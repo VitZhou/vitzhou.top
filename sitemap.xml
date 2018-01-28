@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>http://vitzhou.top/tags/about/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/categories/about/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://vitzhou.top/archives/</loc>
     <priority>0</priority>
   </url>
@@ -20,6 +30,10 @@
   <url>
     <loc>http://vitzhou.top/</loc>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/about/</loc>
   </url>
   
 </urlset>
