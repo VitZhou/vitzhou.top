@@ -1,0 +1,880 @@
+
+
+  
+    
+  
+
+
+  
+
+
+
+
+  
+
+
+  
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
+    <title>Spring Cloud Config</title>
+    <meta name="author" content="周圣华">
+    <meta name="keywords" content=", java, redis, spring cloud, spring boot, docker, k8s, unit test">
+
+    <link rel="icon" href="http://vitzhou.top/favicon.png">
+    
+
+    
+    <meta name="description" content="Spring Cloud Config自动刷新的主要流程
+">
+    <meta property="og:description" content="Spring Cloud Config自动刷新的主要流程
+">
+    <meta property="og:type" content="blog">
+    <meta property="og:title" content="Spring Cloud Config">
+    <meta property="og:url" content="/2018/02/spring-cloud-config/">
+    <meta property="og:site_name" content="首页">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="首页">
+    <meta name="twitter:description" content="Spring Cloud Config自动刷新的主要流程
+">
+    
+    
+
+    
+    
+
+    
+      <meta property="og:image" content="//www.gravatar.com/avatar/ccfaa5056cb19a47376367385b8d75c1?s=640">
+    
+
+    
+      <meta property="og:image" content="http://vitzhou.top/img/spring-cloud/banner.jpeg">
+    
+    
+    
+
+    
+
+    
+    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    
+    
+    <link rel="stylesheet" href="http://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    
+    
+
+    
+      
+    
+    
+  </head>
+
+  <body>
+    <div id="blog">
+      <header id="header" data-behavior="5">
+  <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+  <div class="header-title">
+    <a class="header-title-link" href="http://vitzhou.top/">首页</a>
+  </div>
+  
+    
+      <a class="header-right-picture "
+         href="http://vitzhou.top/#about">
+    
+    
+    
+      
+        <img class="header-picture" src="https://avatars2.githubusercontent.com/u/17940712?s=460&v=4" alt="作者的图片" />
+      
+    
+    </a>
+  
+</header>
+
+      <nav id="sidebar" data-behavior="5">
+  <div class="sidebar-container">
+    
+      <div class="sidebar-profile">
+        <a href="http://vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="https://avatars2.githubusercontent.com/u/17940712?s=460&v=4" />
+        </a>
+        <h4 class="sidebar-profile-name">周圣华</h4>
+        
+          <h5 class="sidebar-profile-bio">如果耐不住寂寞,就看不到繁华</h5>
+        
+      </div>
+    
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://vitzhou.top/">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+      
+      <span class="sidebar-button-desc">首页</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://vitzhou.top/categories">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+      
+      <span class="sidebar-button-desc">分类</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://vitzhou.top/tags">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+      
+      <span class="sidebar-button-desc">标签</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://vitzhou.top/archives">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+      
+      <span class="sidebar-button-desc">归档</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://vitzhou.top/#about">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+      
+      <span class="sidebar-button-desc">关于</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://github.com/VitZhou" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+      
+      <span class="sidebar-button-desc">GitHub</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+
+    </ul>
+  </div>
+</nav>
+
+      
+
+      <div id="main" data-behavior="5"
+        class="
+               hasCoverMetaIn
+               ">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
+  
+    <h1 class="post-title" itemprop="headline">
+      Spring Cloud Config
+    </h1>
+  
+  
+  <div class="postShorten-meta post-meta">
+    
+      <time itemprop="datePublished" datetime="2018-02-06T14:31:23&#43;08:00">
+        
+  二月 6, 2018
+
+      </time>
+    
+    
+  
+  
+    <span>发布在</span>
+    
+      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud">Spring Cloud</a>, 
+    
+      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud-config">Spring Cloud Config</a>
+    
+  
+
+  </div>
+
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>Spring Cloud Config自动刷新的主要流程
+</p>
+
+<p>![]
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li><a href="#spring-cloud-config">Spring Cloud Config</a>
+<ul>
+<li><a href="#spring-cloud-config的小坑">Spring Cloud Config的小坑</a></li>
+<li><a href="#关于git">关于git</a></li>
+<li><a href="#自动刷新配置">自动刷新配置</a></li>
+<li><a href="#源码">源码</a>
+<ul>
+<li><a href="#config-server">config server</a></li>
+<li><a href="#config-client">config client</a>
+<ul>
+<li><a href="#添加配置到environment的细节实现">添加配置到Environment的细节实现</a></li>
+<li><a href="#处理environmentchangeevent事件">处理EnvironmentChangeEvent事件</a></li>
+<li><a href="#scope刷新">scope刷新</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav></p>
+
+<h1 id="spring-cloud-config">Spring Cloud Config</h1>
+
+<h2 id="spring-cloud-config的小坑">Spring Cloud Config的小坑</h2>
+
+<p>在做demo时遇到了个不大不小的坑:
+<em>Spring Cloud Config</em> 的客户端的配置文件不能用&rdquo;application.yml&rdquo;而需要改为&rdquo;bootstrap.yml&rdquo;,否则即便你所有的参数都配对了,你在使用@Value注入配置时也会抛出Could not resolve placeholder···异常。</p>
+
+<h2 id="关于git">关于git</h2>
+
+<p>为何spring cloud config会使用git作为存储配置的仓库呢？我想有以下几个考虑点:</p>
+
+<ol>
+<li>git自带版本控制</li>
+<li>git自带的branch可以用来支持配置中心的多环境(比如dev,test)</li>
+<li>git自带回滚功能</li>
+<li>git除了key:value之外还可以存储文件</li>
+</ol>
+
+<p>但是也由于Git本身没有事件通知机制所以需要依赖mq来通知各个客户端(而且也只是通知说有配置更新,还需要一次网络交互才能获取到新配置)。总而言之使用git可以带来一些便利,但是也增加了架构的复杂度(需要多一个mq中间件,这也是很多人诟病它的一点吧？)</p>
+
+<h2 id="自动刷新配置">自动刷新配置</h2>
+
+<p>流程:
+<img src="http://vitzhou.top/img/spring-cloud/spring-cloud-config.jpg" alt="" /></p>
+
+<p><a href="git@github.com:VitZhou/spring-cloud-demo.git">这里</a>是我做的demo,使用了rabbitmq来做消息队列.</p>
+
+<h2 id="源码">源码</h2>
+
+<h3 id="config-server">config server</h3>
+
+<p>由上图可知当更新配置之后git会通过webhook调用/bus/refresh接口。 这是自动刷新配置的入口,代码如下:</p>
+
+<pre><code class="language-java">@ManagedResource
+public class RefreshBusEndpoint extends AbstractBusEndpoint {
+	//省略部分不重要代码
+
+	@RequestMapping(value = &quot;refresh&quot;, method = RequestMethod.POST)
+	@ResponseBody
+	@ManagedOperation
+	public void refresh(
+			@RequestParam(value = &quot;destination&quot;, required = false) String destination) {
+		publish(new RefreshRemoteApplicationEvent(this, getInstanceId(), destination));
+	}
+}
+</code></pre>
+
+<p>当调用了该接口时,会发送一个RefreshRemoteApplicationEvent事件。config server和config client都监听了该事件(也就是说config server也是可以刷新配置的)。</p>
+
+<h3 id="config-client">config client</h3>
+
+<p>事件的监听:</p>
+
+<pre><code class="language-java">public class RefreshListener implements ApplicationListener&lt;RefreshRemoteApplicationEvent&gt; {
+    //省略部分不重要代码
+	@Override
+	public void onApplicationEvent(RefreshRemoteApplicationEvent event) {
+		Set&lt;String&gt; keys = contextRefresher.refresh();
+		log.info(&quot;Received remote refresh request. Keys refreshed &quot; + keys);
+	}
+}
+</code></pre>
+
+<p>当发生RefreshRemoteApplicationEvent事件时会调用ContextRefresher的refresh()方法.该方法的主要内容如下</p>
+
+<pre><code class="language-java">public synchronized Set&lt;String&gt; refresh() {
+    Map&lt;String, Object&gt; before = extract(
+            this.context.getEnvironment().getPropertySources());
+    addConfigFilesToEnvironment();
+    Set&lt;String&gt; keys = changes(before,
+            extract(this.context.getEnvironment().getPropertySources())).keySet();
+    this.context.publishEvent(new EnvironmentChangeEvent(keys));
+    this.scope.refreshAll();
+    return keys;
+}
+</code></pre>
+
+<ol>
+<li><p>从上下文指定的环境(对应profile)中的所有配置资源中提取配置(除了standardSources之外的配置)</p>
+
+<pre><code class="language-java">private Set&lt;String&gt; standardSources = new HashSet&lt;&gt;(
+            Arrays.asList(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME,
+                    StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                    StandardServletEnvironment.JNDI_PROPERTY_SOURCE_NAME,
+                    StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME,
+                    StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME));
+</code></pre></li>
+
+<li><p>添加配置文件到Environment(这一步比较重要需要细聊,下一小结详解)</p></li>
+
+<li><p>发送一个EnvironmentChangeEvent事件</p></li>
+
+<li><p>刷新当前context的scope</p></li>
+</ol>
+
+<h4 id="添加配置到environment的细节实现">添加配置到Environment的细节实现</h4>
+
+<pre><code class="language-java">ConfigurableApplicationContext addConfigFilesToEnvironment() {
+        ConfigurableApplicationContext capture = null;
+        try {
+            //拷贝环境
+            StandardEnvironment environment = copyEnvironment(
+                    this.context.getEnvironment());
+            //1
+            SpringApplicationBuilder builder = new SpringApplicationBuilder(Empty.class)
+                    .bannerMode(Mode.OFF).web(false).environment(environment);
+            // Just the listeners that affect the environment (e.g. excluding logging
+            // listener because it has side effects)
+            builder.application()
+                    .setListeners(Arrays.asList(new BootstrapApplicationListener(),
+                            new ConfigFileApplicationListener()));
+            capture = builder.run();
+            //2
+            if (environment.getPropertySources().contains(REFRESH_ARGS_PROPERTY_SOURCE)) {
+                environment.getPropertySources().remove(REFRESH_ARGS_PROPERTY_SOURCE);
+            }
+            MutablePropertySources target = this.context.getEnvironment()
+                    .getPropertySources();
+            String targetName = null;
+            for (PropertySource&lt;?&gt; source : environment.getPropertySources()) {
+                String name = source.getName();
+                if (target.contains(name)) {
+                    targetName = name;
+                }
+                if (!this.standardSources.contains(name)) {
+                    if (target.contains(name)) {
+                        target.replace(name, source);
+                    }
+                    else {
+                        if (targetName != null) {
+                            target.addAfter(targetName, source);
+                        }
+                        else {
+                            // targetName was null so we are at the start of the list
+                            target.addFirst(source);
+                            targetName = name;
+                        }
+                    }
+                }
+            }
+            //3
+        }
+        finally {
+            ConfigurableApplicationContext closeable = capture;
+            while (closeable != null) {
+                try {
+                    closeable.close();
+                }
+                catch (Exception e) {
+                    // Ignore;
+                }
+                if (closeable.getParent() instanceof ConfigurableApplicationContext) {
+                    closeable = (ConfigurableApplicationContext) closeable.getParent();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        return capture;
+    }
+</code></pre>
+
+<ol>
+<li>拷贝环境(只是从main环境中拷贝默认配置源和profile)</li>
+
+<li><p>从注释1到注释2之间发生了很有意思的事(实在不知道说什么好):</p>
+
+<ol>
+<li>首先他会创建一个新的SpringApplicationBuild出来</li>
+<li>然后通过build.run()方法创建一个新的ConfigurableApplicationContext出来
+为何这么做呢？这又涉及到另外一个类:PropertySourceBootstrapConfiguration,先看下这个类实现的接口:
+<br /></li>
+</ol>
+
+<pre><code class="language-java">public class PropertySourceBootstrapConfiguration implements
+        ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt;, Ordered
+</code></pre>
+
+<p>由于他实现了ApplicationContextInitializer<ConfigurableApplicationContext>接口,所以当ConfigurableApplicationContext初始化时会调用它的public void initialize(ConfigurableApplicationContext applicationContext)方法:</p>
+
+<pre><code class="language-java">public void initialize(ConfigurableApplicationContext applicationContext) {
+        CompositePropertySource composite = new CompositePropertySource(
+                BOOTSTRAP_PROPERTY_SOURCE_NAME);
+        AnnotationAwareOrderComparator.sort(this.propertySourceLocators);
+        boolean empty = true;
+        ConfigurableEnvironment environment = applicationContext.getEnvironment();
+        for (PropertySourceLocator locator : this.propertySourceLocators) {
+            PropertySource&lt;?&gt; source = null;
+            source = locator.locate(environment);
+            if (source == null) {
+                continue;
+            }
+            logger.info(&quot;Located property source: &quot; + source);
+            composite.addPropertySource(source);
+            empty = false;
+        }
+    //省略部分代码
+}
+</code></pre>
+
+<p>最重要的一步是locator.locate(environment),该方法如下(ConfigServicePropertySourceLocator类):</p>
+
+<pre><code class="language-java">@Override
+    @Retryable(interceptor = &quot;configServerRetryInterceptor&quot;)
+    public org.springframework.core.env.PropertySource&lt;?&gt; locate(
+            org.springframework.core.env.Environment environment) {
+        ConfigClientProperties properties = this.defaultProperties.override(environment);
+        CompositePropertySource composite = new CompositePropertySource(&quot;configService&quot;);
+        RestTemplate restTemplate = this.restTemplate == null ? getSecureRestTemplate(properties)
+                : this.restTemplate;
+        Exception error = null;
+        String errorBody = null;
+        logger.info(&quot;Fetching config from server at: &quot; + properties.getRawUri());
+        try {
+            String[] labels = new String[] { &quot;&quot; };
+            if (StringUtils.hasText(properties.getLabel())) {
+                labels = StringUtils.commaDelimitedListToStringArray(properties.getLabel());
+            }
+    
+            String state = ConfigClientStateHolder.getState();
+    
+            // Try all the labels until one works
+            for (String label : labels) {
+                Environment result = getRemoteEnvironment(restTemplate,
+                        properties, label.trim(), state);
+//省略不重要的代码
+}
+</code></pre>
+
+<p>该方法主要是从远程获取Environment(其实际就是发送了个rest request到config server),因为该方法不允许失败,所以还添加@Retryable注解(在失败时重试)</p></li>
+
+<li><p>从注释2到3主要是将从远程获取的Environment和当前上下文的Environment做比较,当前Environment有的属性就替换,没有的就新增到当前的Environment中</p></li>
+
+<li><p>最后需要close掉新建出来的ConfigurableApplicationContext。</p></li>
+</ol>
+
+<p>总结一下: config client为了能去远程获取Environment,创建了一个ConfigurableApplicationContext,用来触发ConfigServicePropertySourceLocator的locate方法,随后将新的配置更新到当前环境中，并关闭ConfigurableApplicationContext。</p>
+
+<h4 id="处理environmentchangeevent事件">处理EnvironmentChangeEvent事件</h4>
+
+<p>ConfigurationPropertiesRebinder:</p>
+
+<pre><code class="language-java">@Override
+public void onApplicationEvent(EnvironmentChangeEvent event) {
+    rebind();
+}
+@ManagedOperation
+public void rebind() {
+    this.errors.clear();
+    for (String name : this.beans.getBeanNames()) {
+        rebind(name);
+    }
+}
+
+@ManagedOperation
+public boolean rebind(String name) {
+    if (!this.beans.getBeanNames().contains(name)) {
+        return false;
+    }
+    if (this.applicationContext != null) {
+        try {
+            Object bean = this.applicationContext.getBean(name);
+            if (AopUtils.isCglibProxy(bean)) {
+                bean = getTargetObject(bean);
+            }
+            this.binder.postProcessBeforeInitialization(bean, name);
+            this.applicationContext.getAutowireCapableBeanFactory()
+                    .initializeBean(bean, name);
+            return true;
+        }
+        catch (RuntimeException e) {
+            this.errors.put(name, e);
+            throw e;
+        }
+    }
+    return false;
+}
+</code></pre>
+
+<p>当发生EnvironmentChangeEvent事件时会重新初始化bean(包括重新绑定新的配置源以及重新校验metadata等,详情请查看spring core的官方文档)</p>
+
+<h4 id="scope刷新">scope刷新</h4>
+
+<p>RefreshScope：</p>
+
+<pre><code class="language-java">public void refreshAll() {
+    super.destroy();
+    this.context.publishEvent(new RefreshScopeRefreshedEvent());
+}
+</code></pre>
+
+<p>由于之前的bean重新初始化了,所以这里需要调用GenericScope的destroy().该方法会调用注册在BeanFactory中的bean destroy回调方法。</p>
+
+<p>然后发送一个RefreshScopeRefreshedEvent事件。RefreshScopeRefreshedEvent事件的监听处理如下(EurekaDiscoveryClientConfiguration类):</p>
+
+<pre><code class="language-java">@EventListener(RefreshScopeRefreshedEvent.class)
+public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
+    //This will force the creation of the EurkaClient bean if not already created
+    //to make sure the client will be reregistered after a refresh event
+    if(eurekaClient != null) {
+        eurekaClient.getApplications();
+    }
+    if (autoRegistration != null) {
+        // register in case meta data changed
+        this.autoRegistration.stop();
+        this.autoRegistration.start();
+    }
+}
+</code></pre>
+
+<p>每当metadata发生变化就需要重新在eureka注册，实际上只要调用了/bus/refresh接口就会执行这一步骤。</p>
+
+<p>由于调用了/bus/refresh接口就会触发RefreshRemoteApplicationEvent事件，并且config server和
+config client都会监听该事件,而且该事件的处理是不管配置是否更新是否不是该微服务所需要的(即全量的)的都会执行scope的刷新
+.所以只要你微服务使用了config的动态刷新,那么当任何一项配置更新时,你所有微服务都会在eureka中重新注册.
+然后eureka的服务发现也是全量更新和读取的。然后你懂的。。。。。。</p>
+
+<p><img src="http://vitzhou.top/img/spring-cloud/spring-cloud-config-seq.png" alt="" /></p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="http://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
+
+  <a class="tag tag--primary tag--small" href="http://vitzhou.top/tags/spring-cloud-config/">Spring Cloud Config</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/1/01/%E6%96%B0%E5%BC%80%E5%8D%9A%E5%AE%A2/" data-tooltip="新开博客">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+            
+              
+                <div id="disqus_thread">
+  <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+              
+            
+          </div>
+        </article>
+        <footer id="footer" class="main-content-wrap">
+  <span class="copyrights">
+    &copy; 2018 周圣华. All Rights Reserved
+  </span>
+</footer>
+
+      </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/1/01/%E6%96%B0%E5%BC%80%E5%8D%9A%E5%AE%A2/" data-tooltip="新开博客">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+    </div>
+    
+    <div id="about">
+  <div id="about-card">
+    <div id="about-btn-close">
+      <i class="fa fa-remove"></i>
+    </div>
+    
+      <img id="about-card-picture" src="https://avatars2.githubusercontent.com/u/17940712?s=460&v=4" alt="作者的图片" />
+    
+    <h4 id="about-card-name">周圣华</h4>
+    
+      <div id="about-card-bio">如果耐不住寂寞,就看不到繁华</div>
+    
+    
+      <div id="about-card-job">
+        <i class="fa fa-briefcase"></i>
+        <br/>
+        高级java@数人云
+      </div>
+    
+    
+      <div id="about-card-location">
+        <i class="fa fa-map-marker"></i>
+        <br/>
+        vitzhou@gmail.com
+      </div>
+    
+  </div>
+</div>
+
+    <div id="algolia-search-modal" class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="close-button"><i class="fa fa-close"></i></span>
+      <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+        <span class="searchby-algolia-text text-color-light text-small">by</span>
+        <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+      </a>
+      <i class="search-icon fa fa-search"></i>
+      <form id="algolia-search-form">
+        <input type="text" id="algolia-search-input" name="search"
+          class="form-control input--large search-input" placeholder="搜索" />
+      </form>
+    </div>
+    <div class="modal-body">
+      <div class="no-result text-color-light text-center"></div>
+      <div class="results">
+        
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="http://vitzhou.top/2018/02/spring-cloud-config/">
+                <h3 class="media-heading">Spring Cloud Config</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>Spring Cloud Config自动刷新的主要流程
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="http://vitzhou.top/1/01/%E6%96%B0%E5%BC%80%E5%8D%9A%E5%AE%A2/">
+                <h3 class="media-heading">新开博客</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Jan 1, 0001
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"> 由于gitbook不适合记录零散的工作,学习笔记,所以新开了此博客,记录学习工作中的点滴 </div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+      </div>
+    </div>
+    <div class="modal-footer">
+      <p class="results-count text-medium"
+         data-message-zero=""
+         data-message-one=""
+         data-message-other="">
+         2 posts found
+      </p>
+    </div>
+  </div>
+</div>
+    
+  
+    
+    <div id="cover" style="background-image:url('http://vitzhou.top/images/cover.jpg');"></div>
+  
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
+
+
+<script src="http://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+
+
+
+<script>
+$(document).ready(function() {
+  hljs.configure({ classPrefix: '', useBR: false });
+  $('pre.code-highlight > code, pre > code').each(function(i, block) {
+    if (!$(this).hasClass('codeblock')) {
+      $(this).addClass('codeblock');
+    }
+    hljs.highlightBlock(block);
+  });
+});
+</script>
+
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'http:\/\/vitzhou.top\/2018\/02\/spring-cloud-config\/';
+          
+            this.page.identifier = '\/2018\/02\/spring-cloud-config\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = 'hugo-tranquilpeak-theme';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
+
+
+
+    
+  </body>
+</html>
+
