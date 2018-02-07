@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Spring Cloud Config on 首页</title>
-    <link>http://vitzhou.top/categories/spring-cloud-config/</link>
+    <link>http://192.168.31.233/categories/spring-cloud-config/</link>
     <description>Recent content in Spring Cloud Config on 首页</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Tue, 06 Feb 2018 14:31:23 +0800</lastBuildDate>
     
-	<atom:link href="http://vitzhou.top/categories/spring-cloud-config/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://192.168.31.233/categories/spring-cloud-config/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Spring Cloud Config</title>
-      <link>http://vitzhou.top/2018/02/spring-cloud-config/</link>
+      <link>http://192.168.31.233/2018/02/spring-cloud-config/</link>
       <pubDate>Tue, 06 Feb 2018 14:31:23 +0800</pubDate>
       
-      <guid>http://vitzhou.top/2018/02/spring-cloud-config/</guid>
+      <guid>http://192.168.31.233/2018/02/spring-cloud-config/</guid>
       <description>&lt;p&gt;Spring Cloud Config自动刷新的主要流程
 &lt;/p&gt;</description>
     </item>
