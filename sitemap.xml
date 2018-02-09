@@ -13,13 +13,13 @@
   </url>
   
   <url>
-    <loc>http://vitzhou.top/categories/about/</loc>
+    <loc>http://vitzhou.top/tags/about/</loc>
     <lastmod>2018-02-04T14:31:23+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://vitzhou.top/tags/about/</loc>
+    <loc>http://vitzhou.top/categories/about/</loc>
     <lastmod>2018-02-04T14:31:23+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -42,25 +42,25 @@
   </url>
   
   <url>
-    <loc>http://vitzhou.top/categories/spring-cloud/</loc>
-    <lastmod>2018-02-06T14:31:23+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>http://vitzhou.top/tags/spring-cloud/</loc>
     <lastmod>2018-02-06T14:31:23+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://vitzhou.top/categories/spring-cloud-config/</loc>
+    <loc>http://vitzhou.top/categories/spring-cloud/</loc>
     <lastmod>2018-02-06T14:31:23+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://vitzhou.top/tags/spring-cloud-config/</loc>
+    <lastmod>2018-02-06T14:31:23+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/categories/spring-cloud-config/</loc>
     <lastmod>2018-02-06T14:31:23+08:00</lastmod>
     <priority>0</priority>
   </url>
