@@ -24,7 +24,7 @@
     <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
     <title>Spring Cloud Config</title>
     <meta name="author" content="周圣华">
-    <meta name="keywords" content=", java, redis, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="Spring Cloud, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
 
     <link rel="icon" href="http://vitzhou.top/images/author.jpeg">
     
@@ -235,9 +235,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud">Spring Cloud</a>, 
-    
-      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud-config">Spring Cloud Config</a>
+      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud">Spring Cloud</a>
     
   
 
@@ -346,8 +344,11 @@ public class RefreshBusEndpoint extends AbstractBusEndpoint {
 }
 </code></pre>
 
+<p></br ></p>
+
 <ol>
-<li><p>从上下文指定的环境(对应profile)中的所有配置资源中提取配置(除了standardSources之外的配置)</p>
+<li>从上下文指定的环境(对应profile)中的所有配置资源中提取配置(除了standardSources之外的配置)</li>
+</ol>
 
 <pre><code class="language-java">private Set&lt;String&gt; standardSources = new HashSet&lt;&gt;(
             Arrays.asList(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME,
@@ -355,13 +356,12 @@ public class RefreshBusEndpoint extends AbstractBusEndpoint {
                     StandardServletEnvironment.JNDI_PROPERTY_SOURCE_NAME,
                     StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME,
                     StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME));
-</code></pre></li>
+</code></pre>
 
-<li><p>添加配置文件到Environment(这一步比较重要需要细聊,下一小结详解)</p></li>
-
-<li><p>发送一个EnvironmentChangeEvent事件</p></li>
-
-<li><p>刷新当前context的scope</p></li>
+<ol>
+<li>添加配置文件到Environment(这一步比较重要需要细聊,下一小结详解)</li>
+<li>发送一个EnvironmentChangeEvent事件</li>
+<li>刷新当前context的scope</li>
 </ol>
 
 <h4 id="添加配置到environment的细节实现">添加配置到Environment的细节实现</h4>
@@ -622,7 +622,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/welcome/" data-tooltip="Welcome">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -701,7 +701,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/welcome/" data-tooltip="Welcome">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -813,23 +813,6 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             <hr>
           </div>
         
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="http://vitzhou.top/2018/02/welcome/">
-                <h3 class="media-heading">Welcome</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Feb 2, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"> 由于gitbook不适合记录零散的工作,学习笔记,所以新开了此博客,记录学习工作中的点滴 </div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
       </div>
     </div>
     <div class="modal-footer">
@@ -837,7 +820,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         2 posts found
+         1 posts found
       </p>
     </div>
   </div>
@@ -890,7 +873,7 @@ $(document).ready(function() {
             return;
           }
           var d = document, s = d.createElement('script');
-          var disqus_shortname = 'hugo-tranquilpeak-theme';
+          var disqus_shortname = '个人博客';
           s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
           s.setAttribute('data-timestamp', +new Date());
