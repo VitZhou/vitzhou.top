@@ -26,22 +26,19 @@
     <meta name="author" content="周圣华">
     <meta name="keywords" content="Spring Cloud, Spring Cloud Eureka, Spring Cloud Eureka registry, Eureka, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
 
-    <link rel="icon" href="http://vitzhou.top/images/author.jpeg">
+    <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
 
     
-    <meta name="description" content="本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看这里入门.
-">
-    <meta property="og:description" content="本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看这里入门.
-">
+    <meta name="description" content="spring cloud eureka注册流程">
+    <meta property="og:description" content="spring cloud eureka注册流程">
     <meta property="og:type" content="blog">
     <meta property="og:title" content="Eureka Client Registry">
     <meta property="og:url" content="/2018/02/eureka-client-registry/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看这里入门.
-">
+    <meta name="twitter:description" content="spring cloud eureka注册流程">
     
     
 
@@ -53,7 +50,7 @@
     
 
     
-      <meta property="og:image" content="http://vitzhou.top/img/spring-cloud/eureka-client/22.jpg">
+      <meta property="og:image" content="https://vitzhou.top/img/spring-cloud/eureka-client/22.jpg">
     
     
     
@@ -61,12 +58,12 @@
     
 
     
-    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
-    <link rel="stylesheet" href="http://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
     
     
-    <link rel="stylesheet" href="http://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    <link rel="stylesheet" href="https://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
     
     
 
@@ -81,17 +78,17 @@
       <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
-    <a class="header-title-link" href="http://vitzhou.top/">周圣华的博客</a>
+    <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
   </div>
   
     
       <a class="header-right-picture "
-         href="http://vitzhou.top/#about">
+         href="https://vitzhou.top/#about">
     
     
     
       
-        <img class="header-picture" src="http://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+        <img class="header-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
       
     
     </a>
@@ -102,8 +99,8 @@
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
-        <a href="http://vitzhou.top/#about">
-          <img class="sidebar-profile-picture" src="http://vitzhou.top/images/author.jpeg?s=460&v=4" />
+        <a href="https://vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" />
         </a>
         <h4 class="sidebar-profile-name">周圣华</h4>
         
@@ -115,7 +112,7 @@
       
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="http://vitzhou.top/">
+      <a class="sidebar-button-link " href="https://vitzhou.top/">
     
       <i class="sidebar-button-icon fa fa-lg fa-home"></i>
       
@@ -125,7 +122,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="http://vitzhou.top/categories">
+      <a class="sidebar-button-link " href="https://vitzhou.top/categories">
     
       <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
       
@@ -135,7 +132,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="http://vitzhou.top/tags">
+      <a class="sidebar-button-link " href="https://vitzhou.top/tags">
     
       <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
       
@@ -145,7 +142,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="http://vitzhou.top/archives">
+      <a class="sidebar-button-link " href="https://vitzhou.top/archives">
     
       <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
       
@@ -155,7 +152,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="http://vitzhou.top/#about">
+      <a class="sidebar-button-link " href="https://vitzhou.top/#about">
     
       <i class="sidebar-button-icon fa fa-lg fa-question"></i>
       
@@ -235,7 +232,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="http://vitzhou.top/categories/spring-cloud">Spring Cloud</a>
+      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud">Spring Cloud</a>
     
   
 
@@ -443,7 +440,7 @@ public void register(EurekaRegistration reg) {
 
 <p>通过查找ApplicationInfoManager的registerStatusChangeListener方法的使用可以看到:</p>
 
-<p><img src="http://vitzhou.top/img/spring-cloud/eureka-client/1.jpg" alt="" /></p>
+<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/1.jpg" alt="" /></p>
 
 <p>跳进去可以看到:</p>
 
@@ -585,7 +582,7 @@ scheduledPeriodicRef.set(next);
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="http://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
 
                   </div>
                 
@@ -606,7 +603,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/spring-cloud-config/" data-tooltip="Spring Cloud Config">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018/02/spring-cloud-config/" data-tooltip="Spring Cloud Config">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -685,7 +682,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/spring-cloud-config/" data-tooltip="Spring Cloud Config">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018/02/spring-cloud-config/" data-tooltip="Spring Cloud Config">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -737,7 +734,7 @@ scheduledPeriodicRef.set(next);
       <i class="fa fa-remove"></i>
     </div>
     
-      <img id="about-card-picture" src="http://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+      <img id="about-card-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
     
     <h4 id="about-card-name">周圣华</h4>
     
@@ -747,7 +744,7 @@ scheduledPeriodicRef.set(next);
       <div id="about-card-job">
         <i class="fa fa-briefcase"></i>
         <br/>
-        高级java@数人云
+        高级java开发
       </div>
     
     
@@ -782,7 +779,7 @@ scheduledPeriodicRef.set(next);
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="http://vitzhou.top/2018/02/eureka-client-registry/">
+              <a class="link-unstyled" href="https://vitzhou.top/2018/02/eureka-client-registry/">
                 <h3 class="media-heading">Eureka Client Registry</h3>
               </a>
               <span class="media-meta">
@@ -800,7 +797,7 @@ scheduledPeriodicRef.set(next);
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="http://vitzhou.top/2018/02/spring-cloud-config/">
+              <a class="link-unstyled" href="https://vitzhou.top/2018/02/spring-cloud-config/">
                 <h3 class="media-heading">Spring Cloud Config</h3>
               </a>
               <span class="media-meta">
@@ -830,7 +827,7 @@ scheduledPeriodicRef.set(next);
     
   
     
-    <div id="cover" style="background-image:url('http://vitzhou.top/images/cover1.jpg');"></div>
+    <div id="cover" style="background-image:url('https://vitzhou.top/images/cover1.jpg');"></div>
   
 
 
@@ -842,7 +839,7 @@ scheduledPeriodicRef.set(next);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
 
 
-<script src="http://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+<script src="https://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
 
 
 
@@ -863,7 +860,7 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'http:\/\/vitzhou.top\/2018\/02\/eureka-client-registry\/';
+          this.page.url = 'https:\/\/vitzhou.top\/2018\/02\/eureka-client-registry\/';
           
             this.page.identifier = '\/2018\/02\/eureka-client-registry\/'
           
