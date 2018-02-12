@@ -24,7 +24,7 @@
     <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
     <title>Spring Cloud Config</title>
     <meta name="author" content="周圣华">
-    <meta name="keywords" content="Spring Cloud, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="Spring Cloud, Spring Cloud Config, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
 
     <link rel="icon" href="http://vitzhou.top/images/author.jpeg">
     
@@ -189,7 +189,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://skyao.io/project/dreammesh/" target="_blank" rel="noopener">
+      <a class="sidebar-button-link " href="https://dreamfly.io/project/dreammesh/" target="_blank" rel="noopener">
     
       <i class="sidebar-button-icon fa fa-lg fa-github-square"></i>
       
@@ -270,6 +270,10 @@
 </nav>
 
 <h2 id="spring-cloud-config的小坑">Spring Cloud Config的小坑</h2>
+
+<blockquote>
+<p>本文是基于spring-cloud-netflix 1.4.0.RELEASE版本</p>
+</blockquote>
 
 <p>在做demo时遇到了个不大不小的坑:
 <em>Spring Cloud Config</em> 的客户端的配置文件不能用&rdquo;application.yml&rdquo;而需要改为&rdquo;bootstrap.yml&rdquo;,否则即便你所有的参数都配对了,你在使用@Value注入配置时也会抛出Could not resolve placeholder···异常。</p>
@@ -601,8 +605,6 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
                     
   <a class="tag tag--primary tag--small" href="http://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
 
-  <a class="tag tag--primary tag--small" href="http://vitzhou.top/tags/spring-cloud-config/">Spring Cloud Config</a>
-
                   </div>
                 
               
@@ -614,7 +616,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/eureka-client-registry/" data-tooltip="Eureka Client Registry">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -693,7 +695,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="http://vitzhou.top/2018/02/eureka-client-registry/" data-tooltip="Eureka Client Registry">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -798,6 +800,24 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           <div class="media">
             
             <div class="media-body">
+              <a class="link-unstyled" href="http://vitzhou.top/2018/02/eureka-client-registry/">
+                <h3 class="media-heading">Eureka Client Registry</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看<a href="http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/">这里</a>入门.
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
               <a class="link-unstyled" href="http://vitzhou.top/2018/02/spring-cloud-config/">
                 <h3 class="media-heading">Spring Cloud Config</h3>
               </a>
@@ -820,7 +840,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         1 posts found
+         2 posts found
       </p>
     </div>
   </div>

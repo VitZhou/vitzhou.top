@@ -6,10 +6,20 @@
     <description>Recent content on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 06 Feb 2018 14:31:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 11 Feb 2018 15:09:33 +0800</lastBuildDate>
     
 	<atom:link href="http://vitzhou.top/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Eureka Client Registry</title>
+      <link>http://vitzhou.top/2018/02/eureka-client-registry/</link>
+      <pubDate>Sun, 11 Feb 2018 15:09:33 +0800</pubDate>
+      
+      <guid>http://vitzhou.top/2018/02/eureka-client-registry/</guid>
+      <description>&lt;p&gt;本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看&lt;a href=&#34;http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/&#34;&gt;这里&lt;/a&gt;入门.
+&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Spring Cloud Config</title>
