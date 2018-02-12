@@ -681,6 +681,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
     var gitment = new Gitment({
+            id: window.location.pathname,
                                   owner: 'VitZhou',
                                   repo: 'vitzhou.top',
                                   oauth: {
