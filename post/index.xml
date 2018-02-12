@@ -22,7 +22,7 @@
     </item>
     
     <item>
-      <title>Spring Cloud Config</title>
+      <title>Spring Cloud Config自动刷新机制</title>
       <link>https://vitzhou.top/2018-02-spring-cloud-refresh-context/</link>
       <pubDate>Tue, 06 Feb 2018 14:31:23 +0800</pubDate>
       
