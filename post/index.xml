@@ -12,13 +12,22 @@
     
     
     <item>
-      <title>Eureka服务注册配置详解</title>
+      <title>Eureka Client配置详解</title>
       <link>https://vitzhou.top/20180213_eureka_client_config/</link>
       <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
       
       <guid>https://vitzhou.top/20180213_eureka_client_config/</guid>
-      <description>&lt;p&gt;这次我们来详细聊聊eureka服务的配置
+      <description>&lt;p&gt;这次我们来详细聊聊eureka client服务的配置
 &lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Eureka Server配置详解</title>
+      <link>https://vitzhou.top/20180215_eureka_server_config/</link>
+      <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180215_eureka_server_config/</guid>
+      <description>Eureka Server的配置详解: </description>
     </item>
     
     <item>

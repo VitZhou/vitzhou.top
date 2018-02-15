@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Eureka服务注册配置详解</title>
+    <title>Eureka Client配置详解</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="Spring Cloud, Spring Cloud Eureka, Spring Cloud Eureka Config, Eureka, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="spring cloud eureka服务配置详解">
-    <meta property="og:description" content="spring cloud eureka服务配置详解">
+    <meta name="description" content="spring cloud eureka client配置详解">
+    <meta property="og:description" content="spring cloud eureka client配置详解">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Eureka服务注册配置详解">
+    <meta property="og:title" content="Eureka Client配置详解">
     <meta property="og:url" content="/20180213_eureka_client_config/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="spring cloud eureka服务配置详解">
+    <meta name="twitter:description" content="spring cloud eureka client配置详解">
     
     
 
@@ -232,7 +232,7 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Eureka服务注册配置详解
+      Eureka Client配置详解
     </h1>
   
   
@@ -261,12 +261,12 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>这次我们来详细聊聊eureka服务的配置
+              <p>这次我们来详细聊聊eureka client服务的配置
 </p>
 
 <h2 id="概述">概述</h2>
 
-<p>Eureka 客户端的配置分为两大类:应用级配置和实例级配置。分别是以下两个类:AutoServiceRegistrationProperties,CloudEurekaInstanceConfig</p>
+<p>Eureka 客户端的配置分为两大类:应用级配置和实例级配置以及client配置。分别是以下几个类:AutoServiceRegistrationProperties,CloudEurekaInstanceConfig以及EurekaClientConfig</p>
 
 <h2 id="autoserviceregistrationproperties">AutoServiceRegistrationProperties</h2>
 
@@ -464,6 +464,148 @@ public class AutoServiceRegistrationProperties {
 </tr>
 </tbody>
 </table>
+
+<h2 id="eurekaclientconfig">EurekaClientConfig</h2>
+
+<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/5.jpg" alt="" /></p>
+
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>registryFetchIntervalSeconds</td>
+<td>int</td>
+<td>指示从eureka服务器获取注册表信息的频率（以秒为单位）。</td>
+</tr>
+
+<tr>
+<td>instanceInfoReplicationIntervalSeconds</td>
+<td>int</td>
+<td>实例信息复制间隔(单位:秒)，默认30</td>
+</tr>
+
+<tr>
+<td>initialInstanceInfoReplicationIntervalSeconds</td>
+<td>int</td>
+<td>实例初始化后经过多长时间复制信息到eureka服务器(单位:秒),默认40</td>
+</tr>
+
+<tr>
+<td>eurekaServiceUrlPollIntervalSeconds</td>
+<td>int</td>
+<td>轮训eureka server信息变更的时间间隔(单位:秒),eureka server信息变更后,eureka client应该知道,默认是300</td>
+</tr>
+
+<tr>
+<td>proxyPort</td>
+<td>String</td>
+<td>eureka server代理端口如果存在,默认null</td>
+</tr>
+
+<tr>
+<td>proxyHost</td>
+<td>String</td>
+<td>eureka server代理host如果存在,默认null</td>
+</tr>
+
+<tr>
+<td>proxyUserName</td>
+<td>String</td>
+<td>eureka server代理用户名如果存在,默认null</td>
+</tr>
+
+<tr>
+<td>proxyPassword</td>
+<td>String</td>
+<td>eureka server密码如果存在,默认null</td>
+</tr>
+
+<tr>
+<td>shouldGZipContent</td>
+<td>boolean</td>
+<td>来自eureka server的注册信息是否需要压缩以便获得最佳的网络流量,默认true</td>
+</tr>
+
+<tr>
+<td>eurekaServerReadTimeoutSeconds</td>
+<td>int</td>
+<td>从eureka server读取超时之前等待多久(单位:秒),默认8秒</td>
+</tr>
+
+<tr>
+<td>eurekaServerConnectTimeoutSeconds</td>
+<td>int</td>
+<td>从eureka server连接超时之前需要等待多久(单位:秒)。注意:客户端中的连接由HttpClient连接，并且此设置会影响实际的连接创建以及从池中获取连接的等待时间</td>
+</tr>
+
+<tr>
+<td>backupRegistryImpl</td>
+<td>String</td>
+<td>从eureka server读取超时之前等待多久(单位:秒),默认8秒</td>
+</tr>
+
+<tr>
+<td>eurekaServerTotalConnections</td>
+<td>int</td>
+<td>获取从client到所有server允许的连接总数。,默认200</td>
+</tr>
+
+<tr>
+<td>eurekaServerTotalConnectionsPerHost</td>
+<td>int</td>
+<td>获取从client到server host所允许的连接总数。,默认50</td>
+</tr>
+
+<tr>
+<td>eurekaServerURLContext</td>
+<td>String</td>
+<td>当eureka server列表来自DNS解析时,获取用于构建service url(联系eureka server)的上下文,当配置shouldUseDnsForFetchingServiceUrls为true时起作用</td>
+</tr>
+
+<tr>
+<td>eurekaServerPort</td>
+<td>String</td>
+<td>当eureka server列表来自DNS解析时,获取用于构建service url(联系eureka server)的服务端端口,,当配置shouldUseDnsForFetchingServiceUrls为true时起作用</td>
+</tr>
+
+<tr>
+<td>eurekaServerDNSName</td>
+<td>String</td>
+<td>获取要查询的DNS名称以获取eureka服务器列表。如果契约通过实现getEurekaServerServiceUrls（String）返回服务URL，则不需要此信息。</td>
+</tr>
+
+<tr>
+<td>shouldUseDnsForFetchingServiceUrls</td>
+<td>boolean</td>
+<td>指示eureka客户端是否应使用DNS机制来获取要与之通话的eureka服务器列表。 当DNS名称更新为具有其他服务器时，该信息将在eureka客户端根据{getEurekaServiceUrlPollIntervalSeconds()中的指定轮询该信息后立即使用</td>
+</tr>
+
+<tr>
+<td>shouldRegisterWithEureka</td>
+<td>boolean</td>
+<td>指示此实例是否应将其信息注册到eureka服务器以供其他人发现。默认true</td>
+</tr>
+
+<tr>
+<td>shouldPreferSameZoneEureka</td>
+<td>boolean</td>
+<td>优先使用相同区( zone )的 Eureka Server，默认true</td>
+</tr>
+
+<tr>
+<td>allowRedirects</td>
+<td>boolean</td>
+<td>指示服务器是否可以将客户端请求重定向到备份服务器/群集。 如果设置为false，服务器将直接处理请求，如果设置为true，则可能会将HTTP重定向发送到客户端，并携带有新的服务器位置。默认false</td>
+</tr>
+</tbody>
+</table>
               
             </div>
           </div>
@@ -498,7 +640,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180215_eureka_server_config/" data-tooltip="Eureka Server配置详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -578,7 +720,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180215_eureka_server_config/" data-tooltip="Eureka Server配置详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -640,7 +782,7 @@ public class AutoServiceRegistrationProperties {
       <div id="about-card-job">
         <i class="fa fa-briefcase"></i>
         <br/>
-        高级java开发
+        高级java码农
       </div>
     
     
@@ -676,15 +818,32 @@ public class AutoServiceRegistrationProperties {
             
             <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20180213_eureka_client_config/">
-                <h3 class="media-heading">Eureka服务注册配置详解</h3>
+                <h3 class="media-heading">Eureka Client配置详解</h3>
               </a>
               <span class="media-meta">
                 <span class="media-date text-small">
                   Feb 2, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>这次我们来详细聊聊eureka服务的配置
+              <div class="media-content hide-xs font-merryweather"><p>这次我们来详细聊聊eureka client服务的配置
 </p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180215_eureka_server_config/">
+                <h3 class="media-heading">Eureka Server配置详解</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather">Eureka Server的配置详解: </div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -733,7 +892,7 @@ public class AutoServiceRegistrationProperties {
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         3 posts found
+         4 posts found
       </p>
     </div>
   </div>
