@@ -3,52 +3,69 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://vitzhou.top/20180211_eureka_client_registry/</loc>
+    <loc>http://vitzhou.top/20180213_eureka_client_config/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/20180211_eureka_client_registry/</loc>
     <lastmod>2018-02-11T15:09:33+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/2018-02-spring-cloud-refresh-context/</loc>
+    <loc>http://vitzhou.top/2018-02-spring-cloud-refresh-context/</loc>
     <lastmod>2018-02-06T14:31:23+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/archives/</loc>
+    <loc>http://vitzhou.top/archives/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/</loc>
+    <loc>http://vitzhou.top/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-02-11T15:09:33+08:00</lastmod>
+    <loc>http://vitzhou.top/post/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/tags/spring-cloud/</loc>
-    <lastmod>2018-02-11T15:09:33+08:00</lastmod>
+    <loc>http://vitzhou.top/categories/spring-cloud/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/spring-cloud/</loc>
-    <lastmod>2018-02-11T15:09:33+08:00</lastmod>
+    <loc>http://vitzhou.top/tags/spring-cloud/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/tags/</loc>
-    <lastmod>2018-02-11T15:09:33+08:00</lastmod>
+    <loc>http://vitzhou.top/categories/spring-cloud-eureka/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-02-11T15:09:33+08:00</lastmod>
+    <loc>http://vitzhou.top/tags/spring-cloud-eureka/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/tags/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://vitzhou.top/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
