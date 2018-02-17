@@ -22,15 +22,6 @@
     </item>
     
     <item>
-      <title>Eureka Server配置详解</title>
-      <link>https://vitzhou.top/20180215_eureka_server_config/</link>
-      <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
-      
-      <guid>https://vitzhou.top/20180215_eureka_server_config/</guid>
-      <description>Eureka Server的配置详解: </description>
-    </item>
-    
-    <item>
       <title>Eureka客户端注册流程</title>
       <link>https://vitzhou.top/20180211_eureka_client_registry/</link>
       <pubDate>Sun, 11 Feb 2018 15:09:33 +0800</pubDate>

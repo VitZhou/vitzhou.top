@@ -8,11 +8,6 @@
   </url>
   
   <url>
-    <loc>https://vitzhou.top/20180215_eureka_server_config/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://vitzhou.top/20180211_eureka_client_registry/</loc>
     <lastmod>2018-02-11T15:09:33+08:00</lastmod>
   </url>
@@ -39,25 +34,25 @@
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/spring-cloud/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://vitzhou.top/tags/spring-cloud/</loc>
     <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/spring-cloud-eureka/</loc>
+    <loc>https://vitzhou.top/categories/spring-cloud/</loc>
     <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://vitzhou.top/tags/spring-cloud-eureka/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/categories/spring-cloud-eureka/</loc>
     <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>

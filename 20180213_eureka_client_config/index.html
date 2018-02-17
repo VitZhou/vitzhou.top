@@ -604,6 +604,108 @@ public class AutoServiceRegistrationProperties {
 <td>boolean</td>
 <td>指示服务器是否可以将客户端请求重定向到备份服务器/群集。 如果设置为false，服务器将直接处理请求，如果设置为true，则可能会将HTTP重定向发送到客户端，并携带有新的服务器位置。默认false</td>
 </tr>
+
+<tr>
+<td>onDemandUpdateStatusChange</td>
+<td>boolean</td>
+<td>如果设置为true，则通过ApplicationInfoManager进行本地状态更新将触发对远程eureka服务器的按需（但速率有限）注册/更新</td>
+</tr>
+
+<tr>
+<td>logDeltaDiff</td>
+<td>boolean</td>
+<td>是否根据注册表信息记录eureka server和eureka client之间的差异。eureka client只会从eureka server中检索增量,以便最大限度的减少网络流量.收到增量后,eureka client会协调来自服务器的信息,以便验证他是否遗漏信息。如果协调失败(比如网络异常的情况下),那么客户端会获取注册表的全量。默认false</td>
+</tr>
+
+<tr>
+<td>disableDelta</td>
+<td>boolean</td>
+<td>是否禁用注册表增量获取,如果禁用则使用注册表全量获取</td>
+</tr>
+
+<tr>
+<td>fetchRemoteRegionsRegistry</td>
+<td>String</td>
+<td>以逗号分隔的eureka注册表信息将被提取的区域列表。 必须为可用区域返回的每个zone定义的可用区域。 如果不这样做，将导致发现客户端启动失败。 如果为null,表示不需要获取远程zone.默认为Null</td>
+</tr>
+
+<tr>
+<td>region</td>
+<td>String</td>
+<td>获取此实例所在的区域（在AWS数据中心中使用）。默认:us-east-1</td>
+</tr>
+
+<tr>
+<td>filterOnlyUpInstances</td>
+<td>boolean</td>
+<td>过滤InstanceStatus UP状态的实例。默认true</td>
+</tr>
+
+<tr>
+<td>getEurekaConnectionIdleTimeoutSeconds</td>
+<td>int</td>
+<td>跟eureka server连接的http连接在空闲多久后被关闭。默认30</td>
+</tr>
+
+<tr>
+<td>fetchRegistry</td>
+<td>boolean</td>
+<td>指示此客户端是否应从eureka服务器获取eureka注册表信息。默认true</td>
+</tr>
+
+<tr>
+<td>registryRefreshSingleVipAddress</td>
+<td>String</td>
+<td>指示客户端是否只对单个VIP的注册表信息感兴趣,默认null</td>
+</tr>
+
+<tr>
+<td>heartbeatExecutorThreadPoolSize</td>
+<td>int</td>
+<td>用于初始化heartbeatExecutor线程池的大小,默认2</td>
+</tr>
+
+<tr>
+<td>heartbeatExecutorExponentialBackOffBound</td>
+<td>int</td>
+<td>Heartbeat executor指数退避相关属性.这是重试延迟的最大倍数值，以防出现一系列超时</td>
+</tr>
+
+<tr>
+<td>cacheRefreshExecutorThreadPoolSize</td>
+<td>int</td>
+<td>用于初始化cacheRefreshExecutor的线程池大小,默认2</td>
+</tr>
+
+<tr>
+<td>cacheRefreshExecutorExponentialBackOffBound</td>
+<td>int</td>
+<td>缓存刷新执行程序指数退避相关属性,默认10</td>
+</tr>
+
+<tr>
+<td>dollarReplacement</td>
+<td>String</td>
+<td>在eureka服务器中序列化/反序列化信息期间，获取美元符号$的替换字符串,默认:_-</td>
+</tr>
+
+<tr>
+<td>escapeCharReplacement</td>
+<td>String</td>
+<td>在序列化/反序列化尤里卡服务器中的信息期间获取下划线符号_的替换字符串,默认:__(两个下划线)</td>
+</tr>
+
+<tr>
+<td>encoderName</td>
+<td>String</td>
+<td>encoder名称（这是一个暂时的配置，一旦最新的encoder稳定，可以删除）</td>
+</tr>
+
+<tr>
+<td>decoderName</td>
+<td>String</td>
+<td>decoder名称（这是一个暂时的配置，一旦最新的decoder稳定，可以删除）</td>
+</tr>
 </tbody>
 </table>
               
@@ -640,7 +742,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180215_eureka_server_config/" data-tooltip="Eureka Server配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -720,7 +822,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180215_eureka_server_config/" data-tooltip="Eureka Server配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -835,23 +937,6 @@ public class AutoServiceRegistrationProperties {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180215_eureka_server_config/">
-                <h3 class="media-heading">Eureka Server配置详解</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Feb 2, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather">Eureka Server的配置详解: </div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
-          <div class="media">
-            
-            <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20180211_eureka_client_registry/">
                 <h3 class="media-heading">Eureka客户端注册流程</h3>
               </a>
@@ -892,7 +977,7 @@ public class AutoServiceRegistrationProperties {
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         4 posts found
+         3 posts found
       </p>
     </div>
   </div>
