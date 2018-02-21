@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Eureka Client配置详解</title>
+    <title>TheadPoolExecutor(二)</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="Spring Cloud, Spring Cloud Eureka, Spring Cloud Eureka Config, Eureka, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="TheadPoolExecutor, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="spring cloud eureka client配置详解">
-    <meta property="og:description" content="spring cloud eureka client配置详解">
+    <meta name="description" content="TheadPoolExecutor学习笔记">
+    <meta property="og:description" content="TheadPoolExecutor学习笔记">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Eureka Client配置详解">
-    <meta property="og:url" content="/20180213_eureka_client_config/">
+    <meta property="og:title" content="TheadPoolExecutor(二)">
+    <meta property="og:url" content="/20180218_threadpoolexecutor2/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="spring cloud eureka client配置详解">
+    <meta name="twitter:description" content="TheadPoolExecutor学习笔记">
     
     
 
@@ -232,15 +232,15 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Eureka Client配置详解
+      TheadPoolExecutor(二)
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-13T11:07:44&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-02-18T18:16:38&#43;08:00">
         
-  二月 13, 2018
+  二月 18, 2018
 
       </time>
     
@@ -249,9 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud">Spring Cloud</a>, 
-    
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud-eureka">Spring Cloud Eureka</a>
+      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
     
   
 
@@ -261,453 +259,267 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>这次我们来详细聊聊eureka client服务的配置
+              <p>接着上文继续看ThreadPoolExecutor
 </p>
 
-<h2 id="概述">概述</h2>
+<h1 id="runworker-worker-w">runWorker(Worker w)</h1>
 
-<p>Eureka 客户端的配置分为两大类:应用级配置和实例级配置以及client配置。分别是以下几个类:AutoServiceRegistrationProperties,CloudEurekaInstanceConfig以及EurekaClientConfig</p>
-
-<h2 id="autoserviceregistrationproperties">AutoServiceRegistrationProperties</h2>
-
-<p>AutoServiceRegistrationProperties比较简单:</p>
-
-<pre><code class="language-java">@ConfigurationProperties(&quot;spring.cloud.service-registry.auto-registration&quot;)
-public class AutoServiceRegistrationProperties {
-
-	/** 是否自动启用注册. 默认为true*/
-	private boolean enabled = true;
-
-	/** 是否将manager注册为服务, defaults to true */
-	private boolean registerManagement = true;
-
-	//在没有AutoServiceRegistration这个bean是否快速失败(即程序启动时就报错）,默认为false
-	private boolean failFast = false;
-    //省略getter,setter
+<pre><code class="language-java">/**
+    * Main worker run loop.  Repeatedly gets tasks from queue and
+    * executes them, while coping with a number of issues:
+    * 反复从队列中获取任务并执行它们，同时应对以下几个问题:
+    *
+    * 1. We may start out with an initial task, in which case we
+    * don't need to get the first one. Otherwise, as long as pool is
+    * running, we get tasks from getTask. If it returns null then the
+    * worker exits due to changed pool state or configuration
+    * parameters.  Other exits result from exception throws in
+    * external code, in which case completedAbruptly holds, which
+    * usually leads processWorkerExit to replace this thread.
+    * 1. Worker可能还是执行一个初始化的task(firstTask)，但是有时也不需要获取该task(因为task可以为null),
+    *    只要poll在运行，就可以从getTask()获得任务.如果它返回null,则由于更改池状态或配置参数而导致worker退出。
+    *    其他退出是由外部代码中的异常抛出引起的，在这种情况下，completionAbruptly成立，
+    *    这通常会导致processWorkerExit替换该线程
+    *
+    * 2. Before running any task, the lock is acquired to prevent
+    * other pool interrupts while the task is executing, and then we
+    * ensure that unless pool is stopping, this thread does not have
+    * its interrupt set.
+    * 2. 在运行任何任务之前，获取锁以防止任务执行期间出现其他池中断，然后确保除非池正在停止，则此线程不能设置其中断。
+    *
+    * 3. Each task run is preceded by a call to beforeExecute, which
+    * might throw an exception, in which case we cause thread to die
+    * (breaking loop with completedAbruptly true) without processing
+    * the task.
+    * 3. 每个任务运行前都会调用beforeExecute，这可能会引发异常，在这种情况下，
+    *    会将线程杀死（断开循环completeAbruptly为true），而不处理任务。
+    *
+    * 4. Assuming beforeExecute completes normally, we run the task,
+    * gathering any of its thrown exceptions to send to afterExecute.
+    * We separately handle RuntimeException, Error (both of which the
+    * specs guarantee that we trap) and arbitrary Throwables.
+    * Because we cannot rethrow Throwables within Runnable.run, we
+    * wrap them within Errors on the way out (to the thread's
+    * UncaughtExceptionHandler).  Any thrown exception also
+    * conservatively causes thread to die.
+    * 假设beforeExecute正常执行(没有抛出任何异常),接下来就会执行任务,并且会收集任何抛出来的异常发送到afterExecute
+    * 分别处理RuntimeException，Error和任意Throwables。因为我们不能在Runnable.run中重新引发Throwables，
+    * 所以会将它们封装在出错的路径中（到线程的UncaughtExceptionHandler）。 任何抛出的异常都会保守地导致线程死亡。
+    *
+    * 5. After task.run completes, we call afterExecute, which may
+    * also throw an exception, which will also cause thread to
+    * die. According to JLS Sec 14.20, this exception is the one that
+    * will be in effect even if task.run throws.
+    *  task.run完成后，我们调用afterExecute，这也可能会引发异常，这也会导致线程死亡。
+    *
+    * The net effect of the exception mechanics is that afterExecute
+    * and the thread's UncaughtExceptionHandler have as accurate
+    * information as we can provide about any problems encountered by
+    * user code.
+    * 异常机制的最终效果是afterExecute和线程的UncaughtExceptionHandler拥有我们可以提供的有关用户代码遇到的任何问题的准确信息
+    *
+    * @param w the worker
+    */
+final void runWorker(Worker w) {
+    Thread wt = Thread.currentThread();
+    Runnable task = w.firstTask;
+    w.firstTask = null;
+    w.unlock(); // allow interrupts
+    boolean completedAbruptly = true;
+    try {
+        while (task != null || (task = getTask()) != null) {//如果task为null,则从getTask()中获取任务
+            w.lock();
+            // If pool is stopping, ensure thread is interrupted;
+            // if not, ensure thread is not interrupted.  This
+            // requires a recheck in second case to deal with
+            // shutdownNow race while clearing interrupt
+            // 如果池停止，确保线程中断;如果没有，确保线程不中断。这需要在第二种情况下进行重新检查，以便在清除中断时处理shutdownNow竞争
+            // (STOP状态会终端线程)
+            if ((runStateAtLeast(ctl.get(), STOP) ||
+                    (Thread.interrupted() &amp;&amp;
+                    runStateAtLeast(ctl.get(), STOP))) &amp;&amp;
+                !wt.isInterrupted())
+                wt.interrupt();
+            try {
+                beforeExecute(wt, task);
+                Throwable thrown = null;
+                try {
+                    task.run();
+                } catch (RuntimeException x) {
+                    thrown = x; throw x;
+                } catch (Error x) {
+                    thrown = x; throw x;
+                } catch (Throwable x) {
+                    thrown = x; throw new Error(x);
+                } finally {
+                    afterExecute(task, thrown);
+                }
+            } finally {
+                task = null;
+                w.completedTasks++;
+                w.unlock();
+            }
+        }
+        completedAbruptly = false;
+    } finally {
+        processWorkerExit(w, completedAbruptly);
+    }
 }
 </code></pre>
 
-<p>这类配置都直接在application.yml中配置即可</p>
-
-<h2 id="cloudeurekainstanceconfig">CloudEurekaInstanceConfig</h2>
-
-<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/3.jpg" alt="" /></p>
-
-<p>我们先看EurekaInstanceConfig这个类中的配置:</p>
-
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>类型</th>
-<th>作用</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>instanceId</td>
-<td>String</td>
-<td>该服务实例的唯一标识,默认是{spring.cloud.client.hostname}:{spring.application.name}:{server.port}</td>
-</tr>
-
-<tr>
-<td>appname</td>
-<td>String</td>
-<td>注册在eureka上的应用名,默认使用你的spring.application.name配置</td>
-</tr>
-
-<tr>
-<td>appname</td>
-<td>String</td>
-<td>注册在eureka上的应用名,默认使用你的spring.application.name配置</td>
-</tr>
-
-<tr>
-<td>instanceEnabledOnit</td>
-<td>boolean</td>
-<td>是否eureka注册之后立刻接收流量,有时候应用需要进行一些预处理,一般配合config的自动刷新使用.默认true（注:在如果一个服务只有一个实例的话,不起作用,因为要优先保证请求处理）</td>
-</tr>
-
-<tr>
-<td>nonSecurePort</td>
-<td>int</td>
-<td>接收流量的非加密端口(一般是http端口),默认是80</td>
-</tr>
-
-<tr>
-<td>securePort</td>
-<td>int</td>
-<td>接收流量的加密端口(一般是https端口),默认是443</td>
-</tr>
-
-<tr>
-<td>nonSecurePortEnabled</td>
-<td>boolean</td>
-<td>是否启动不加密端口</td>
-</tr>
-
-<tr>
-<td>securePortEnabled</td>
-<td>boolean</td>
-<td>是否启动加密端口</td>
-</tr>
-
-<tr>
-<td>leaseRenewalIntervalInSeconds</td>
-<td>int</td>
-<td>租约更新间隔(心跳),单位:秒,默认是30</td>
-</tr>
-
-<tr>
-<td>virtualHostName</td>
-<td>String</td>
-<td>虚拟主机名, 默认是{spring.application.name},服务发现通过该值来查找服务</td>
-</tr>
-
-<tr>
-<td>secureVirtualHostName</td>
-<td>String</td>
-<td>虚拟主机名, 默认是{spring.application.name},服务发现通过该值来查找服务(启动TSL时使用)</td>
-</tr>
-
-<tr>
-<td>metadataMap</td>
-<td>Ma<String,String></td>
-<td>服务实例的metadata信息，可以发送到eureka server,并被其他实例使用。（携带自定义的k,v）</td>
-</tr>
-
-<tr>
-<td>dataCenterInfo</td>
-<td>String</td>
-<td>服务实例部署的数据中心,如果存在多数据中心的话有用,默认为:MyOwn</td>
-</tr>
-
-<tr>
-<td>ipAddress</td>
-<td>String</td>
-<td>服务实例的ip地址</td>
-</tr>
-
-<tr>
-<td>statusPageUrlPath</td>
-<td>String</td>
-<td>相对的状态页面url路径,默认是/info</td>
-</tr>
-
-<tr>
-<td>statusPageUrl</td>
-<td>String</td>
-<td>绝对的状态页面url路径,默认是http://{ip}:{port}/info</td>
-</tr>
-
-<tr>
-<td>homePageUrlPath</td>
-<td>String</td>
-<td>绝对的Home页面url路径,默认是http://{ip}:{port}/info</td>
-</tr>
-
-<tr>
-<td>statusPageUrlPath</td>
-<td>String</td>
-<td>相对的状态页面url路径,默认是/</td>
-</tr>
-
-<tr>
-<td>statusPageUrl</td>
-<td>String</td>
-<td>绝对的状态页面url路径,默认是null</td>
-</tr>
-
-<tr>
-<td>healthCheckUrlPath</td>
-<td>String</td>
-<td>相对的健康检查url路径,默认是/health</td>
-</tr>
-
-<tr>
-<td>healthCheckUrl</td>
-<td>String</td>
-<td>绝对的健康检查url路径,默认是http://{ip}:{port}/health</td>
-</tr>
-
-<tr>
-<td>secureHealthCheckUrl</td>
-<td>String</td>
-<td>相对的安全的健康检查url,默认为null</td>
-</tr>
-
-<tr>
-<td>namespace</td>
-<td>String</td>
-<td>默认为eureka</td>
-</tr>
-</tbody>
-</table>
-
-<p>在CloudEurekaInstanceConfig中有一个配置项:</p>
-
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>类型</th>
-<th>作用</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>instanceStatus</td>
-<td>InstanceInfo.InstanceStatus</td>
-<td>UP:已经准备好接收流量,DOWN:不再接受流量,健康检查返回的结果是失败,STARTING:准备完成初始化,不接收流量，OUT_OF_SERVICE:有意的关闭流量,UNKNOW.默认为UP</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="eurekaclientconfig">EurekaClientConfig</h2>
-
-<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/5.jpg" alt="" /></p>
-
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>类型</th>
-<th>作用</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>registryFetchIntervalSeconds</td>
-<td>int</td>
-<td>指示从eureka服务器获取注册表信息的频率（以秒为单位）。</td>
-</tr>
-
-<tr>
-<td>instanceInfoReplicationIntervalSeconds</td>
-<td>int</td>
-<td>实例信息复制间隔(单位:秒)，默认30</td>
-</tr>
-
-<tr>
-<td>initialInstanceInfoReplicationIntervalSeconds</td>
-<td>int</td>
-<td>实例初始化后经过多长时间复制信息到eureka服务器(单位:秒),默认40</td>
-</tr>
-
-<tr>
-<td>eurekaServiceUrlPollIntervalSeconds</td>
-<td>int</td>
-<td>轮训eureka server信息变更的时间间隔(单位:秒),eureka server信息变更后,eureka client应该知道,默认是300</td>
-</tr>
-
-<tr>
-<td>proxyPort</td>
-<td>String</td>
-<td>eureka server代理端口如果存在,默认null</td>
-</tr>
-
-<tr>
-<td>proxyHost</td>
-<td>String</td>
-<td>eureka server代理host如果存在,默认null</td>
-</tr>
-
-<tr>
-<td>proxyUserName</td>
-<td>String</td>
-<td>eureka server代理用户名如果存在,默认null</td>
-</tr>
-
-<tr>
-<td>proxyPassword</td>
-<td>String</td>
-<td>eureka server密码如果存在,默认null</td>
-</tr>
-
-<tr>
-<td>shouldGZipContent</td>
-<td>boolean</td>
-<td>来自eureka server的注册信息是否需要压缩以便获得最佳的网络流量,默认true</td>
-</tr>
-
-<tr>
-<td>eurekaServerReadTimeoutSeconds</td>
-<td>int</td>
-<td>从eureka server读取超时之前等待多久(单位:秒),默认8秒</td>
-</tr>
-
-<tr>
-<td>eurekaServerConnectTimeoutSeconds</td>
-<td>int</td>
-<td>从eureka server连接超时之前需要等待多久(单位:秒)。注意:客户端中的连接由HttpClient连接，并且此设置会影响实际的连接创建以及从池中获取连接的等待时间</td>
-</tr>
-
-<tr>
-<td>backupRegistryImpl</td>
-<td>String</td>
-<td>从eureka server读取超时之前等待多久(单位:秒),默认8秒</td>
-</tr>
-
-<tr>
-<td>eurekaServerTotalConnections</td>
-<td>int</td>
-<td>获取从client到所有server允许的连接总数。,默认200</td>
-</tr>
-
-<tr>
-<td>eurekaServerTotalConnectionsPerHost</td>
-<td>int</td>
-<td>获取从client到server host所允许的连接总数。,默认50</td>
-</tr>
-
-<tr>
-<td>eurekaServerURLContext</td>
-<td>String</td>
-<td>当eureka server列表来自DNS解析时,获取用于构建service url(联系eureka server)的上下文,当配置shouldUseDnsForFetchingServiceUrls为true时起作用</td>
-</tr>
-
-<tr>
-<td>eurekaServerPort</td>
-<td>String</td>
-<td>当eureka server列表来自DNS解析时,获取用于构建service url(联系eureka server)的服务端端口,,当配置shouldUseDnsForFetchingServiceUrls为true时起作用</td>
-</tr>
-
-<tr>
-<td>eurekaServerDNSName</td>
-<td>String</td>
-<td>获取要查询的DNS名称以获取eureka服务器列表。如果契约通过实现getEurekaServerServiceUrls（String）返回服务URL，则不需要此信息。</td>
-</tr>
-
-<tr>
-<td>shouldUseDnsForFetchingServiceUrls</td>
-<td>boolean</td>
-<td>指示eureka客户端是否应使用DNS机制来获取要与之通话的eureka服务器列表。 当DNS名称更新为具有其他服务器时，该信息将在eureka客户端根据{getEurekaServiceUrlPollIntervalSeconds()中的指定轮询该信息后立即使用</td>
-</tr>
-
-<tr>
-<td>shouldRegisterWithEureka</td>
-<td>boolean</td>
-<td>指示此实例是否应将其信息注册到eureka服务器以供其他人发现。默认true</td>
-</tr>
-
-<tr>
-<td>shouldPreferSameZoneEureka</td>
-<td>boolean</td>
-<td>优先使用相同区( zone )的 Eureka Server，默认true</td>
-</tr>
-
-<tr>
-<td>allowRedirects</td>
-<td>boolean</td>
-<td>指示服务器是否可以将客户端请求重定向到备份服务器/群集。 如果设置为false，服务器将直接处理请求，如果设置为true，则可能会将HTTP重定向发送到客户端，并携带有新的服务器位置。默认false</td>
-</tr>
-
-<tr>
-<td>onDemandUpdateStatusChange</td>
-<td>boolean</td>
-<td>如果设置为true，则通过ApplicationInfoManager进行本地状态更新将触发对远程eureka服务器的按需（但速率有限）注册/更新</td>
-</tr>
-
-<tr>
-<td>logDeltaDiff</td>
-<td>boolean</td>
-<td>是否根据注册表信息记录eureka server和eureka client之间的差异。eureka client只会从eureka server中检索增量,以便最大限度的减少网络流量.收到增量后,eureka client会协调来自服务器的信息,以便验证他是否遗漏信息。如果协调失败(比如网络异常的情况下),那么客户端会获取注册表的全量。默认false</td>
-</tr>
-
-<tr>
-<td>disableDelta</td>
-<td>boolean</td>
-<td>是否禁用注册表增量获取,如果禁用则使用注册表全量获取</td>
-</tr>
-
-<tr>
-<td>fetchRemoteRegionsRegistry</td>
-<td>String</td>
-<td>以逗号分隔的eureka注册表信息将被提取的区域列表。 必须为可用区域返回的每个zone定义的可用区域。 如果不这样做，将导致发现客户端启动失败。 如果为null,表示不需要获取远程zone.默认为Null</td>
-</tr>
-
-<tr>
-<td>region</td>
-<td>String</td>
-<td>获取此实例所在的区域（在AWS数据中心中使用）。默认:us-east-1</td>
-</tr>
-
-<tr>
-<td>filterOnlyUpInstances</td>
-<td>boolean</td>
-<td>过滤InstanceStatus UP状态的实例。默认true</td>
-</tr>
-
-<tr>
-<td>getEurekaConnectionIdleTimeoutSeconds</td>
-<td>int</td>
-<td>跟eureka server连接的http连接在空闲多久后被关闭。默认30</td>
-</tr>
-
-<tr>
-<td>fetchRegistry</td>
-<td>boolean</td>
-<td>指示此客户端是否应从eureka服务器获取eureka注册表信息。默认true</td>
-</tr>
-
-<tr>
-<td>registryRefreshSingleVipAddress</td>
-<td>String</td>
-<td>指示客户端是否只对单个VIP的注册表信息感兴趣,默认null</td>
-</tr>
-
-<tr>
-<td>heartbeatExecutorThreadPoolSize</td>
-<td>int</td>
-<td>用于初始化heartbeatExecutor线程池的大小,默认2</td>
-</tr>
-
-<tr>
-<td>heartbeatExecutorExponentialBackOffBound</td>
-<td>int</td>
-<td>Heartbeat executor指数退避相关属性.这是重试延迟的最大倍数值，以防出现一系列超时</td>
-</tr>
-
-<tr>
-<td>cacheRefreshExecutorThreadPoolSize</td>
-<td>int</td>
-<td>用于初始化cacheRefreshExecutor的线程池大小,默认2</td>
-</tr>
-
-<tr>
-<td>cacheRefreshExecutorExponentialBackOffBound</td>
-<td>int</td>
-<td>缓存刷新执行程序指数退避相关属性,默认10</td>
-</tr>
-
-<tr>
-<td>dollarReplacement</td>
-<td>String</td>
-<td>在eureka服务器中序列化/反序列化信息期间，获取美元符号$的替换字符串,默认:_-</td>
-</tr>
-
-<tr>
-<td>escapeCharReplacement</td>
-<td>String</td>
-<td>在序列化/反序列化尤里卡服务器中的信息期间获取下划线符号_的替换字符串,默认:__(两个下划线)</td>
-</tr>
-
-<tr>
-<td>encoderName</td>
-<td>String</td>
-<td>encoder名称（这是一个暂时的配置，一旦最新的encoder稳定，可以删除）</td>
-</tr>
-
-<tr>
-<td>decoderName</td>
-<td>String</td>
-<td>decoder名称（这是一个暂时的配置，一旦最新的decoder稳定，可以删除）</td>
-</tr>
-</tbody>
-</table>
+<p>beforeExecute方法是个钩子,在ThreadPoolExcutor中是空实现.它一般用于在Runnable执行之前记录日志或初始化ThreadLocals.
+afterExecute方法也是个钩子,在ThreadPoolExcutor中是空实现.一般用于在Runnable执行之后处理异常。
+completedAbruptly表示循环是否正常结束(beforeExecute或者afterExecute的执行或者其他地方如果抛出异常了就是非正常结束)</p>
+
+<p>在获取到任务task之后会调用其run方法(所以Task虽然是Runnable,但是并非是线程,它只是被worker中的线程调用了run方法)</p>
+
+<p>如果任务队列中没有任务了就进入worker退出逻辑processWorkerExit:</p>
+
+<pre><code class="language-java">private void processWorkerExit(Worker w, boolean completedAbruptly) {
+    if (completedAbruptly) // If abrupt, then workerCount wasn't adjusted
+        decrementWorkerCount();
+
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        completedTaskCount += w.completedTasks;
+        workers.remove(w);
+    } finally {
+        mainLock.unlock();
+    }
+
+    tryTerminate();
+
+    int c = ctl.get();
+    if (runStateLessThan(c, STOP)) {
+        if (!completedAbruptly) {
+            int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
+            if (min == 0 &amp;&amp; ! workQueue.isEmpty())
+                min = 1;
+            if (workerCountOf(c) &gt;= min)
+                return; // replacement not needed
+        }
+        addWorker(null, false);
+    }
+}
+</code></pre>
+
+<p>如果runWorker非正常结束则表示期间有异常发生,则需要将workerCount自减。然后记录完成任务数量,将worker从现有线程池workers中移除.并且尝试终止线程池。
+如果线程池状态小于STOP.则执行以下步骤:</p>
+
+<ol>
+<li><p>如果runWorker非正常执行完,那么尝试addWorker.</p></li>
+
+<li><p>如果runWorker正常执行完,并且核心线程不允许超时,则如果当前线程池的workerCount小于corePoolSize时会重新addWorker,以保证线程池的大小一直是corePoolSize大小.</p></li>
+
+<li><p>如果runWorker正常执行完,任务队列中还有任务,并且核心线程允许超时,则当前线程池最少保留一个worker.</p></li>
+
+<li><p>如果runWorker正常执行完,任务队列中没有任务,并且核心线程允许超时,则线程池回收全部线程.</p></li>
+
+<li><p>还有一个逻辑需要结合getTask()才能明白，即大于corePoolSize的线程会在超时之后退出,然后尝试添加新的firstTask为null的Worker线程。</p></li>
+</ol>
+
+<p>getTask():</p>
+
+<pre><code class="language-java">/**
+     * Performs blocking or timed wait for a task, depending on
+     * current configuration settings, or returns null if this worker
+     * must exit because of any of:
+     * 根据当前配置设置执行时阻塞或定时等待任务.如果满足一下情况,则worker必须退出返回null:
+     * 1. There are more than maximumPoolSize workers (due to
+     *    a call to setMaximumPoolSize).
+     * 有多于maximumPoolSize的worker
+     * 2. The pool is stopped.
+     * 线程池已停止
+     * 3. The pool is shutdown and the queue is empty.
+     * 线程池已经关闭,队列是空的
+     * 4. This worker timed out waiting for a task, and timed-out
+     *    workers are subject to termination (that is,
+     *    {@code allowCoreThreadTimeOut || workerCount &gt; corePoolSize})
+     *    both before and after the timed wait, and if the queue is
+     *    non-empty, this worker is not the last thread in the pool.
+     * 该worker等待任务超时,worker在等待超时会被终止(即代码: allowCoreThreadTimeOut || workerCount&gt; corePoolSize)
+     * 在等待超时之前和之后,如果队列不为空,则该worker不会是线程池中最后一个线程。(即如果任务队列中有任务,并且该worker是线程池中的最后一个线程则不管该worker是否等待超时都不* 会终止它，因为要保证任务被执行)
+     * @return task, or null if the worker must exit, in which case
+     *         workerCount is decremented
+     */
+     // 这里要强调下allowCoreThreadTimeOut标记，该值为false的话,即便核心线程数为空闲也会保持活跃状态,为true的则核心线程使用keepAliveTime超时等待工作
+    private Runnable getTask() {
+        boolean timedOut = false; // Did the last poll() time out?
+
+        for (;;) {
+            int c = ctl.get();
+            int rs = runStateOf(c);
+
+            // Check if queue empty only if necessary.
+            //线程池已经关闭,队列是空的
+            if (rs &gt;= SHUTDOWN &amp;&amp; (rs &gt;= STOP || workQueue.isEmpty())) {
+                decrementWorkerCount();
+                return null;
+            }
+
+            int wc = workerCountOf(c);
+
+            // Are workers subject to culling?
+            boolean timed = allowCoreThreadTimeOut || wc &gt; corePoolSize;
+
+            if ((wc &gt; maximumPoolSize || (timed &amp;&amp; timedOut))
+                &amp;&amp; (wc &gt; 1 || workQueue.isEmpty())) {
+                if (compareAndDecrementWorkerCount(c))
+                    return null;
+                continue;
+            }
+
+            try {
+                 //允许核心线程超时或者当前线程大小大于corePoolSize(利用maximumPoolSize添加的线程worker)则keepAliveTime之后会超时,否则会一直阻塞直到有新的任务
+                Runnable r = timed ?
+                    workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
+                    workQueue.take();
+                if (r != null)
+                    return r;
+                timedOut = true;
+            } catch (InterruptedException retry) {
+                timedOut = false;
+            }
+        }
+}
+</code></pre>
+
+<p>整个方法的逻辑集合重要代码片段</p>
+
+<pre><code class="language-java">Runnable r = timed ?workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :workQueue.take();
+</code></pre>
+
+<p>可以看出,该方法除了注释中的那几种情况return null之外或阻塞在poll或take()中，直到拿到worker线程。</p>
+
+<p>总结: runWorker会首先执行firstTask,如果firstTask为null的会阻塞等待获取workQueue中的任务,然后调用任务的run方法(换句话说:worker本身的任务已经执行完毕,下一次就会执行队列中的任务).</p>
+
+<p>线程池的主要流程到此就结束了。我们来总结一下线程池的主要特性：</p>
+
+<ol>
+<li>如果线程池的大小小于等于corePoolSize时,会添加有firstTask的线程Worker,并且立即start该线程.该线程会首先执行firstTask任务,然后再从队列中获取任务.</li>
+<li>如果线程池的大小等于corePoolSize时，任务会添加到任务队列workQueue中。</li>
+<li>如果线程池的大小等于corePoolSize时，任务添加到任务队列workQueue中成功后,会再次校验线程池状态,如果状态不是running状态,会移除任务,并且任务成功移除,则执行拒绝策略</li>
+<li>如果线程池的大小等于corePoolSize时，并且任务队列也满了时,会在小于等于maximumPoolSize的基础上添加worker,用于首先执行不再任务队列中的任务,然后再去任务队列中获取任务.</li>
+
+<li><p>如果线程池的大小等于maximumPoolSize时，并且任务队列也满了时,会执行拒绝策略</p></li>
+
+<li><p>获取任务时,如果允许核心线程超时，那么会在等待任务队列keepAlive时间之后超时</p></li>
+
+<li><p>获取任务时,如果不允许核心线程超时,并且当前线程数小于等于corePoolSize的话，会永不终止的等待任务队列中的任务.</p></li>
+
+<li><p>获取任务时,如果不允许核心线程超时,并且当前线程数大于corePoolSize的话，多出来(即大于corePoolSize)的线程会在等待任务队列keepAlive时间之后超时</p></li>
+
+<li><p>进行线程退出时,如果任务执行中抛出了异常(等待超时就是一种异常),则将原来的worker删除重新添加一个没有firstTask的worker(该worker优先从任务队列中获取任务).</p></li>
+
+<li><p>进行线程退出时,如果任务队列中的任务执行完了,并且不允许核心线程超时的话,线程池会保持corePoolThread大小。</p></li>
+
+<li><p>进行线程退出时,如果任务队列中的任务执行完了,并且允许核心线程超时的话,线程池大小为0。</p></li>
+
+<li><p>进行线程退出时,如果任务队列中还有任务,并且允许核心线程超时的话,线程池的大小1.</p></li>
+</ol>
+
+<p>至于拒绝策略,我们下一篇中继续讲。</p>
               
             </div>
           </div>
@@ -719,9 +531,7 @@ public class AutoServiceRegistrationProperties {
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
-
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud-eureka/">Spring Cloud Eureka</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-thread-pool/">Java Thread Pool</a>
 
                   </div>
                 
@@ -734,7 +544,7 @@ public class AutoServiceRegistrationProperties {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180217_threadpoolexecutor/" data-tooltip="TheadPoolExecutor(一)">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/" data-tooltip="ThreadPoolExecutor的Reject策略">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -742,7 +552,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180217_threadpoolexecutor/" data-tooltip="TheadPoolExecutor(一)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -814,7 +624,7 @@ public class AutoServiceRegistrationProperties {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180217_threadpoolexecutor/" data-tooltip="TheadPoolExecutor(一)">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/" data-tooltip="ThreadPoolExecutor的Reject策略">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -822,7 +632,7 @@ public class AutoServiceRegistrationProperties {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180217_threadpoolexecutor/" data-tooltip="TheadPoolExecutor(一)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -1072,9 +882,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180213_eureka_client_config\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20180218_threadpoolexecutor2\/';
           
-            this.page.identifier = '\/20180213_eureka_client_config\/'
+            this.page.identifier = '\/20180218_threadpoolexecutor2\/'
           
         };
         (function() {

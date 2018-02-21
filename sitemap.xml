@@ -3,6 +3,21 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20180221_threadpoolexcutor_reject/</loc>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/20180218_threadpoolexecutor2/</loc>
+    <lastmod>2018-02-18T18:16:38+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/20180217_threadpoolexecutor/</loc>
+    <lastmod>2018-02-18T11:07:44+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20180213_eureka_client_config/</loc>
     <lastmod>2018-02-13T11:07:44+08:00</lastmod>
   </url>
@@ -28,8 +43,20 @@
   </url>
   
   <url>
+    <loc>https://vitzhou.top/categories/java/</loc>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/tags/java-thread-pool/</loc>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -59,13 +86,13 @@
   
   <url>
     <loc>https://vitzhou.top/tags/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <lastmod>2018-02-21T14:00:01+08:00</lastmod>
     <priority>0</priority>
   </url>
   

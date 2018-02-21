@@ -1,0 +1,1024 @@
+
+
+  
+    
+  
+
+
+  
+
+
+
+
+  
+
+
+  
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
+    <title>TheadPoolExecutor(一)</title>
+    <meta name="author" content="Vit Zhou/周圣华">
+    <meta name="keywords" content="TheadPoolExecutor, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113904612-1');
+    </script>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?5e7939ec0e76c7d22e429ffd57848a67";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
+    
+
+    
+    <meta name="description" content="TheadPoolExecutor学习笔记">
+    <meta property="og:description" content="TheadPoolExecutor学习笔记">
+    <meta property="og:type" content="blog">
+    <meta property="og:title" content="TheadPoolExecutor(一)">
+    <meta property="og:url" content="/20180217_threadpoolexecutor/">
+    <meta property="og:site_name" content="周圣华的博客">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="周圣华的博客">
+    <meta name="twitter:description" content="TheadPoolExecutor学习笔记">
+    
+    
+
+    
+    
+
+    
+      <meta property="og:image" content="//www.gravatar.com/avatar/ccfaa5056cb19a47376367385b8d75c1?s=640">
+    
+
+    
+      <meta property="og:image" content="https://vitzhou.top/img/spring-cloud/eureka-client/4.jpg">
+    
+    
+    
+
+    
+
+    
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    
+    
+    <link rel="stylesheet" href="https://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    
+    
+
+    
+      
+    
+    
+  </head>
+
+  <body>
+    <div id="blog">
+      <header id="header" data-behavior="5">
+  <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+  <div class="header-title">
+    <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
+  </div>
+  
+    
+      <a class="header-right-picture "
+         href="https://vitzhou.top/#about">
+    
+    
+    
+      
+        <img class="header-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+      
+    
+    </a>
+  
+</header>
+
+      <nav id="sidebar" data-behavior="5">
+  <div class="sidebar-container">
+    
+      <div class="sidebar-profile">
+        <a href="https://vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" />
+        </a>
+        <h4 class="sidebar-profile-name">Vit Zhou/周圣华</h4>
+        
+          <h5 class="sidebar-profile-bio">如果耐不住寂寞,就看不到繁华</h5>
+        
+      </div>
+    
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+      
+      <span class="sidebar-button-desc">Home</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/categories">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+      
+      <span class="sidebar-button-desc">分类</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/tags">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+      
+      <span class="sidebar-button-desc">标签</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/archives">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+      
+      <span class="sidebar-button-desc">归档</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/#about">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+      
+      <span class="sidebar-button-desc">关于</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://github.com/VitZhou" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+      
+      <span class="sidebar-button-desc">GitHub</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://www.gitbook.com/@vitzhou" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-leanpub"></i>
+      
+      <span class="sidebar-button-desc">学习笔记</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://dreamfly.io/project/dreammesh/" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-github-square"></i>
+      
+      <span class="sidebar-button-desc">开源项目</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+
+    </ul>
+  </div>
+</nav>
+
+      
+
+      <div id="main" data-behavior="5"
+        class="
+               hasCoverMetaIn
+               ">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
+  
+    <h1 class="post-title" itemprop="headline">
+      TheadPoolExecutor(一)
+    </h1>
+  
+  
+  <div class="postShorten-meta post-meta">
+    
+      <time itemprop="datePublished" datetime="2018-02-18T11:07:44&#43;08:00">
+        
+  二月 18, 2018
+
+      </time>
+    
+    
+  
+  
+    <span>发布在</span>
+    
+      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
+    
+  
+
+  </div>
+
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
+</p>
+
+<p>一般使用线程池都会使用Excutors,但是其内部实现是ThreadPoolExecutor。所以要理解多线程还是需要直接看ThreadPoolExecutor源码的。</p>
+
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li><a href="#threadpoolexecutor">ThreadPoolExecutor</a>
+<ul>
+<li><a href="#构造方法">构造方法</a></li>
+<li><a href="#属性">属性</a></li>
+<li><a href="#execute">execute()</a></li>
+<li><a href="#addworker-runnable-firsttask-boolean-core">addWorker(Runnable firstTask, boolean core)</a></li>
+<li><a href="#worker">Worker</a>
+<ul>
+<li><a href="#run">run()</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+
+<h1 id="threadpoolexecutor">ThreadPoolExecutor</h1>
+
+<h2 id="构造方法">构造方法</h2>
+
+<pre><code class="language-java">public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue&lt;Runnable&gt; workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) {
+        if (corePoolSize &lt; 0 ||
+            maximumPoolSize &lt;= 0 ||
+            maximumPoolSize &lt; corePoolSize ||
+            keepAliveTime &lt; 0)
+            throw new IllegalArgumentException();
+        if (workQueue == null || threadFactory == null || handler == null)
+            throw new NullPointerException();
+        this.acc = System.getSecurityManager() == null ?
+                null :
+                AccessController.getContext();
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
+        this.workQueue = workQueue;
+        this.keepAliveTime = unit.toNanos(keepAliveTime);
+        this.threadFactory = threadFactory;
+        this.handler = handler;
+    }
+</code></pre>
+
+<ol>
+<li>corePoolSize: 核心线程大小,必须大于等于0</li>
+<li>maximumPoolSize: 线程池最大容量大小,必须大于0(如果也等于0的话,那这个线程池就无法创建线程了,没啥意义了)</li>
+<li>maximumPoolSize必须大于或者等于corePoolSize</li>
+<li>keepAliveTime: 当线程数大于核心数时，这是多余空闲线程在终止之前等待新任务的最长时间。必须大于等于0</li>
+<li>workQueue: 承载任务的队列</li>
+<li>handler: 线程拒绝(抛弃)策略(这个参数,我后面专门写篇博客来聊)</li>
+</ol>
+
+<h2 id="属性">属性</h2>
+
+<p>要弄明白ThreadPoolExecutor需要先弄清楚它的关键属性，以及状态的变化</p>
+
+<pre><code class="language-java">    //ctl保存当前线程数量和当前线程池状态。其中高3位位状态,低29位位数量。
+    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+    //偏移量
+    private static final int COUNT_BITS = Integer.SIZE - 3;
+    //最大线程容量2^29-1
+    private static final int CAPACITY   = (1 &lt;&lt; COUNT_BITS) - 1;
+
+    // runState is stored in the high-order bits
+    //线程池状态如下:
+    //接受新任务并处理排队的任务。 111
+    private static final int RUNNING    = -1 &lt;&lt; COUNT_BITS;
+    //不再接收新任务,但是处理排队的任务。 000
+    private static final int SHUTDOWN   =  0 &lt;&lt; COUNT_BITS;
+    //不接受新任务，不处理排队的任务，并中断正在进行的任务. 001
+    private static final int STOP       =  1 &lt;&lt; COUNT_BITS;
+    //所有任务都已终止，workerCount为零，转换为状态TIDYING的线程将运行terminate()钩子方法。  010
+    private static final int TIDYING    =  2 &lt;&lt; COUNT_BITS;
+    //terminated()执行完毕. 011
+    private static final int TERMINATED =  3 &lt;&lt; COUNT_BITS;
+    //获取线程池状态，取前3位
+    private static int runStateOf(int c)     { return c &amp; ~CAPACITY; }
+    //获取当前正在工作的worker,主要是取后面29位
+    private static int workerCountOf(int c)  { return c &amp; CAPACITY; }
+    //获取ctl
+    private static int ctlOf(int rs, int wc) { return rs | wc; }
+
+    private final ReentrantLock mainLock = new ReentrantLock();
+    //存放池中的所有工作线程。 只有在持有mainLock的情况下才能访问。
+    private final HashSet&lt;Worker&gt; workers = new HashSet&lt;Worker&gt;();
+</code></pre>
+
+<blockquote>
+<p>可以看出当状态值大于等于0时都不在接受新任务</p>
+</blockquote>
+
+<p>状态的主要变化:
+1. RUNNING -&gt; SHUTDOWN: 在调用shutdown()时发生该变化，可能会隐式地在finalize()中调用。</p>
+
+<ol>
+<li><p>(RUNNING or SHUTDOWN) -&gt; STOP: 当调用shutdownNow()时。</p></li>
+
+<li><p>SHUTDOWN -&gt; TIDYING: 当队列和池都是空的时</p></li>
+
+<li><p>STOP -&gt; TIDYING: 当池中没有线程时.</p></li>
+
+<li><p>TIDYING -&gt; TERMINATED: 当terminated()钩子方法被调用时.</p></li>
+</ol>
+
+<h2 id="execute">execute()</h2>
+
+<p>我们先看execute方法(Executors.submit()方法的作用是创建一个FutureTask,然后调用execute()):</p>
+
+<p>execute()方法用来执行给定的任务,该任务可以在新的线程池中或者现有的线程池中执行.如果任务无法提交执行，无论是因为该执行程序已关闭或因其容量已达到，该任务将由当前的RejectedExecutionHandler处理。</p>
+
+<pre><code class="language-java">public void execute(Runnable command) {
+    if (command == null)
+        throw new NullPointerException();
+    /*
+        * Proceed in 3 steps:
+        *
+        * 1. If fewer than corePoolSize threads are running, try to
+        * start a new thread with the given command as its first
+        * task.  The call to addWorker atomically checks runState and
+        * workerCount, and so prevents false alarms that would add
+        * threads when it shouldn't, by returning false.
+        * 如果正在运行的线程数少于corePoolSize，则将给定的command作为第一个任务来启动一个新线程(worker).
+        * addWorker()方法以原子方式检查runState(线程池状态)和workerCount(worker数量)，从而防止线程池在不能添加线程的情况下添加线程。
+        *
+        * 2. If a task can be successfully queued, then we still need
+        * to double-check whether we should have added a thread
+        * (because existing ones died since last checking) or that
+        * the pool shut down since entry into this method. So we
+        * recheck state and if necessary roll back the enqueuing if
+        * stopped, or start a new thread if there are none.
+        * 如果线程入队成功,还需要进行double-check确认是否可以添加新线程(因为现有线程在上一次检查之后已经died)或者进入该方法后线程池是否关闭了该线程.
+        * 如果有必要的话就回滚队列,否则就启动一个新的线程。
+        *
+        * 3. If we cannot queue task, then we try to add a new
+        * thread.  If it fails, we know we are shut down or saturated
+        * and so reject the task.
+        * 如果我们不能排队任务，那么我们尝试添加一个新线程。 如果添加失败，那么池已关闭或饱和，然后会拒绝任务。
+        */
+    int c = ctl.get();
+    if (workerCountOf(c) &lt; corePoolSize) {
+        //如果woker已经添加并且启动成功了直接返回
+        
+        if (addWorker(command, true))
+            return;
+        c = ctl.get();
+    }
+    //温馨提示:请先看addWorker方法,再回来看下来逻辑
+
+    if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
+        int recheck = ctl.get();
+        if (! isRunning(recheck) &amp;&amp; remove(command))
+            reject(command);
+        else if (workerCountOf(recheck) == 0)
+            addWorker(null, false);
+    }
+    else if (!addWorker(command, false))
+        reject(command);
+}
+</code></pre>
+
+<blockquote>
+<p>这里需要提些概念，方便对下面内容的理解:</br>
+Woker: 当前线程池中的线程.</br>
+Task: 实现了Runnable,但是并非是线程,会被Worker调用run()方法</br>
+maximumPoolSize: 线程池最多能创建多少个worker</br>
+corePoolSize: 核心线程池的容量.当核心线程池满了时,并且workerQueue队列也满了时,
+还可以创建Worker去处理WorkerQueue队列中的task,但是不能超过maximumPoolSize。超过corePoolSize之外的线程会在空闲超时后终止。</p>
+</blockquote>
+
+<pre><code class="language-java">if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
+    int recheck = ctl.get();
+    if (! isRunning(recheck) &amp;&amp; remove(command))
+        reject(command);
+    else if (workerCountOf(recheck) == 0)
+        addWorker(null, false);
+}else if (!addWorker(command, false))
+    reject(command);
+</code></pre>
+
+<p>这一段的意思是:</p>
+
+<ol>
+<li><p>如果前面第一次addWorker失败,然后线程池还是running状态,并且任务还可以添加到workQueue中成功,则再次校验线程池状态,如果非running状态并且将任务从workQueue中删除成功的话,直接拒绝策略。如果可运行线程为0的话,则添加firstTask为null的worker用于执行队列中的任务.</p></li>
+
+<li><p>如果线程池状态为非running状态,则直接丢弃任务.</p></li>
+
+<li><p>如果线程池为running状态，但是workQueue已满,则尝试基于maximumPoolSize大小添加worker.用该worker优先执行不在队列中的任务,然后再从任务队列中获取任务</p></li>
+
+<li><p>如果线程池为running状态，但是workQueue已满,而且线程池的大小已经大于等于maximumPoolSize,则执行拒绝策略</p></li>
+</ol>
+
+<blockquote>
+<p>由于workQueue是否可以添加任务影响execute方法的逻辑,所以ThreadPoolExecutor的实际运行状况跟workQueue的具体实现(是否是有界队列)有关</p>
+</blockquote>
+
+<h2 id="addworker-runnable-firsttask-boolean-core">addWorker(Runnable firstTask, boolean core)</h2>
+
+<pre><code class="language-java">/**
+    * Checks if a new worker can be added with respect to current
+    * pool state and the given bound (either core or maximum). If so,
+    * the worker count is adjusted accordingly, and, if possible, a
+    * new worker is created and started, running firstTask as its
+    * first task. This method returns false if the pool is stopped or
+    * eligible to shut down. It also returns false if the thread
+    * factory fails to create a thread when asked.  If the thread
+    * creation fails, either due to the thread factory returning
+    * null, or due to an exception (typically OutOfMemoryError in
+    * Thread.start()), we roll back cleanly.
+    * 根据线程池状态和给定的界限(核心或最大)检查是否可以添加新的worker.
+    * 如果可以添加的话,则调整相应的worker数量.如果可以的话,创建并启动新的woker,
+    * 并将firstTask作为其第一个任务. 如果线程池关闭或者状态为shutdown,则返回false.
+    * 如果线程工厂在被调用后未能创建新线程,该方法返回false.如果创建线程失败,或者由于线程工厂
+    * 返回Null,或者由于异常(一般是Thread.start()中的OutOfMemoryError)，该方法会干净的回滚队列
+    *
+    * @param firstTask the task the new thread should run first (or
+    * null if none). Workers are created with an initial first task
+    * (in method execute()) to bypass queuing when there are fewer
+    * than corePoolSize threads (in which case we always start one),
+    * or when the queue is full (in which case we must bypass queue).
+    * Initially idle threads are usually created via
+    * prestartCoreThread or to replace other dying workers.
+    * 新线程应该首先运行的任务(如果没有，则为null).当少于corePoolSize线程数(
+    * 在这种情况下，我们总是启动一个线程)或者队列已满时(这种情况下,我们必须绕过队列),创建
+    * 第一次任务的woker(在方法execute()方法中)以绕过队列.原来空闲的线程通常通过prestartCoreThread创建,
+    * 或者是替换其他垂死的worker.
+    *
+    * @param core 如果为true则使用corePoolSize来绑定，否则使用maximumPoolSize.
+    * @return true if successful
+    */
+private boolean addWorker(Runnable firstTask, boolean core) {
+    retry:
+    for (;;) {
+        int c = ctl.get();
+        int rs = runStateOf(c);//线程状态
+
+        // Check if queue empty only if necessary.
+        // 这里要结合上文的状态来看,
+        // 当线程池的状态大于等于SHUTDOWN时拒绝添加worker
+        // 当线程池状态等于SHUTDOWN时,并且workQueue为empty时也不允许添加firstTask为null的worker
+        // 注: 当线程池状态为SHUTDOWN,并且workQueue已满时是可以添加firstTask为null的worker,
+        // 这么做是为了让worker消费workQueue队列中的任务
+        if (rs &gt;= SHUTDOWN &amp;&amp;
+            ! (rs == SHUTDOWN &amp;&amp;
+                firstTask == null &amp;&amp;
+                ! workQueue.isEmpty()))
+            return false;
+
+        for (;;) {
+            int wc = workerCountOf(c);//worker数量
+            if (wc &gt;= CAPACITY ||
+                wc &gt;= (core ? corePoolSize : maximumPoolSize))
+                return false;
+            
+            if (compareAndIncrementWorkerCount(c))
+                break retry;
+            c = ctl.get();  // Re-read ctl
+            if (runStateOf(c) != rs)
+                continue retry;
+            // 如果由于workerCount更改CAS失败; 重试内部循环
+            // 重试时要再次校验线程池状态和workerCount,因为他们都可能已经发生了变化
+        }
+    }
+
+    //workerCount修改成功之后就要做添加woker操作了
+    boolean workerStarted = false;
+    boolean workerAdded = false;
+    Worker w = null;
+    try {
+        w = new Worker(firstTask);
+        final Thread t = w.thread;
+        if (t != null) {
+            final ReentrantLock mainLock = this.mainLock;
+            //在要对队列以及状态修改时加锁（因为workers是hashSet,非线程安全）
+            mainLock.lock();
+            try {
+                // Recheck while holding lock.
+                // Back out on ThreadFactory failure or if
+                // shut down before lock acquired.
+                int rs = runStateOf(ctl.get());
+                
+                //当线程池状态为RUNNING状态时或者状态为SHUTDOWN并且firstTask为null时(shutdown状态不接受新任务,但是任务为null时还是可以添加worker)
+                //可以添加worker
+                if (rs &lt; SHUTDOWN ||
+                    (rs == SHUTDOWN &amp;&amp; firstTask == null)) {
+                    // 预先检查t是否可以启动
+                    // 如果一个线程已经启动并且还没有死亡，那么这个线程是活着(alive)的
+                    if (t.isAlive()) 
+                        throw new IllegalThreadStateException();
+                    workers.add(w);
+                    int s = workers.size();
+                    if (s &gt; largestPoolSize)
+                        largestPoolSize = s;
+                    workerAdded = true;
+                }
+            } finally {
+                mainLock.unlock();
+            }
+            if (workerAdded) {//提供添加成功了就启动woker线程
+                t.start();
+                workerStarted = true;
+            }
+        }
+    } finally {
+        //1. 如果调用的线程工厂(在new Worker(firstTask)中调用)创建新的线程失败
+        //2. 添加woker启动失败
+        //3. 发生异常
+        //以上3种情况发生的话进入addWorkerFailed(w)逻辑
+        if (! workerStarted)
+            addWorkerFailed(w);
+    }
+    return workerStarted;//返回woker是否启动成功的标记
+}
+</code></pre>
+
+<p>addWorkerFailed(Worker w)</p>
+
+<pre><code class="language-java">private void addWorkerFailed(Worker w) {
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        if (w != null)
+            workers.remove(w);
+        decrementWorkerCount();
+        tryTerminate();
+    } finally {
+        mainLock.unlock();
+    }
+}
+</code></pre>
+
+<p>这里主要是回滚队列和还原workerCount.并调用tryTerminate().</p>
+
+<h2 id="worker">Worker</h2>
+
+<p>我们先看Worker类的接口定义</p>
+
+<pre><code class="language-java">private final class Worker extends AbstractQueuedSynchronizer implements Runnable{
+    /**
+    * Creates with given first task and thread from ThreadFactory.
+    * @param firstTask the first task (null if none)
+    */
+    Worker(Runnable firstTask) {
+        setState(-1); // inhibit interrupts until runWorker
+        this.firstTask = firstTask;
+        this.thread = getThreadFactory().newThread(this);
+    }
+    //省略.....
+}
+</code></pre>
+
+<p>由此可见Worker继续了AQS并且实现了Runnable接口,所以Worker本身包含着任务信息(firstTask)以及线程(thread)</p>
+
+<h3 id="run">run()</h3>
+
+<p>由于Worker实现了Runnable接口,所以Worker类会实现run()方法,而addWorker(Runnable firstTask, boolean core)方法中的t.start()就会调用到Worker类的run方法。</p>
+
+<pre><code class="language-java">/** Delegates main run loop to outer runWorker  */
+public void run() {
+    runWorker(this);
+}
+</code></pre>
+
+<p>总结: 在用submit()提交任务之后，会对线程池状态和当前线程数进行判断,如果当前的worker数量超过了corePoolSize并且任务队列已满则使用maximumPoolSize再次尝试添加worker,如果满足条件就会创建一个Worker,该Worker包含一个线程和一个第一任务信息(firstTask).添加成功后会将Woker加入现有工作线程池workers中,并且会立即start该worker的线程.而start方法会首先执行该Worker的firstTask(下篇博文会讲到)。所以如果addWork成功的话任务会被第一时间执行。如果添加失败的话会将任务添加到workQueue</p>
+
+<p>本博文先讲到这,任务是如何执行的,如何回收的,我们下个博文见</p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-thread-pool/">Java Thread Pool</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180218_threadpoolexecutor2/" data-tooltip="TheadPoolExecutor(二)">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+            
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
+            
+          </div>
+        </article>
+        <footer id="footer" class="main-content-wrap">
+  <span class="copyrights">
+    &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
+  </span>
+</footer>
+
+      </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180218_threadpoolexecutor2/" data-tooltip="TheadPoolExecutor(二)">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+    </div>
+    
+    <div id="about">
+  <div id="about-card">
+    <div id="about-btn-close">
+      <i class="fa fa-remove"></i>
+    </div>
+    
+      <img id="about-card-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+    
+    <h4 id="about-card-name">Vit Zhou/周圣华</h4>
+    
+      <div id="about-card-bio">如果耐不住寂寞,就看不到繁华</div>
+    
+    
+      <div id="about-card-job">
+        <i class="fa fa-briefcase"></i>
+        <br/>
+        高级java码农
+      </div>
+    
+    
+      <div id="about-card-location">
+        <i class="fa fa-map-marker"></i>
+        <br/>
+        vitzhou@gmail.com
+      </div>
+    
+  </div>
+</div>
+
+    <div id="algolia-search-modal" class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="close-button"><i class="fa fa-close"></i></span>
+      <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+        <span class="searchby-algolia-text text-color-light text-small">by</span>
+        <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+      </a>
+      <i class="search-icon fa fa-search"></i>
+      <form id="algolia-search-form">
+        <input type="text" id="algolia-search-input" name="search"
+          class="form-control input--large search-input" placeholder="搜索" />
+      </form>
+    </div>
+    <div class="modal-body">
+      <div class="no-result text-color-light text-center"></div>
+      <div class="results">
+        
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">
+                <h3 class="media-heading">ThreadPoolExecutor的Reject策略</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>今天我们专门聊聊ThreadPoolExecutor的拒绝策略
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180218_threadpoolexecutor2/">
+                <h3 class="media-heading">TheadPoolExecutor(二)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>接着上文继续看ThreadPoolExecutor
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180217_threadpoolexecutor/">
+                <h3 class="media-heading">TheadPoolExecutor(一)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180213_eureka_client_config/">
+                <h3 class="media-heading">Eureka Client配置详解</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>这次我们来详细聊聊eureka client服务的配置
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180211_eureka_client_registry/">
+                <h3 class="media-heading">Eureka客户端注册流程</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看<a href="http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/">这里</a>入门.
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/">
+                <h3 class="media-heading">Spring Cloud Config自动刷新机制</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>Spring Cloud Config自动刷新的主要流程
+</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+      </div>
+    </div>
+    <div class="modal-footer">
+      <p class="results-count text-medium"
+         data-message-zero=""
+         data-message-one=""
+         data-message-other="">
+         6 posts found
+      </p>
+    </div>
+  </div>
+</div>
+    
+  
+    
+    <div id="cover" style="background-image:url('https://vitzhou.top/images/cover1.jpg');"></div>
+  
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
+
+
+<script src="https://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+
+
+
+<script>
+$(document).ready(function() {
+  hljs.configure({ classPrefix: '', useBR: false });
+  $('pre.code-highlight > code, pre > code').each(function(i, block) {
+    if (!$(this).hasClass('codeblock')) {
+      $(this).addClass('codeblock');
+    }
+    hljs.highlightBlock(block);
+  });
+});
+</script>
+
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20180217_threadpoolexecutor\/';
+          
+            this.page.identifier = '\/20180217_threadpoolexecutor\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
+
+
+
+    
+  </body>
+</html>
+
