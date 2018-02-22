@@ -262,7 +262,9 @@
               <p>接着上文继续看ThreadPoolExecutor
 </p>
 
-<h1 id="runworker-worker-w">runWorker(Worker w)</h1>
+<!--top-->
+
+<h2 id="runworker-worker-w">runWorker(Worker w)</h2>
 
 <pre><code class="language-java">/**
     * Main worker run loop.  Repeatedly gets tasks from queue and
@@ -408,7 +410,7 @@ completedAbruptly表示循环是否正常结束(beforeExecute或者afterExecute�
 如果线程池状态小于STOP.则执行以下步骤:</p>
 
 <ol>
-<li><p>如果runWorker非正常执行完,那么尝试addWorker.</p></li>
+<li><p>如果runWorker非正常执行完,那么会用新的worker替换旧的(addWorker(null,false)).</p></li>
 
 <li><p>如果runWorker正常执行完,并且核心线程不允许超时,则如果当前线程池的workerCount小于corePoolSize时会重新addWorker,以保证线程池的大小一直是corePoolSize大小.</p></li>
 
@@ -419,7 +421,7 @@ completedAbruptly表示循环是否正常结束(beforeExecute或者afterExecute�
 <li><p>还有一个逻辑需要结合getTask()才能明白，即大于corePoolSize的线程会在超时之后退出,然后尝试添加新的firstTask为null的Worker线程。</p></li>
 </ol>
 
-<p>getTask():</p>
+<h3 id="gettask">getTask():</h3>
 
 <pre><code class="language-java">/**
      * Performs blocking or timed wait for a task, depending on
@@ -519,7 +521,106 @@ completedAbruptly表示循环是否正常结束(beforeExecute或者afterExecute�
 <li><p>进行线程退出时,如果任务队列中还有任务,并且允许核心线程超时的话,线程池的大小1.</p></li>
 </ol>
 
-<p>至于拒绝策略,我们下一篇中继续讲。</p>
+<p>接下来我们继续看其他几个比较重要的方法.至于拒绝策略,我们下一篇中继续讲。</p>
+
+<h2 id="shutdown">shutdown()</h2>
+
+<pre><code class="language-java"> public void shutdown() {
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        checkShutdownAccess();
+        advanceRunState(SHUTDOWN);
+        interruptIdleWorkers();
+        onShutdown(); // hook for ScheduledThreadPoolExecutor
+    } finally {
+        mainLock.unlock();
+    }
+    tryTerminate();
+}
+</code></pre>
+
+<p>简单来说做了以下五步:</p>
+
+<ol>
+<li>校验线程shutdown权限.</li>
+<li>修改当前线程池的状态为SHUTDOWN</li>
+<li>终止空闲(Idle)线程Worker</li>
+<li>调用钩子onShutdown()</li>
+<li>尝试终止线程池</li>
+</ol>
+
+<p>其中interruptIdleWorkers(),tryTerminate()需要细聊下:</p>
+
+<h2 id="interruptidleworkers">interruptIdleWorkers()</h2>
+
+<pre><code class="language-java">private void interruptIdleWorkers() {
+    interruptIdleWorkers(false);
+}
+
+private void interruptIdleWorkers(boolean onlyOne) {
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        for (Worker w : workers) {
+            Thread t = w.thread;
+            if (!t.isInterrupted() &amp;&amp; w.tryLock()) {//如果可以获取到锁则说明该线程是空闲的
+                try {
+                    t.interrupt();
+                } catch (SecurityException ignore) {
+                    //如果抛出这种异常,说明无法修改该线程的状态,它会保持不中断
+                } finally {
+                    w.unlock();
+                }
+            }
+            if (onlyOne)
+                break;
+        }
+    } finally {
+        mainLock.unlock();
+    }
+}
+</code></pre>
+
+<h2 id="tryterminate">tryTerminate()</h2>
+
+<pre><code class="language-java">final void tryTerminate() {
+    for (;;) {
+        int c = ctl.get();
+        if (isRunning(c) ||
+            runStateAtLeast(c, TIDYING) ||
+            (runStateOf(c) == SHUTDOWN &amp;&amp; ! workQueue.isEmpty()))
+            return;
+        if (workerCountOf(c) != 0) { // Eligible to terminate
+            interruptIdleWorkers(ONLY_ONE);
+            return;
+        }
+
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            if (ctl.compareAndSet(c, ctlOf(TIDYING, 0))) {
+                try {
+                    terminated();
+                } finally {
+                    ctl.set(ctlOf(TERMINATED, 0));
+                    termination.signalAll();
+                }
+                return;
+            }
+        } finally {
+            mainLock.unlock();
+        }
+        // else retry on failed CAS
+    }
+}
+</code></pre>
+
+<p>在对线程池做终止操作的时候回再一次判断线程池状态以及任务队列workQueue中的任务是否已全部执行完毕(如果任务是比较耗时的那很有可能还没执行完，注意,shutdown状态的线程池虽然不接受新任务,但是必须保证任务队列中的任务全部执行完毕的).</p>
+
+<p>如果当前线程池中仍有线程，则终端一个空闲的线程.</p>
+
+<p>如果线程池中没有线程了,状态也非running(并且小于TIDYING)，并且任务队列也空了.那么就将线程池状态设置为TIDYING,并调用钩子terminated().执行完毕之后再将线程池状态设置为TERMINATED。</p>
               
             </div>
           </div>

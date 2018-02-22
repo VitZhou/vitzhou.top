@@ -267,24 +267,24 @@
 <p>我们还是需要回到最开始的execute方法：</p>
 
 <pre><code class="language-java"> public void execute(Runnable command) {
-        if (command == null)
-            throw new NullPointerException();
-        int c = ctl.get();
-        if (workerCountOf(c) &lt; corePoolSize) {
-            if (addWorker(command, true))
-                return;
-            c = ctl.get();
-        }
-        if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
-            int recheck = ctl.get();
-            if (! isRunning(recheck) &amp;&amp; remove(command))
-                reject(command);
-            else if (workerCountOf(recheck) == 0)
-                addWorker(null, false);
-        }
-        else if (!addWorker(command, false))
-            reject(command);
+    if (command == null)
+        throw new NullPointerException();
+    int c = ctl.get();
+    if (workerCountOf(c) &lt; corePoolSize) {
+        if (addWorker(command, true))
+            return;
+        c = ctl.get();
     }
+    if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
+        int recheck = ctl.get();
+        if (! isRunning(recheck) &amp;&amp; remove(command))
+            reject(command);
+        else if (workerCountOf(recheck) == 0)
+            addWorker(null, false);
+    }
+    else if (!addWorker(command, false))
+        reject(command);
+}
 </code></pre>
 
 <p>我们可以看到线程池会在corePoolSize的线程池大小上尝试添加失败(addWorker(command, true))之后再次进行在maximumPoolSize大小上尝试添加(addWorker(null, false))。如果都失败了就会调用reject(command)。进行拒绝策略的处理。</p>
@@ -300,7 +300,9 @@
 1. DiscardPolicy: 直接丢弃被拒绝的任务,不做任何事.
 1. DiscardOldestPolicy: 如果线程池没有关闭,则将队列(workQueue)的队头任务(等待最久的任务)抛弃,然后尝试将被拒绝的任务再次添加到队列中。如果线程池已经关闭则直接丢弃任务</p>
 
-<p>//TBD</p>
+<p>ThreadPoolExecutor的默认实现是AbortPolicy。</p>
+
+<h2 id="executors">Executors</h2>
               
             </div>
           </div>

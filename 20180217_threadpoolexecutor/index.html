@@ -311,7 +311,7 @@
 </code></pre>
 
 <ol>
-<li>corePoolSize: 核心线程大小,必须大于等于0</li>
+<li>corePoolSize: 线程池中核心线程数量,必须大于等于0</li>
 <li>maximumPoolSize: 线程池最大容量大小,必须大于0(如果也等于0的话,那这个线程池就无法创建线程了,没啥意义了)</li>
 <li>maximumPoolSize必须大于或者等于corePoolSize</li>
 <li>keepAliveTime: 当线程数大于核心数时，这是多余空闲线程在终止之前等待新任务的最长时间。必须大于等于0</li>
@@ -432,7 +432,7 @@
 Woker: 当前线程池中的线程.</br>
 Task: 实现了Runnable,但是并非是线程,会被Worker调用run()方法</br>
 maximumPoolSize: 线程池最多能创建多少个worker</br>
-corePoolSize: 核心线程池的容量.当核心线程池满了时,并且workerQueue队列也满了时,
+corePoolSize: 线程池的核心线程数量.当线程池满了时,并且workerQueue队列也满了时,
 还可以创建Worker去处理WorkerQueue队列中的task,但是不能超过maximumPoolSize。超过corePoolSize之外的线程会在空闲超时后终止。</p>
 </blockquote>
 
