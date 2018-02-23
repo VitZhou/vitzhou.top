@@ -294,11 +294,14 @@
 }
 </code></pre>
 
-<p>reject会调用接口RejectedExecutionHandler的rejectedExecution方法.而RejectedExecutionHandler在ThreadPoolExecutor中有如下几个默认实现(都是内部类):
-1. AbortPolicy: 抛出一个RejectedExecutionException异常,然后抛弃任务.
-1. CallerRunsPolicy: 如果线程池没有关闭直接在线程池中执行被拒绝的任务,否则任务会被丢弃。
-1. DiscardPolicy: 直接丢弃被拒绝的任务,不做任何事.
-1. DiscardOldestPolicy: 如果线程池没有关闭,则将队列(workQueue)的队头任务(等待最久的任务)抛弃,然后尝试将被拒绝的任务再次添加到队列中。如果线程池已经关闭则直接丢弃任务</p>
+<p>reject会调用接口RejectedExecutionHandler的rejectedExecution方法.而RejectedExecutionHandler在ThreadPoolExecutor中有如下几个默认实现(都是内部类):</p>
+
+<ol>
+<li>AbortPolicy: 抛出一个RejectedExecutionException异常,然后抛弃任务.</li>
+<li>CallerRunsPolicy: 如果线程池没有关闭直接在线程池中执行被拒绝的任务,否则任务会被丢弃。</li>
+<li>DiscardPolicy: 直接丢弃被拒绝的任务,不做任何事.</li>
+<li>DiscardOldestPolicy: 如果线程池没有关闭,则将队列(workQueue)的队头任务(等待最久的任务)抛弃,然后尝试将被拒绝的任务再次添加到队列中。如果线程池已经关闭则直接丢弃任务</li>
+</ol>
 
 <p>ThreadPoolExecutor的默认实现是AbortPolicy。</p>
               
