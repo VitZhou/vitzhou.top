@@ -21,7 +21,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="Hugo 0.33 with theme Tranquilpeak 0.4.3-BETA">
+    <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
     <title>ThreadPoolExecutor(一)</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="ThreadPoolExecutor, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
@@ -488,7 +488,7 @@ corePoolSize: 线程池的核心线程数量.当线程池满了时,并且workerQ
     * or when the queue is full (in which case we must bypass queue).
     * Initially idle threads are usually created via
     * prestartCoreThread or to replace other dying workers.
-    * 新线程应该首先运行的任务(如果没有，则为null).当少于corePoolSize线程数(
+    * 新线程中的任务应该先运行(如果没有，则为null).当少于corePoolSize线程数(
     * 在这种情况下，我们总是启动一个线程)或者队列已满时(这种情况下,我们必须绕过队列),创建
     * 第一次任务的woker(在方法execute()方法中)以绕过队列.原来空闲的线程通常通过prestartCoreThread创建,
     * 或者是替换其他垂死的worker.
@@ -806,7 +806,7 @@ public void run() {
       <div id="about-card-job">
         <i class="fa fa-briefcase"></i>
         <br/>
-        高级java码农
+        团贷网@高级java码农
       </div>
     
     
