@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Eureka客户端注册流程</title>
+    <title>http2资料收集</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="Spring Cloud, Spring Cloud Eureka, Spring Cloud Eureka registry, Eureka, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="http 2协议, http 2中文, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="spring cloud eureka注册流程">
-    <meta property="og:description" content="spring cloud eureka注册流程">
+    <meta name="description" content="http2 资料收集">
+    <meta property="og:description" content="http2 资料收集">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Eureka客户端注册流程">
-    <meta property="og:url" content="/20180211_eureka_client_registry/">
+    <meta property="og:title" content="http2资料收集">
+    <meta property="og:url" content="/20180321_http2collection/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="spring cloud eureka注册流程">
+    <meta name="twitter:description" content="http2 资料收集">
     
     
 
@@ -67,7 +67,7 @@
     
 
     
-      <meta property="og:image" content="https://vitzhou.top/img/spring-cloud/eureka-client/22.jpg">
+      <meta property="og:image" content="https://vitzhou.top/img/http2/01.jpeg">
     
     
     
@@ -232,15 +232,15 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Eureka客户端注册流程
+      http2资料收集
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-11T15:09:33&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-03-21T20:41:02&#43;08:00">
         
-  二月 11, 2018
+  三月 21, 2018
 
       </time>
     
@@ -249,9 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud">Spring Cloud</a>, 
-    
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud-eureka">Spring Cloud Eureka</a>
+      <a class="category-link" href="https://vitzhou.top/categories/http-2">http 2</a>
     
   
 
@@ -261,335 +259,21 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看<a href="http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/">这里</a>入门.
+              <p>今天开始学习http2,先搜集一些资料
 </p>
 
-<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<p>现在越来越的网站开始支持http2;chrome,firfox,Apache Tomcat 8.5+,jetty,nginx等等工具和厂家都在陆陆续续的支持实现http2. 可以说http2成熟期指日可待.所以对于一个码农来说http 2已经变成了不可不学得一门手艺.</p>
+
 <ul>
-<li>
-<ul>
-<li><a href="#入口">入口</a>
-<ul>
-<li><a href="#eurekaautoserviceregistration">EurekaAutoServiceRegistration</a></li>
-<li><a href="#serviceregistry">ServiceRegistry</a></li>
-</ul></li>
-</ul></li>
+<li><a href="https://github.com/http2/http2-spec/wiki/Implementations">这里</a>: 介绍了目前各工具对http2的支持。</li>
+<li><a href="https://http2.github.io/">官网</a> 需要多介绍了吧？</li>
+<li><a href="https://www.kancloud.cn/kancloud/http2-explained/49812">http2讲解&ndash;一书的中文翻译</a></li>
+<li><a href="https://yuedu.baidu.com/ebook/478d1a62376baf1ffc4fad99?pn=1&amp;rf=http%3A%2F%2Ffex.baidu.com%2Fblog%2F2014%2F09%2Fhttp-2.0%2F">唯一一个比较全的中文翻译</a>可惜的是该翻译是14年的版本相对比较老,如果初学者还是建议看官网了。</li>
+<li><a href="https://http2.akamai.com/demo">akamai</a>这个例子直观的让你了http2和http1的性能差异</li>
+<li><a href="https://www.ibm.com/developerworks/cn/web/wa-http2-under-the-hood/index.html">原理介绍</a> 这篇文章还不错,但是细节还是建议看官网</li>
 </ul>
-</nav>
 
-<h2 id="入口">入口</h2>
-
-<blockquote>
-<p>本文是基于spring-cloud-netflix 1.4.0.RELEASE版本</p>
-</blockquote>
-
-<p>spring cloud的入口都相对容易找.eureka客户端注册的入口类是EurekaDiscoveryClientConfiguration和EurekaClientAutoConfiguration:</p>
-
-<p>EurekaDiscoveryClientConfiguration:</p>
-
-<pre><code class="language-java">@Configuration
-@EnableConfigurationProperties
-@ConditionalOnClass(EurekaClientConfig.class)
-@ConditionalOnProperty(value = &quot;eureka.client.enabled&quot;, matchIfMissing = true)
-public class EurekaDiscoveryClientConfiguration {
-    //省略
-}
-</code></pre>
-
-<p>由注解@ConditionalOnClass(EurekaClientConfig.class)可知:只要EurekaClientConfig类在classpath下就会实例化该bean.</p>
-
-<p>EurekaClientAutoConfiguration:</p>
-
-<pre><code class="language-java">@Configuration
-@EnableConfigurationProperties
-@ConditionalOnClass(EurekaClientConfig.class)
-@Import(DiscoveryClientOptionalArgsConfiguration.class)
-@ConditionalOnBean(EurekaDiscoveryClientConfiguration.Marker.class)
-@ConditionalOnProperty(value = &quot;eureka.client.enabled&quot;, matchIfMissing = true)
-@AutoConfigureBefore({ NoopDiscoveryClientAutoConfiguration.class,
-		CommonsClientAutoConfiguration.class, ServiceRegistryAutoConfiguration.class })
-@AutoConfigureAfter(name = {&quot;org.springframework.cloud.autoconfigure.RefreshAutoConfiguration&quot;,
-		&quot;org.springframework.cloud.netflix.eureka.EurekaDiscoveryClientConfiguration&quot;,
-		&quot;org.springframework.cloud.client.serviceregistry.AutoServiceRegistrationAutoConfiguration&quot;})
-public class EurekaClientAutoConfiguration {
-    //省略
-}
-</code></pre>
-
-<p>由@ConditionalOnBean(EurekaDiscoveryClientConfiguration.Marker.class)可以看出EurekaClientAutoConfiguration的实例化依赖于EurekaDiscoveryClientConfiguration。所以只要你依赖了spring-cloud-starter-eureka包就会启动EurekaClientAutoConfiguration,而该类初始化了eurekaServiceRegistry和discoveryClient。
-所以即便你不加@EnableDiscoveryClient注解在你的Application启动类上,只要你加载了它的依赖就会自动做服务注册和发现。</p>
-
-<p>EurekaDiscoveryClientConfiguration类还做了两件事:</p>
-
-<p>一件是监听RefreshScopeRefreshedEvent事件(跟自动配置相关),另外一件是实例化EurekaHealthCheckHandler(跟健康检查相关)</p>
-
-<p>先着重看第一件事:</p>
-
-<pre><code class="language-java">@Configuration
-@ConditionalOnClass(RefreshScopeRefreshedEvent.class)
-protected static class EurekaClientConfigurationRefresher {
-
-    @Autowired(required = false)
-    private EurekaClient eurekaClient;
-
-    @Autowired(required = false)
-    private EurekaAutoServiceRegistration autoRegistration;
-
-    @EventListener(RefreshScopeRefreshedEvent.class)
-    public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
-        //This will force the creation of the EurkaClient bean if not already created
-        //to make sure the client will be reregistered after a refresh event
-        if(eurekaClient != null) {
-            eurekaClient.getApplications();
-        }
-        if (autoRegistration != null) {
-            // register in case meta data changed
-            this.autoRegistration.stop();
-            this.autoRegistration.start();
-        }
-    }
-}
-</code></pre>
-
-<p>可以看到这里用到了EurekaAutoServiceRegistration,从名字就可以看出这个是Eureka 自动注册的关键类了。</p>
-
-<h3 id="eurekaautoserviceregistration">EurekaAutoServiceRegistration</h3>
-
-<p>先看它的实现的接口:</p>
-
-<pre><code class="language-java">public class EurekaAutoServiceRegistration implements AutoServiceRegistration, SmartLifecycle, Ordered {
-    private int order = 0;
-    //...省略
-}
-</code></pre>
-
-<p>由于实现了SmartLifecycle接口,该类会在所有的bean实例化之后被调用其start()方法:</p>
-
-<pre><code class="language-java">@Override
-public void start() {
-    // only set the port if the nonSecurePort or securePort is 0 and this.port != 0
-    if (this.port.get() != 0) {
-        if (this.registration.getNonSecurePort() == 0) {
-            this.registration.setNonSecurePort(this.port.get());
-        }
-
-        if (this.registration.getSecurePort() == 0 &amp;&amp; this.registration.isSecure()) {
-            this.registration.setSecurePort(this.port.get());
-        }
-    }
-
-    // only initialize if nonSecurePort is greater than 0 and it isn't already running
-    // because of containerPortInitializer below
-    if (!this.running.get() &amp;&amp; this.registration.getNonSecurePort() &gt; 0) {
-
-        this.serviceRegistry.register(this.registration);
-
-        this.context.publishEvent(
-                new InstanceRegisteredEvent&lt;&gt;(this, this.registration.getInstanceConfig()));
-        this.running.set(true);
-    }
-}
-</code></pre>
-
-<p>该方法比较简单,就是第一次运行时将客户端信息注册。
-至于注册信息具体有哪些,我会专门写篇博客来讲，请期待&hellip;</p>
-
-<h3 id="serviceregistry">ServiceRegistry</h3>
-
-<pre><code class="language-java">@Override
-public void register(EurekaRegistration reg) {
-    maybeInitializeClient(reg);
-
-    if (log.isInfoEnabled()) {
-        log.info(&quot;Registering application &quot; + reg.getInstanceConfig().getAppname()
-                + &quot; with eureka with status &quot;
-                + reg.getInstanceConfig().getInitialStatus());
-    }
-
-    reg.getApplicationInfoManager()
-            .setInstanceStatus(reg.getInstanceConfig().getInitialStatus());
-
-    if (reg.getHealthCheckHandler() != null) {
-        reg.getEurekaClient().registerHealthCheck(reg.getHealthCheckHandler());
-    }
-}
-</code></pre>
-
-<p>这里最重要的一步是在ApplicationInfoManager中设置当前的状态.那么设置状态又发生了什么呢？ 接下来继续看ApplicationInfoManager类:</p>
-
-<pre><code class="language-java"> public synchronized void setInstanceStatus(InstanceStatus status) {
-    InstanceStatus next = instanceStatusMapper.map(status);
-    if (next == null) {
-        return;
-    }
-
-    InstanceStatus prev = instanceInfo.setStatus(next);
-    if (prev != null) {
-        for (StatusChangeListener listener : listeners.values()) {
-            try {
-                listener.notify(new StatusChangeEvent(prev, next));
-            } catch (Exception e) {
-                logger.warn(&quot;failed to notify listener: {}&quot;, listener.getId(), e);
-            }
-        }
-    }
-}
-</code></pre>
-
-<p>instanceStatusMapper.map(status)这一步应该是为未来留下的接口,现有的实现只是return status。instanceInfo.setStatus(next)会将参数next和之前的状态进行比较.如果不一致就实例信息是脏数据isInstanceInfoDirty标记为true,并记录最后修改时间lastDirtyTimestamp,并返回之前的状态:</p>
-
-<pre><code class="language-java">public synchronized InstanceStatus setStatus(InstanceStatus status) {
-    if (this.status != status) {
-        InstanceStatus prev = this.status;
-        this.status = status;
-        setIsDirty();
-        return prev;
-    }
-    return null;
-}
-</code></pre>
-
-<p>如果有状态返回,则表示状态发生了变化,则需要通知所有的监听者发生了StatusChangeEvent事件.
-&gt; 目前没看到该事件有监听器负责监听并处理，那么服务注册是怎么发送到服务端的呢？继续往下看</p>
-
-<pre><code class="language-java">public void registerStatusChangeListener(StatusChangeListener listener) {
-    listeners.put(listener.getId(), listener);
-}
-</code></pre>
-
-<p>通过查找ApplicationInfoManager的registerStatusChangeListener方法的使用可以看到:</p>
-
-<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/1.jpg" alt="" /></p>
-
-<p>跳进去可以看到:</p>
-
-<pre><code class="language-java">statusChangeListener = new ApplicationInfoManager.StatusChangeListener() {
-        @Override
-        public String getId() {
-            return &quot;statusChangeListener&quot;;
-        }
-    
-        @Override
-        public void notify(StatusChangeEvent statusChangeEvent) {
-            if (InstanceStatus.DOWN == statusChangeEvent.getStatus() ||
-                    InstanceStatus.DOWN == statusChangeEvent.getPreviousStatus()) {
-                // log at warn level if DOWN was involved
-                logger.warn(&quot;Saw local status change event {}&quot;, statusChangeEvent);
-            } else {
-                logger.info(&quot;Saw local status change event {}&quot;, statusChangeEvent);
-            }
-            instanceInfoReplicator.onDemandUpdate();
-        }
-    };
-    
-    if (clientConfig.shouldOnDemandUpdateStatusChange()) {
-        applicationInfoManager.registerStatusChangeListener(statusChangeListener);
-    }
-</code></pre>
-
-<p>setInstanceStatus方法中的notify实际上是就做了两件事,1是记录状态的变化，2是调用instanceInfoReplicator.onDemandUpdate()方法。其实现如下:</p>
-
-<pre><code class="language-java">public boolean onDemandUpdate() {
-    if (rateLimiter.acquire(burstSize, allowedRatePerMinute)) {
-        scheduler.submit(new Runnable() {
-            @Override
-            public void run() {
-                logger.debug(&quot;Executing on-demand update of local InstanceInfo&quot;);
-
-                Future latestPeriodic = scheduledPeriodicRef.get();
-                if (latestPeriodic != null &amp;&amp; !latestPeriodic.isDone()) {
-                    logger.debug(&quot;Canceling the latest scheduled update, it will be rescheduled at the end of on demand update&quot;);
-                    latestPeriodic.cancel(false);
-                }
-
-                InstanceInfoReplicator.this.run();
-            }
-        });
-        return true;
-    } else {
-        logger.warn(&quot;Ignoring onDemand update due to rate limiter&quot;);
-        return false;
-    }
-}
-</code></pre>
-
-<p>简单说明下rateLimiter.acquire(burstSize, allowedRatePerMinute)这个限流是通过你配置参数中的replicationIntervalSeconds来指定的。防止单位时间内状态变化太快。</p>
-
-<p>该方法的主要内容是像scheduler提交一个作业.该作业的内容是将scheduledPeriodicRef中没有完成的作业取消.
-&gt; 实际上scheduledPeriodicRef中的未完成作业就是scheduler中未完成的作业:</p>
-
-<pre><code class="language-java">Future next = scheduler.schedule(this, replicationIntervalSeconds, TimeUnit.SECONDS);
-scheduledPeriodicRef.set(next);
-</code></pre>
-
-<p>然后调用this.run():</p>
-
-<pre><code class="language-java">public void run() {
-    try {
-        discoveryClient.refreshInstanceInfo();
-
-        Long dirtyTimestamp = instanceInfo.isDirtyWithTime();
-        if (dirtyTimestamp != null) {
-            discoveryClient.register();
-            instanceInfo.unsetIsDirty(dirtyTimestamp);
-        }
-    } catch (Throwable t) {
-        logger.warn(&quot;There was a problem with the instance info replicator&quot;, t);
-    } finally {
-        Future next = scheduler.schedule(this, replicationIntervalSeconds, TimeUnit.SECONDS);
-        scheduledPeriodicRef.set(next);
-    }
-}
-</code></pre>
-
-<p>它首先会刷新本地的实例信息discoveryClient.refreshInstanceInfo()(这一步的细节在服务发现博客再细聊),然后通过isInstanceInfoDirty和lastDirtyTimestamp来判断是否是脏数据,如果是的话就调用discoveryClient.register()注册到eureka server中。
-然后继续看discoveryClient.register()：</p>
-
-<pre><code class="language-java">boolean register() throws Throwable {
-    logger.info(PREFIX + appPathIdentifier + &quot;: registering service...&quot;);
-    EurekaHttpResponse&lt;Void&gt; httpResponse;
-    try {
-        httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
-    } catch (Exception e) {
-        logger.warn(&quot;{} - registration failed {}&quot;, PREFIX + appPathIdentifier, e.getMessage(), e);
-        throw e;
-    }
-    if (logger.isInfoEnabled()) {
-        logger.info(&quot;{} - registration status: {}&quot;, PREFIX + appPathIdentifier, httpResponse.getStatusCode());
-    }
-    return httpResponse.getStatusCode() == 204;
-}
-</code></pre>
-
-<p>eurekaTransport.registrationClient.register(instanceInfo)最终会调到AbstractJerseyEurekaHttpClient的register方法:</p>
-
-<pre><code class="language-java">public EurekaHttpResponse&lt;Void&gt; register(InstanceInfo info) {
-        String urlPath = &quot;apps/&quot; + info.getAppName();
-        ClientResponse response = null;
-        try {
-            Builder resourceBuilder = jerseyClient.resource(serviceUrl).path(urlPath).getRequestBuilder();
-            addExtraHeaders(resourceBuilder);
-            response = resourceBuilder
-                    .header(&quot;Accept-Encoding&quot;, &quot;gzip&quot;)
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .post(ClientResponse.class, info);
-            return anEurekaHttpResponse(response.getStatus()).headers(headersOf(response)).build();
-        } finally {
-            if (logger.isDebugEnabled()) {
-                logger.debug(&quot;Jersey HTTP POST {}/{} with instance {}; statusCode={}&quot;, serviceUrl, urlPath, info.getId(),
-                        response == null ? &quot;N/A&quot; : response.getStatus());
-            }
-            if (response != null) {
-                response.close();
-            }
-        }
-    }
-</code></pre>
-
-<p>这里主要是通过rest(url:<a href="http://host:port/eureka/apps/{appName})请求将注册信息注册到eureka">http://host:port/eureka/apps/{appName})请求将注册信息注册到eureka</a> server中。</p>
-
-<p>小结:总得来说eureka client的服务注册的流程还是挺简单的。通过状态的变化来notify ApplicationInfoManager的匿名StatusChangeListener监听器,监听器通过scheduler调度进行注册客户端实例信息.</p>
+<p>后期有其他资料将会陆续补上</p>
               
             </div>
           </div>
@@ -601,9 +285,7 @@ scheduledPeriodicRef.set(next);
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
-
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud-eureka/">Spring Cloud Eureka</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/http-2/">http 2</a>
 
                   </div>
                 
@@ -616,7 +298,7 @@ scheduledPeriodicRef.set(next);
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -624,7 +306,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/" data-tooltip="ThreadPoolExecutor的Reject策略">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -651,7 +333,7 @@ scheduledPeriodicRef.set(next);
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -696,7 +378,7 @@ scheduledPeriodicRef.set(next);
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -704,7 +386,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/" data-tooltip="ThreadPoolExecutor的Reject策略">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -731,7 +413,7 @@ scheduledPeriodicRef.set(next);
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -972,9 +654,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180211_eureka_client_registry\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20180321_http2collection\/';
           
-            this.page.identifier = '\/20180211_eureka_client_registry\/'
+            this.page.identifier = '\/20180321_http2collection\/'
           
         };
         (function() {

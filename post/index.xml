@@ -6,10 +6,20 @@
     <description>Recent content in Posts on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 21 Feb 2018 14:00:01 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 21 Mar 2018 20:41:02 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>http2资料收集</title>
+      <link>https://vitzhou.top/20180321_http2collection/</link>
+      <pubDate>Wed, 21 Mar 2018 20:41:02 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180321_http2collection/</guid>
+      <description>&lt;p&gt;今天开始学习http2,先搜集一些资料
+&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>ThreadPoolExecutor的Reject策略</title>
