@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20180328_prometheus_config/</loc>
+    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20180321_http2collection/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
   </url>
@@ -48,13 +53,13 @@
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/http-2/</loc>
+    <loc>https://vitzhou.top/tags/http-2/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/tags/http-2/</loc>
+    <loc>https://vitzhou.top/categories/http-2/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -73,13 +78,13 @@
   
   <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-03-21T20:41:02+08:00</lastmod>
+    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/spring-cloud/</loc>
-    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <loc>https://vitzhou.top/categories/prometheus/</loc>
+    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -90,7 +95,7 @@
   </url>
   
   <url>
-    <loc>https://vitzhou.top/categories/spring-cloud-eureka/</loc>
+    <loc>https://vitzhou.top/categories/spring-cloud/</loc>
     <lastmod>2018-02-13T11:07:44+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -102,14 +107,26 @@
   </url>
   
   <url>
+    <loc>https://vitzhou.top/categories/spring-cloud-eureka/</loc>
+    <lastmod>2018-02-13T11:07:44+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/tags/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
+    <loc>https://vitzhou.top/tags/work/</loc>
+    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-03-21T20:41:02+08:00</lastmod>
+    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
     <priority>0</priority>
   </url>
   
