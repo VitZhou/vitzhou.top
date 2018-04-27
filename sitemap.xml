@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20180428_k8s_network_sc/</loc>
+    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20180328_prometheus_config/</loc>
     <lastmod>2018-03-28T20:51:05+08:00</lastmod>
   </url>
@@ -77,8 +82,20 @@
   </url>
   
   <url>
+    <loc>https://vitzhou.top/tags/k8s/</loc>
+    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/categories/k8s/</loc>
+    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
+    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -126,7 +143,7 @@
   
   <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-03-28T20:51:05+08:00</lastmod>
+    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
