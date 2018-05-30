@@ -823,12 +823,11 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
                   May 5, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用
-原文地址:https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c
-HTTP(S) Proxy在Golang中实现不超过一百行代码 本文的目标是为HTTP何HTTPS实施代理服务器.处理HTTP请求只是一个简单的解析请求:将http的请求传递给最终的目标服务器,读取响应并将其传递回客户端. 我们所需要的就是内置http server和client(net/http);HTTPS不同,因为它将使用HTTP CONNECT隧道技术.第一个客户端使用HTTP CONNECT方法发送请求以建立客户端和目标服务器之间的隧道. 当这种由两个TCP链接组成的隧道准备就绪后,客户端就会与目标服务器开始定义的TLS握手.以建立安全的连接并在随后发送请求并接收响应.
-证书 我们的代理将是一个HTTPS服务器(当使用&ndash;proto https时),所以我们需要证书和私钥.为了本文的目的,我们使用自签名证书.可以使用以下脚本生成证书:
-#!/usr/bin/env bash case `uname -s` in Linux*) sslConfig=/etc/ssl/openssl.cnf;; Darwin*) sslConfig=/System/Library/OpenSSL/openssl.cnf;; esac openssl req \ -newkey rsa:2048 \ -x509 \ -nodes \ -keyout server.key \ -new \ -out server.pem \ -subj /CN=localhost \ -reqexts SAN \ -extensions SAN \ -config &lt;(cat $sslConfig \ &lt;(printf '[SAN]\nsubjectAltName=DNS:localhost')) \ -sha256 \ -days 3650  它需要说服你的操作系统来信任这样的证书。 在OS X中，可以使用钥匙串访问完成 - https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/。
-HTTP 为了支持HTTP，我们将使用内置的HTTP Server和Client。 代理的角色是处理HTTP请求，将此请求传递给目标服务器并将响应发送回客户端。</div>
+              <div class="media-content hide-xs font-merryweather"><p>最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用</p>
+
+<p>原文地址:<a href="https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c">https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c</a></p>
+
+<p></p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
