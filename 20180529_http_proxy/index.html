@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>ThreadPoolExecutor(一)</title>
+    <title>HTTP proxy</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="ThreadPoolExecutor, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="http proxy, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="ThreadPoolExecutor学习笔记">
-    <meta property="og:description" content="ThreadPoolExecutor学习笔记">
+    <meta name="description" content="http proxy golang">
+    <meta property="og:description" content="http proxy golang">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="ThreadPoolExecutor(一)">
-    <meta property="og:url" content="/20180217_threadpoolexecutor/">
+    <meta property="og:title" content="HTTP proxy">
+    <meta property="og:url" content="/20180529_http_proxy/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="ThreadPoolExecutor学习笔记">
+    <meta name="twitter:description" content="http proxy golang">
     
     
 
@@ -67,7 +67,7 @@
     
 
     
-      <meta property="og:image" content="https://vitzhou.top/img/spring-cloud/threadpool/5.jpg">
+      <meta property="og:image" content="https://vitzhou.top/img/k8s/33.jpg">
     
     
     
@@ -232,15 +232,15 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      ThreadPoolExecutor(一)
+      HTTP proxy
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-18T11:07:44&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-05-29T18:51:42&#43;08:00">
         
-  二月 18, 2018
+  五月 29, 2018
 
       </time>
     
@@ -249,7 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
+      <a class="category-link" href="https://vitzhou.top/categories/golang">golang</a>
     
   
 
@@ -259,379 +259,216 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
-</p>
+              
 
-<p>一般使用线程池都会使用Excutors,但是其内部实现是ThreadPoolExecutor。所以要理解多线程还是需要直接看ThreadPoolExecutor源码的。</p>
+<p>最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用</p>
 
-<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
-<ul>
-<li><a href="#threadpoolexecutor">ThreadPoolExecutor</a>
-<ul>
-<li><a href="#构造方法">构造方法</a></li>
-<li><a href="#属性">属性</a></li>
-<li><a href="#execute">execute()</a></li>
-<li><a href="#addworker-runnable-firsttask-boolean-core">addWorker(Runnable firstTask, boolean core)</a></li>
-<li><a href="#worker">Worker</a>
-<ul>
-<li><a href="#run">run()</a></li>
-</ul></li>
-</ul></li>
-</ul>
-</nav>
+<p>原文地址:<a href="https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c">https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c</a></p>
 
-<h1 id="threadpoolexecutor">ThreadPoolExecutor</h1>
+<!-- more -->
 
-<h2 id="构造方法">构造方法</h2>
+<h2 id="http-s-proxy在golang中实现不超过一百行代码">HTTP(S) Proxy在Golang中实现不超过一百行代码</h2>
 
-<pre><code class="language-java">public ThreadPoolExecutor(int corePoolSize,
-                              int maximumPoolSize,
-                              long keepAliveTime,
-                              TimeUnit unit,
-                              BlockingQueue&lt;Runnable&gt; workQueue,
-                              ThreadFactory threadFactory,
-                              RejectedExecutionHandler handler) {
-        if (corePoolSize &lt; 0 ||
-            maximumPoolSize &lt;= 0 ||
-            maximumPoolSize &lt; corePoolSize ||
-            keepAliveTime &lt; 0)
-            throw new IllegalArgumentException();
-        if (workQueue == null || threadFactory == null || handler == null)
-            throw new NullPointerException();
-        this.acc = System.getSecurityManager() == null ?
-                null :
-                AccessController.getContext();
-        this.corePoolSize = corePoolSize;
-        this.maximumPoolSize = maximumPoolSize;
-        this.workQueue = workQueue;
-        this.keepAliveTime = unit.toNanos(keepAliveTime);
-        this.threadFactory = threadFactory;
-        this.handler = handler;
-    }
+<p>本文的目标是为HTTP何HTTPS实施<a href="https://en.wikipedia.org/wiki/Proxy_server">代理服务器</a>.处理HTTP请求只是一个简单的解析请求:将http的请求传递给最终的目标服务器,读取响应并将其传递回客户端. 我们所需要的就是内置http server和client(<a href="https://golang.org/pkg/net/http/">net/http</a>);HTTPS不同,因为它将使用HTTP CONNECT隧道技术.第一个客户端使用HTTP CONNECT方法发送请求以建立客户端和目标服务器之间的隧道. 当这种由两个TCP链接组成的隧道准备就绪后,客户端就会与目标服务器开始定义的TLS握手.以建立安全的连接并在随后发送请求并接收响应.</p>
+
+<h3 id="证书">证书</h3>
+
+<p>我们的代理将是一个HTTPS服务器(当使用&ndash;proto https时),所以我们需要证书和私钥.为了本文的目的,我们使用自签名证书.可以使用以下脚本生成证书:</p>
+
+<pre><code class="language-shell">#!/usr/bin/env bash
+case `uname -s` in
+    Linux*)     sslConfig=/etc/ssl/openssl.cnf;;
+    Darwin*)    sslConfig=/System/Library/OpenSSL/openssl.cnf;;
+esac
+openssl req \
+    -newkey rsa:2048 \
+    -x509 \
+    -nodes \
+    -keyout server.key \
+    -new \
+    -out server.pem \
+    -subj /CN=localhost \
+    -reqexts SAN \
+    -extensions SAN \
+    -config &lt;(cat $sslConfig \
+        &lt;(printf '[SAN]\nsubjectAltName=DNS:localhost')) \
+    -sha256 \
+    -days 3650
 </code></pre>
 
-<ol>
-<li>corePoolSize: 线程池中核心线程数量,必须大于等于0</li>
-<li>maximumPoolSize: 线程池最大容量大小,必须大于0(如果也等于0的话,那这个线程池就无法创建线程了,没啥意义了)</li>
-<li>maximumPoolSize必须大于或者等于corePoolSize</li>
-<li>keepAliveTime: 当线程数大于核心数时，这是多余空闲线程在终止之前等待新任务的最长时间。必须大于等于0</li>
-<li>workQueue: 承载任务的队列</li>
-<li>handler: 线程拒绝(抛弃)策略(这个参数,我后面专门写篇博客来聊)</li>
-</ol>
+<p>它需要说服你的操作系统来信任这样的证书。 在OS X中，可以使用钥匙串访问完成 - <a href="https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/。">https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/。</a></p>
 
-<h2 id="属性">属性</h2>
+<h3 id="http">HTTP</h3>
 
-<p>要弄明白ThreadPoolExecutor需要先弄清楚它的关键属性，以及状态的变化</p>
+<p>为了支持HTTP，我们将使用内置的HTTP Server和Client。 代理的角色是处理HTTP请求，将此请求传递给目标服务器并将响应发送回客户端。</p>
 
-<pre><code class="language-java">    //ctl保存当前线程数量和当前线程池状态。其中高3位位状态,低29位位数量。
-    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
-    //偏移量
-    private static final int COUNT_BITS = Integer.SIZE - 3;
-    //最大线程容量2^29-1
-    private static final int CAPACITY   = (1 &lt;&lt; COUNT_BITS) - 1;
+<p><img src="../../static/img/2018/httpproxy1.png" alt="" /></p>
 
-    // runState is stored in the high-order bits
-    //线程池状态如下:
-    //接受新任务并处理排队的任务。 111
-    private static final int RUNNING    = -1 &lt;&lt; COUNT_BITS;
-    //不再接收新任务,但是处理排队的任务。 000
-    private static final int SHUTDOWN   =  0 &lt;&lt; COUNT_BITS;
-    //不接受新任务，不处理排队的任务，并中断正在进行的任务. 001
-    private static final int STOP       =  1 &lt;&lt; COUNT_BITS;
-    //所有任务都已终止，workerCount为零，转换为状态TIDYING的线程将运行terminate()钩子方法。  010
-    private static final int TIDYING    =  2 &lt;&lt; COUNT_BITS;
-    //terminated()执行完毕. 011
-    private static final int TERMINATED =  3 &lt;&lt; COUNT_BITS;
-    //获取线程池状态，取前3位
-    private static int runStateOf(int c)     { return c &amp; ~CAPACITY; }
-    //获取当前正在工作的worker,主要是取后面29位
-    private static int workerCountOf(int c)  { return c &amp; CAPACITY; }
-    //获取ctl
-    private static int ctlOf(int rs, int wc) { return rs | wc; }
+<h3 id="http-connect-隧道">HTTP CONNECT 隧道</h3>
 
-    private final ReentrantLock mainLock = new ReentrantLock();
-    //存放池中的所有工作线程。 只有在持有mainLock的情况下才能访问。
-    private final HashSet&lt;Worker&gt; workers = new HashSet&lt;Worker&gt;();
-</code></pre>
+<p>假设客户端想要使用HTTPS或WebSockets来与服务器通信.客户端会察觉到使用了代理。简单的http请求/响应流程不再支持,因为客户端需要建立与服务器的安全连接(HTTPS)或系统通过TCP连接(WebSockets)使用其他协议.实现的方法是使用HTTP CONNECT.它会告诉代理服务器建议与目标服务器的TCP连接,并完成代理到客户端和来自客户端的TCP流。这样代理服务器不会终止SSL,但是在客户端和目标服务之间传递数据,因为代理和客户端简历了安全的连接.</p>
 
-<blockquote>
-<p>可以看出当状态值大于等于0时都不在接受新任务</p>
-</blockquote>
+<p><img src="../../static/img/2018/httpproxy2.png" alt="" /></p>
 
-<p>状态的主要变化:
-1. RUNNING -&gt; SHUTDOWN: 在调用shutdown()时发生该变化，可能会隐式地在finalize()中调用。</p>
+<h3 id="实现">实现</h3>
 
-<ol>
-<li><p>(RUNNING or SHUTDOWN) -&gt; STOP: 当调用shutdownNow()时。</p></li>
-
-<li><p>SHUTDOWN -&gt; TIDYING: 当队列和池都是空的时</p></li>
-
-<li><p>STOP -&gt; TIDYING: 当池中没有线程时.</p></li>
-
-<li><p>TIDYING -&gt; TERMINATED: 当terminated()钩子方法被调用时.</p></li>
-</ol>
-
-<h2 id="execute">execute()</h2>
-
-<p>我们先看execute方法(Executors.submit()方法的作用是创建一个FutureTask,然后调用execute()):</p>
-
-<p>execute()方法用来执行给定的任务,该任务可以在新的线程池中或者现有的线程池中执行.如果任务无法提交执行，无论是因为该执行程序已关闭或因其容量已达到，该任务将由当前的RejectedExecutionHandler处理。</p>
-
-<pre><code class="language-java">public void execute(Runnable command) {
-    if (command == null)
-        throw new NullPointerException();
-    /*
-        * Proceed in 3 steps:
-        *
-        * 1. If fewer than corePoolSize threads are running, try to
-        * start a new thread with the given command as its first
-        * task.  The call to addWorker atomically checks runState and
-        * workerCount, and so prevents false alarms that would add
-        * threads when it shouldn't, by returning false.
-        * 如果正在运行的线程数少于corePoolSize，则将给定的command作为第一个任务来启动一个新线程(worker).
-        * addWorker()方法以原子方式检查runState(线程池状态)和workerCount(worker数量)，从而防止线程池在不能添加线程的情况下添加线程。
-        *
-        * 2. If a task can be successfully queued, then we still need
-        * to double-check whether we should have added a thread
-        * (because existing ones died since last checking) or that
-        * the pool shut down since entry into this method. So we
-        * recheck state and if necessary roll back the enqueuing if
-        * stopped, or start a new thread if there are none.
-        * 如果线程入队成功,还需要进行double-check确认是否可以添加新线程(因为现有线程在上一次检查之后已经died)或者进入该方法后线程池是否关闭了该线程.
-        * 如果有必要的话就回滚队列,否则就启动一个新的线程。
-        *
-        * 3. If we cannot queue task, then we try to add a new
-        * thread.  If it fails, we know we are shut down or saturated
-        * and so reject the task.
-        * 如果我们不能排队任务，那么我们尝试添加一个新线程。 如果添加失败，那么池已关闭或饱和，然后会拒绝任务。
-        */
-    int c = ctl.get();
-    if (workerCountOf(c) &lt; corePoolSize) {
-        //如果woker已经添加并且启动成功了直接返回
-        
-        if (addWorker(command, true))
-            return;
-        c = ctl.get();
+<pre><code class="language-go">package main
+import (
+    &quot;crypto/tls&quot;
+    &quot;flag&quot;
+    &quot;io&quot;
+    &quot;log&quot;
+    &quot;net&quot;
+    &quot;net/http&quot;
+    &quot;time&quot;
+)
+func handleTunneling(w http.ResponseWriter, r *http.Request) {
+    dest_conn, err := net.DialTimeout(&quot;tcp&quot;, r.Host, 10*time.Second)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusServiceUnavailable)
+        return
     }
-    //温馨提示:请先看addWorker方法,再回来看下来逻辑
-
-    if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
-        int recheck = ctl.get();
-        if (! isRunning(recheck) &amp;&amp; remove(command))
-            reject(command);
-        else if (workerCountOf(recheck) == 0)
-            addWorker(null, false);
+    w.WriteHeader(http.StatusOK)
+    hijacker, ok := w.(http.Hijacker)
+    if !ok {
+        http.Error(w, &quot;Hijacking not supported&quot;, http.StatusInternalServerError)
+        return
     }
-    else if (!addWorker(command, false))
-        reject(command);
+    client_conn, _, err := hijacker.Hijack()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusServiceUnavailable)
+    }
+    go transfer(dest_conn, client_conn)
+    go transfer(client_conn, dest_conn)
 }
-</code></pre>
-
-<blockquote>
-<p>这里需要提些概念，方便对下面内容的理解:</br>
-Woker: 当前线程池中的线程.</br>
-Task: 实现了Runnable,但是并非是线程,会被Worker调用run()方法</br>
-maximumPoolSize: 线程池最多能创建多少个worker</br>
-corePoolSize: 线程池的核心线程数量.当线程池满了时,并且workerQueue队列也满了时,
-还可以创建Worker去处理WorkerQueue队列中的task,但是不能超过maximumPoolSize。超过corePoolSize之外的线程会在空闲超时后终止。</p>
-</blockquote>
-
-<pre><code class="language-java">if (isRunning(c) &amp;&amp; workQueue.offer(command)) {
-    int recheck = ctl.get();
-    if (! isRunning(recheck) &amp;&amp; remove(command))
-        reject(command);
-    else if (workerCountOf(recheck) == 0)
-        addWorker(null, false);
-}else if (!addWorker(command, false))
-    reject(command);
-</code></pre>
-
-<p>这一段的意思是:</p>
-
-<ol>
-<li><p>如果前面第一次addWorker失败,然后线程池还是running状态,并且任务还可以添加到workQueue中成功,则再次校验线程池状态,如果非running状态并且将任务从workQueue中删除成功的话,直接拒绝策略。如果可运行线程为0的话,则添加firstTask为null的worker用于执行队列中的任务.</p></li>
-
-<li><p>如果线程池状态为非running状态,则直接丢弃任务.</p></li>
-
-<li><p>如果线程池为running状态，但是workQueue已满,则尝试基于maximumPoolSize大小添加worker.用该worker优先执行不在队列中的任务,然后再从任务队列中获取任务</p></li>
-
-<li><p>如果线程池为running状态，但是workQueue已满,而且线程池的大小已经大于等于maximumPoolSize,则执行拒绝策略</p></li>
-</ol>
-
-<blockquote>
-<p>由于workQueue是否可以添加任务影响execute方法的逻辑,所以ThreadPoolExecutor的实际运行状况跟workQueue的具体实现(是否是有界队列)有关</p>
-</blockquote>
-
-<h2 id="addworker-runnable-firsttask-boolean-core">addWorker(Runnable firstTask, boolean core)</h2>
-
-<pre><code class="language-java">/**
-    * Checks if a new worker can be added with respect to current
-    * pool state and the given bound (either core or maximum). If so,
-    * the worker count is adjusted accordingly, and, if possible, a
-    * new worker is created and started, running firstTask as its
-    * first task. This method returns false if the pool is stopped or
-    * eligible to shut down. It also returns false if the thread
-    * factory fails to create a thread when asked.  If the thread
-    * creation fails, either due to the thread factory returning
-    * null, or due to an exception (typically OutOfMemoryError in
-    * Thread.start()), we roll back cleanly.
-    * 根据线程池状态和给定的界限(核心或最大)检查是否可以添加新的worker.
-    * 如果可以添加的话,则调整相应的worker数量.如果可以的话,创建并启动新的woker,
-    * 并将firstTask作为其第一个任务. 如果线程池关闭或者状态为shutdown,则返回false.
-    * 如果线程工厂在被调用后未能创建新线程,该方法返回false.如果创建线程失败,或者由于线程工厂
-    * 返回Null,或者由于异常(一般是Thread.start()中的OutOfMemoryError)，该方法会干净的回滚队列
-    *
-    * @param firstTask the task the new thread should run first (or
-    * null if none). Workers are created with an initial first task
-    * (in method execute()) to bypass queuing when there are fewer
-    * than corePoolSize threads (in which case we always start one),
-    * or when the queue is full (in which case we must bypass queue).
-    * Initially idle threads are usually created via
-    * prestartCoreThread or to replace other dying workers.
-    * 新线程中的任务应该先运行(如果没有，则为null).当少于corePoolSize线程数(
-    * 在这种情况下，我们总是启动一个线程)或者队列已满时(这种情况下,我们必须绕过队列),创建
-    * 第一次任务的woker(在方法execute()方法中)以绕过队列.原来空闲的线程通常通过prestartCoreThread创建,
-    * 或者是替换其他垂死的worker.
-    *
-    * @param core 如果为true则使用corePoolSize来绑定，否则使用maximumPoolSize.
-    * @return true if successful
-    */
-private boolean addWorker(Runnable firstTask, boolean core) {
-    retry:
-    for (;;) {
-        int c = ctl.get();
-        int rs = runStateOf(c);//线程状态
-
-        // Check if queue empty only if necessary.
-        // 这里要结合上文的状态来看,
-        // 当线程池的状态大于等于SHUTDOWN时拒绝添加worker
-        // 当线程池状态等于SHUTDOWN时,并且workQueue为empty时也不允许添加firstTask为null的worker
-        // 注: 当线程池状态为SHUTDOWN,并且workQueue已满时是可以添加firstTask为null的worker,
-        // 这么做是为了让worker消费workQueue队列中的任务
-        if (rs &gt;= SHUTDOWN &amp;&amp;
-            ! (rs == SHUTDOWN &amp;&amp;
-                firstTask == null &amp;&amp;
-                ! workQueue.isEmpty()))
-            return false;
-
-        for (;;) {
-            int wc = workerCountOf(c);//worker数量
-            if (wc &gt;= CAPACITY ||
-                wc &gt;= (core ? corePoolSize : maximumPoolSize))
-                return false;
-            
-            if (compareAndIncrementWorkerCount(c))
-                break retry;
-            c = ctl.get();  // Re-read ctl
-            if (runStateOf(c) != rs)
-                continue retry;
-            // 如果由于workerCount更改CAS失败; 重试内部循环
-            // 重试时要再次校验线程池状态和workerCount,因为他们都可能已经发生了变化
+func transfer(destination io.WriteCloser, source io.ReadCloser) {
+    defer destination.Close()
+    defer source.Close()
+    io.Copy(destination, source)
+}
+func handleHTTP(w http.ResponseWriter, req *http.Request) {
+    resp, err := http.DefaultTransport.RoundTrip(req)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusServiceUnavailable)
+        return
+    }
+    defer resp.Body.Close()
+    copyHeader(w.Header(), resp.Header)
+    w.WriteHeader(resp.StatusCode)
+    io.Copy(w, resp.Body)
+}
+func copyHeader(dst, src http.Header) {
+    for k, vv := range src {
+        for _, v := range vv {
+            dst.Add(k, v)
         }
     }
-
-    //workerCount修改成功之后就要做添加woker操作了
-    boolean workerStarted = false;
-    boolean workerAdded = false;
-    Worker w = null;
-    try {
-        w = new Worker(firstTask);
-        final Thread t = w.thread;
-        if (t != null) {
-            final ReentrantLock mainLock = this.mainLock;
-            //在要对队列以及状态修改时加锁（因为workers是hashSet,非线程安全）
-            mainLock.lock();
-            try {
-                // Recheck while holding lock.
-                // Back out on ThreadFactory failure or if
-                // shut down before lock acquired.
-                int rs = runStateOf(ctl.get());
-                
-                //当线程池状态为RUNNING状态时或者状态为SHUTDOWN并且firstTask为null时(shutdown状态不接受新任务,但是任务为null时还是可以添加worker)
-                //可以添加worker
-                if (rs &lt; SHUTDOWN ||
-                    (rs == SHUTDOWN &amp;&amp; firstTask == null)) {
-                    // 预先检查t是否可以启动
-                    // 如果一个线程已经启动并且还没有死亡，那么这个线程是活着(alive)的
-                    if (t.isAlive()) 
-                        throw new IllegalThreadStateException();
-                    workers.add(w);
-                    int s = workers.size();
-                    if (s &gt; largestPoolSize)
-                        largestPoolSize = s;
-                    workerAdded = true;
-                }
-            } finally {
-                mainLock.unlock();
+}
+func main() {
+    var pemPath string
+    flag.StringVar(&amp;pemPath, &quot;pem&quot;, &quot;server.pem&quot;, &quot;path to pem file&quot;)
+    var keyPath string
+    flag.StringVar(&amp;keyPath, &quot;key&quot;, &quot;server.key&quot;, &quot;path to key file&quot;)
+    var proto string
+    flag.StringVar(&amp;proto, &quot;proto&quot;, &quot;https&quot;, &quot;Proxy protocol (http or https)&quot;)
+    flag.Parse()
+    if proto != &quot;http&quot; &amp;&amp; proto != &quot;https&quot; {
+        log.Fatal(&quot;Protocol must be either http or https&quot;)
+    }
+    server := &amp;http.Server{
+        Addr: &quot;:8888&quot;,
+        Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            if r.Method == http.MethodConnect {
+                handleTunneling(w, r)
+            } else {
+                handleHTTP(w, r)
             }
-            if (workerAdded) {//提供添加成功了就启动woker线程
-                t.start();
-                workerStarted = true;
-            }
-        }
-    } finally {
-        //1. 如果调用的线程工厂(在new Worker(firstTask)中调用)创建新的线程失败
-        //2. 添加woker启动失败
-        //3. 发生异常
-        //以上3种情况发生的话进入addWorkerFailed(w)逻辑
-        if (! workerStarted)
-            addWorkerFailed(w);
+        }),
+        // Disable HTTP/2.
+        TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
     }
-    return workerStarted;//返回woker是否启动成功的标记
-}
-</code></pre>
-
-<p>addWorkerFailed(Worker w)</p>
-
-<pre><code class="language-java">private void addWorkerFailed(Worker w) {
-    final ReentrantLock mainLock = this.mainLock;
-    mainLock.lock();
-    try {
-        if (w != null)
-            workers.remove(w);
-        decrementWorkerCount();
-        tryTerminate();
-    } finally {
-        mainLock.unlock();
+    if proto == &quot;http&quot; {
+        log.Fatal(server.ListenAndServe())
+    } else {
+        log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
     }
 }
 </code></pre>
 
-<p>这里主要是回滚队列和还原workerCount.并调用tryTerminate().</p>
+<blockquote>
+<p>提供的代码不是生产级解决方案。 它缺乏 处理<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#hbh">逐跳报头</a>，在两个连接之间复制数据或者通过net/http暴露数据时设置超时 - 在“<a href="https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/">The complete guide to Go net/http timeouts</a>”中可以查看到更多内容。</p>
+</blockquote>
 
-<h2 id="worker">Worker</h2>
+<p>我们的服务器在获取请求时将采取两种处理方式：处理HTTP或处理HTTP CONNECT隧道。 这是通过：</p>
 
-<p>我们先看Worker类的接口定义</p>
-
-<pre><code class="language-java">private final class Worker extends AbstractQueuedSynchronizer implements Runnable{
-    /**
-    * Creates with given first task and thread from ThreadFactory.
-    * @param firstTask the first task (null if none)
-    */
-    Worker(Runnable firstTask) {
-        setState(-1); // inhibit interrupts until runWorker
-        this.firstTask = firstTask;
-        this.thread = getThreadFactory().newThread(this);
+<pre><code class="language-go">http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodConnect {
+        handleTunneling(w, r)
+    } else {
+        handleHTTP(w, r)
     }
-    //省略.....
-}
+})
 </code></pre>
 
-<p>由此可见Worker继续了AQS并且实现了Runnable接口,所以Worker本身包含着任务信息(firstTask)以及线程(thread)</p>
+<p>handleHTTP不言自明是处理http的函数，所以让我们专注于处理隧道。 handleTunneling的第一部分是关于设置连接到目标服务器：</p>
 
-<h3 id="run">run()</h3>
-
-<p>由于Worker实现了Runnable接口,所以Worker类会实现run()方法,而addWorker(Runnable firstTask, boolean core)方法中的t.start()就会调用到Worker类的run方法。</p>
-
-<pre><code class="language-java">/** Delegates main run loop to outer runWorker  */
-public void run() {
-    runWorker(this);
-}
+<pre><code class="language-go">dest_conn, err := net.DialTimeout(&quot;tcp&quot;, r.Host, 10*time.Second)
+if err != nil {
+    http.Error(w, err.Error(), http.StatusServiceUnavailable)
+    return
+ }
+ w.WriteHeader(http.StatusOK)
 </code></pre>
 
-<p>总结: 在用submit()提交任务之后，会对线程池状态和当前线程数进行判断,如果当前的worker数量超过了corePoolSize并且任务队列已满则使用maximumPoolSize再次尝试添加worker,如果满足条件就会创建一个Worker,该Worker包含一个线程和一个第一任务信息(firstTask).添加成功后会将Woker加入现有工作线程池workers中,并且会立即start该worker的线程.而start方法会首先执行该Worker的firstTask(下篇博文会讲到)。所以如果addWork成功的话任务会被第一时间执行。如果添加失败的话会将任务添加到workQueue</p>
+<p>接下来，我们需要劫持一部分由HTTP Server维持的连接:</p>
 
-<p>本博文先讲到这,任务是如何执行的,如何回收的,我们下个博文见</p>
+<pre><code class="language-go">hijacker, ok := w.(http.Hijacker)
+    if !ok {
+        http.Error(w, &quot;Hijacking not supported&quot;, http.StatusInternalServerError)
+        return
+    }
+    client_conn, _, err := hijacker.Hijack()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusServiceUnavailable)
+    }
+</code></pre>
+
+<blockquote>
+<p><a href="https://golang.org/pkg/net/http/#Hijacker">Hijacker接口</a>允许接管连接。 之后，调用者负责管理这种连接（HTTP库不会负责）。</p>
+</blockquote>
+
+<p>一旦我们拿到两个TCP连接（客户端→代理，代理→目标服务器）之后，我们需要设置隧道：</p>
+
+<pre><code class="language-go">go transfer(dest_conn, client_conn)
+go transfer(client_conn, dest_conn)
+</code></pre>
+
+<p>在两个例程中，数据被复制到两个方向：从客户端到目标服务器并向后(backward)。</p>
+
+<h2 id="测试">测试</h2>
+
+<p>要测试我们的代理，您可以使用例如 Chrome:</p>
+
+<pre><code class="language-shell">&gt; Chrome --proxy-server=https://localhost:8888
+</code></pre>
+
+<p>或者<a href="https://github.com/curl/curl">Curl</a></p>
+
+<pre><code class="language-shell">&gt; curl -Lv --proxy https://localhost:8888 --proxy-cacert server.pem https://google.com
+</code></pre>
+
+<blockquote>
+<p>curl需要使用HTTPS代理支持（<a href="https://daniel.haxx.se/blog/2016/11/26/https-proxy-with-curl/">在7.52.0中引入</a>）来构建。</p>
+</blockquote>
+
+<h4 id="http-2">HTTP/2</h4>
+
+<p>在我们的服务器HTTP / 2支持已被故意删除，因为劫持不支持的。 更多信息可以查看<a href="https://github.com/golang/go/issues/14797#issuecomment-196103814">＃14797</a>。</p>
+
+<h3 id="更新">更新</h3>
+
+<p>请阅读<a href="https://medium.com/@mlowicki/https-proxies-support-in-go-1-10-b956fb501d6b关于对Go">https://medium.com/@mlowicki/https-proxies-support-in-go-1-10-b956fb501d6b关于对Go</a> 1.10中的HTTPS代理的支持。</p>
+
               
             </div>
           </div>
@@ -643,7 +480,7 @@ public void run() {
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-thread-pool/">Java Thread Pool</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/http-proxy/">http proxy</a>
 
                   </div>
                 
@@ -656,7 +493,7 @@ public void run() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180218_threadpoolexecutor2/" data-tooltip="ThreadPoolExecutor(二)">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -664,7 +501,7 @@ public void run() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180428_k8s_network_sc/" data-tooltip="记一次k8s的网络实践">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -691,7 +528,7 @@ public void run() {
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -736,7 +573,7 @@ public void run() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180218_threadpoolexecutor2/" data-tooltip="ThreadPoolExecutor(二)">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -744,7 +581,7 @@ public void run() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180428_k8s_network_sc/" data-tooltip="记一次k8s的网络实践">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -771,7 +608,7 @@ public void run() {
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -1072,9 +909,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180217_threadpoolexecutor\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20180529_http_proxy\/';
           
-            this.page.identifier = '\/20180217_threadpoolexecutor\/'
+            this.page.identifier = '\/20180529_http_proxy\/'
           
         };
         (function() {

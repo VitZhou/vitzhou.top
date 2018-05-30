@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20180529_http_proxy/</loc>
+    <lastmod>2018-05-29T18:51:42+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20180428_k8s_network_sc/</loc>
     <lastmod>2018-04-27T18:51:42+08:00</lastmod>
   </url>
@@ -58,6 +63,12 @@
   </url>
   
   <url>
+    <loc>https://vitzhou.top/categories/golang/</loc>
+    <lastmod>2018-05-29T18:51:42+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/tags/http-2/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
     <priority>0</priority>
@@ -66,6 +77,12 @@
   <url>
     <loc>https://vitzhou.top/categories/http-2/</loc>
     <lastmod>2018-03-21T20:41:02+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://vitzhou.top/tags/http-proxy/</loc>
+    <lastmod>2018-05-29T18:51:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -95,7 +112,7 @@
   
   <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
+    <lastmod>2018-05-29T18:51:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -143,7 +160,7 @@
   
   <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-04-27T18:51:42+08:00</lastmod>
+    <lastmod>2018-05-29T18:51:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
