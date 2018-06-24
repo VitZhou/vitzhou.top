@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>redis protocol</title>
+      <title>redis协议简介</title>
       <link>https://vitzhou.top/20180624_redis_protocol/</link>
       <pubDate>Sun, 24 Jun 2018 18:51:42 +0800</pubDate>
       
@@ -24,7 +24,7 @@
     </item>
     
     <item>
-      <title>redis protocol</title>
+      <title>redis协议读写</title>
       <link>https://vitzhou.top/20180624_redis_protocol_rw/</link>
       <pubDate>Sun, 24 Jun 2018 18:51:42 +0800</pubDate>
       
