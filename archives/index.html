@@ -370,21 +370,10 @@
                   Jun 6, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">redis协议简单介绍 摘自https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/
-Redis协议初学者指南 redis最好的特性之一就是他的协议,这就是Redis拥有大量的高质量客户端依赖库生态系统的原因之一. Redis协议非常简单，可以轻松构建实现Redis所有主要功能的客户端。 它的设计也使得编写快速高效的客户端库变得容易。
-什么是resp RESP（REdis序列化协议）是Redis客户端和服务器之间用于通过TCP相互通信的基于文本的协议的名称。 服务器和客户端之间的所有通信由五种基本类型组成：
- 简单的字符串:用于常见的服务器回复，如“OK”（成功写入命令之后）或“PONG”（PING命令的成功响应） 批量字符串: 返回几乎所有单值读取命令，例如GET，LPOP和HGET。 批量字符串与简单字符串不同之处在于它们可以包含任何内容 - 换行符，控制字符或甚至其他的&rdquo;RESP&rdquo;，所有这些都不会被转义或编码。 整型: 用作STRLEN，HLEN或BITCOUNT等任何类型的计数命令的回复。 数组:可以包含任意数量的RESP对象，包括其他数组。 这用于向服务器发送命令，以及用于返回多个元素（例如HGETALL，LRANGE或MGET）的任何回复 错误: 每当Redis在处理你的命令时遇到一个错误时返回.  在编写和读取RESP时，我们不必对我们的key或value进行任何转义或编解码。 我们唯一需要实际解析的RESP的部分是每个RESP对象附带的简单元数据.
-RESP是什么样的? 所有RESP对象都以一个前缀字符开头，并以一个行结束符（数组除外，它们不包含它们自己的行结束符）结束。 RESP对象的最简单示例是OK简单字符串响应：
-+OK\r\n   （RESP是一个人类可读的协议，但为了清楚起见，我将在所有RESP示例中明确地写出换行符（\ r \ n）。）
- 在上面的简单字符串中，+是简单字符串前缀，OK是简单字符串的主体，\ r \ n是标记此简单字符串结尾的行终止符。
-为了读取一个简单的字符串，我们读到下一个\r\n行结束符，返回前面的字节（直到+）作为返回的字符串。 这是可行的，因为RESP简单字符串不能包含任何换行符。
-错误和整数格式与简单字符串类似，但它们使用不同的前缀。 错误前缀为 - ：
--ERR unknown command 'GETT'\r\n  整数的前缀为&rsquo;:&rsquo;:
-:99\r\n  批量字符串是独一无二的，因为它们有两部分。 长度规格和主体：
-$13\r\nHello, World!\r\n  $是批量字符串前缀，13是实际字符串正文中的字节数，然后\r\n终止长度说明。 Hello,Word! 是13字节的字符串主体，并且也以\r\n结尾（这不是字符串主体的一部分）
-由于批量字符串容器为主体提供了精确的长度，因此我们永远不必解析实际的字符串主体以查找结尾 - 我们可以从套接字读取另外13个字节（加上最后一行终止符），而不检查字符串的内容。 这意味着我们可以在字符串正文中使用任何我们想要的数据，而无需编码或转义内容。
-数组也以长度指定开始，但是它的长度字段指示数组中对象的数量而不是数组内容中的字节数。
-*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n  在上面的例子中，我们有一个包含两个批量字符串（foo和bar）的数组。 尽管数组长度规范不允许我们在读取批量字符串时跳过前进的方式，但它确实使我们在客户端实现数组变得容易。 我们可以读取数组大小，读取更多的对象，然后返回最终数组中的所有对象。</div>
+              <div class="media-content hide-xs font-merryweather"><p>redis协议简单介绍
+摘自<a href="https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/">https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/</a></p>
+
+<p></p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -401,12 +390,10 @@ $13\r\nHello, World!\r\n  $是批量字符串前缀，13是实际字符串正文
                   Jun 6, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">读写redis协议 摘自https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/
-用go读写redis协议 在这篇文章中，我概述了Go中两个简单的Redis客户端组件，易于理解的实现，作为了解Redis协议如何工作以及如何发挥其优势的一种方式。
-如果您想在Go中寻找功能齐全且可投入使用的Redis客户端，我们建议您查看Gary Burd的redigo依赖库。
-在我们开始之前，请确保您阅读了我们对Redis协议的温和介绍 (上一篇博客)- 它涵盖了您需要了解的本指南的协议基础知识。
-一个RESP命令的写入 对于我们假设的Redis客户端，我们只需要编写一种对象：用于向Redis发送命令的批量字符串数组。 以下是一个命令转RESP的wirter简单实现：
-package redis import ( &quot;bufio&quot; &quot;io&quot; &quot;strconv&quot; // for converting integers to strings ) var ( arrayPrefixSlice = []byte{'*'} bulkStringPrefixSlice = []byte{'$'} lineEndingSlice = []byte{'\r', '\n'} ) type RESPWriter struct { *bufio.Writer } func NewRESPWriter(writer io.Writer) *RESPWriter { return &amp;RESPWriter{ Writer: bufio.NewWriter(writer), } } func (w *RESPWriter) WriteCommand(args ...string) (err error) { // 在数组中写入数组前缀和参数个数。 w.Write(arrayPrefixSlice) w.WriteString(strconv.Itoa(len(args))) w.Write(lineEndingSlice) // 为每个参数写一个批量字符串.</div>
+              <div class="media-content hide-xs font-merryweather"><p>读写redis协议
+摘自<a href="https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/">https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/</a></p>
+
+<p></p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
