@@ -6,10 +6,21 @@
     <description>Recent content on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 24 Jun 2018 18:51:42 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 29 Jun 2018 22:51:42 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Java 动态代理和CGLIB详解</title>
+      <link>https://vitzhou.top/20180629_java_proxy/</link>
+      <pubDate>Fri, 29 Jun 2018 22:51:42 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180629_java_proxy/</guid>
+      <description>&lt;p&gt;Java 动态代理和CGLIB详解&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>redis协议简介</title>
