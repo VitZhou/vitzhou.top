@@ -259,26 +259,26 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>Java 动态代理和CGLIB详解</p>
+              <p>今天我们聊聊java动态代理</p>
 
 <p>
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
 <ul>
-<li>
+<li><a href="#动态代理">动态代理</a>
 <ul>
-<li>
-<ul>
-<li><a href="#静态代理">静态代理</a>
+<li><a href="#静态代理">静态代理</a></li>
+<li><a href="#动态代理-1">动态代理</a>
 <ul>
 <li><a href="#jdk动态代理">jdk动态代理</a></li>
 <li><a href="#cglib">CGLIB</a></li>
 </ul></li>
 </ul></li>
-</ul></li>
 </ul>
 </nav></p>
 
-<h3 id="静态代理">静态代理</h3>
+<h1 id="动态代理">动态代理</h1>
+
+<h2 id="静态代理">静态代理</h2>
 
 <p>在日常生活中有这么一个场景,周末我一般都喜欢去看场电影.那么看电影之前肯定要先买电影票.传统的方式是去电影院买.于是乎就有了Cinema接口:</p>
 
@@ -343,11 +343,11 @@ public class CinemaStaticProxy implements Cinema {
 
 <p>以上这个例子就是一个简单的静态代理.静态代理是在编译器确定实现类的.静态代理的代表作就是AspectJ.</p>
 
-<p>###动态代理</p>
+<h2 id="动态代理-1">动态代理</h2>
 
 <p>那么动态代理是怎么实现呢？首先动态代理有两种实现方式:jdk的动态代理,以及cglib(Code Generation Library,字面意思是代码生成库)</p>
 
-<h4 id="jdk动态代理">jdk动态代理</h4>
+<h3 id="jdk动态代理">jdk动态代理</h3>
 
 <p>在jdk 1.3开始支持动态代理.那如果想要用jdk动态代理怎么实现上面的例子呢？需要实现一个InvocationHandler接口:</p>
 
@@ -641,7 +641,7 @@ public class CinemaStaticProxy implements Cinema {
 
 <p>这个就是aop就基本的原理.当然spring aop的实现肯定不是这么简单的.而且spring aop不仅适用了jdk的动态代理.还使用了cglib.是因为jdk的动态代理是基于实现接口InvocationHandler来实现的.如果没有实现这个接口就没办法了.但是CGLIB可以解决。</p>
 
-<h4 id="cglib">CGLIB</h4>
+<h3 id="cglib">CGLIB</h3>
 
 <p>//明天继续</p>
               
@@ -861,7 +861,7 @@ public class CinemaStaticProxy implements Cinema {
                   Jun 6, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>Java 动态代理和CGLIB详解</p></div>
+              <div class="media-content hide-xs font-merryweather"><p>今天我们聊聊java动态代理</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
