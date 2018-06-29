@@ -18,9 +18,7 @@
       
       <guid>https://vitzhou.top/20180624_redis_protocol/</guid>
       <description>&lt;p&gt;redis协议简单介绍
-摘自&lt;a href=&#34;https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/&#34;&gt;https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
+摘自&lt;a href=&#34;https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/&#34;&gt;https://www.redisgreen.net/blog/beginners-guide-to-redis-protocol/&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -30,9 +28,7 @@
       
       <guid>https://vitzhou.top/20180624_redis_protocol_rw/</guid>
       <description>&lt;p&gt;读写redis协议
-摘自&lt;a href=&#34;https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/&#34;&gt;https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
+摘自&lt;a href=&#34;https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/&#34;&gt;https://www.redisgreen.net/blog/reading-and-writing-redis-protocol/&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>
