@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Java 动态代理和CGLIB详解</title>
+    <title>Java 动态代理详解</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="java proxy cglib, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="java proxy, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -50,7 +50,7 @@
     <meta name="description" content="java proxy">
     <meta property="og:description" content="java proxy">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Java 动态代理和CGLIB详解">
+    <meta property="og:title" content="Java 动态代理详解">
     <meta property="og:url" content="/20180629_java_proxy/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
@@ -232,7 +232,7 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Java 动态代理和CGLIB详解
+      Java 动态代理详解
     </h1>
   
   
@@ -269,8 +269,10 @@
 <li><a href="#静态代理">静态代理</a></li>
 <li><a href="#动态代理-1">动态代理</a>
 <ul>
-<li><a href="#jdk动态代理">jdk动态代理</a></li>
+<li><a href="#jdk动态代理">jdk动态代理</a>
+<ul>
 <li><a href="#cglib">CGLIB</a></li>
+</ul></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -351,11 +353,11 @@ public class CinemaStaticProxy implements Cinema {
 
 <p>在jdk 1.3开始支持动态代理.那如果想要用jdk动态代理怎么实现上面的例子呢？需要实现一个InvocationHandler接口:</p>
 
-<pre><code class="language-java">public class CinemaInvocationHandler implements InvocationHandler {
+<pre><code class="language-java">public class CinemaProxy implements InvocationHandler {
 
     private Cinema cinema;
 
-    public CinemaInvocationHandler(Cinema cinema) {
+    public CinemaProxy(Cinema cinema) {
         this.cinema = cinema;
     }
 
@@ -604,15 +606,17 @@ public class CinemaStaticProxy implements Cinema {
 
 <p>至此它就生成了一个可以使用的代理对象.可以看出jdk的动态代理中使用了大量的反射。</p>
 
+<p>简单总结下,jdk动态代理会通过你所指定的接口(interfaces),InvocationHandler接口的实现类.动态的为你生成一个proxy对象。 有不少rpc,底层也是用了动态代理的.</p>
+
 <p>#### aop</p>
 
 <p>现在我们将CinemaInvocationHandler稍微改造一下:</p>
 
-<pre><code class="language-java">   public class CinemaInvocationHandler implements InvocationHandler {
+<pre><code class="language-java">   public class CinemaProxy implements InvocationHandler {
    
        private Cinema cinema;
    
-       public CinemaInvocationHandler(Cinema cinema) {
+       public CinemaProxy(Cinema cinema) {
            this.cinema = cinema;
        }
    
@@ -639,11 +643,56 @@ public class CinemaStaticProxy implements Cinema {
    after
 </code></pre>
 
-<p>这个就是aop就基本的原理.当然spring aop的实现肯定不是这么简单的.而且spring aop不仅适用了jdk的动态代理.还使用了cglib.是因为jdk的动态代理是基于实现接口InvocationHandler来实现的.如果没有实现这个接口就没办法了.但是CGLIB可以解决。</p>
+<p>这个就是aop就基本的原理.当然spring aop的实现肯定不是这么简单的.而且spring aop不仅适用了jdk的动态代理.还使用了cglib.是因为jdk的动态代理是需要被代理的类实现接口(Cinema).如果没有实现这个Cinema接口jdk自带的动态代理就束手无策了.那怎么办呢？ 这时候就需要用到CGLIB.</p>
 
-<h3 id="cglib">CGLIB</h3>
+<h4 id="cglib">CGLIB</h4>
 
-<p>//明天继续</p>
+<p>(这里只是简单介绍下,源码级的今天实在没时间，有空补上)</p>
+
+<p>首先,同样是有一个万达影城,但是它没有实现Cinema接口:</p>
+
+<pre><code class="language-java">public class WdCGLIBCinema {
+    public void buy() {
+        System.out.println(&quot;这里是万达影城,欢迎购票&quot;);
+    }
+}
+</code></pre>
+
+<p>那这种情况jdk的动态代理就束手无策了.这时候就需要用到cglib.   cglib是使用ASM框架直接对字节码修改的.需要注意的是它是使用继承方式来实现.也就是说被代理的类不能是final的.</p>
+
+<blockquote>
+<p>ASM 是一个 Java 字节码操控框架。它能够以二进制形式修改已有类或者动态生成类。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。ASM 从类文件中读入信息后，能够改变类行为，分析类信息，甚至能够根据用户要求生成新类。</p>
+</blockquote>
+
+<p>它实现代理的方式是实现一个MethodInterceptor接口:</p>
+
+<pre><code class="language-java">public class CglibProxy implements MethodInterceptor {
+
+    public Object intercept(Object obj, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+        System.out.println(&quot;这里是淘票票,现在帮你在电影院买票&quot;);
+        return methodProxy.invokeSuper(obj, objects);
+    }
+}
+</code></pre>
+
+<p>所以现在代理的使用方式又换了:</p>
+
+<pre><code class="language-java">public class WdCGLIBCinemaTest {
+
+    @Test
+    public void setBuy() {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(WdCGLIBCinema.class);
+        enhancer.setCallback(new CglibProxy());
+       
+
+        WdCGLIBCinema cinema= (WdCGLIBCinema)enhancer.create();
+        cinema.buy();
+    }
+}
+</code></pre>
+
+<p>Enhancer可以指定代理类.以及回调类.然后调用create()方法代理对象.并将所有非final的方法传递给<strong>MethodInterceptor.intercept()</strong>方法.然后我们就可以在intercept()方法中加入任何我想要的逻辑了.比如日志.修改参数等。</p>
               
             </div>
           </div>
@@ -854,7 +903,7 @@ public class CinemaStaticProxy implements Cinema {
             
             <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20180629_java_proxy/">
-                <h3 class="media-heading">Java 动态代理和CGLIB详解</h3>
+                <h3 class="media-heading">Java 动态代理详解</h3>
               </a>
               <span class="media-meta">
                 <span class="media-date text-small">
