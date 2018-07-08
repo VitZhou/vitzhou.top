@@ -30,6 +30,15 @@
     </item>
     
     <item>
+      <title>Java Juc</title>
+      <link>https://vitzhou.top/tags/java-juc/</link>
+      <pubDate>Sun, 08 Jul 2018 12:51:42 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/tags/java-juc/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Java Proxy</title>
       <link>https://vitzhou.top/tags/java-proxy/</link>
       <pubDate>Fri, 29 Jun 2018 22:51:42 +0800</pubDate>
@@ -53,15 +62,6 @@
       <pubDate>Fri, 27 Apr 2018 18:51:42 +0800</pubDate>
       
       <guid>https://vitzhou.top/tags/k8s/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Redis Protocol</title>
-      <link>https://vitzhou.top/tags/redis-protocol/</link>
-      <pubDate>Sun, 24 Jun 2018 18:51:42 +0800</pubDate>
-      
-      <guid>https://vitzhou.top/tags/redis-protocol/</guid>
       <description></description>
     </item>
     

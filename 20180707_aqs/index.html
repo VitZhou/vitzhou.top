@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Spring Cloud Config自动刷新机制</title>
+    <title>详读J.U.C系列(1)之AQS</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="Spring Cloud, Spring Cloud Config, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="java JUC, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="spring cloud config自动生效流程">
-    <meta property="og:description" content="spring cloud config自动生效流程">
+    <meta name="description" content="java J.U.C">
+    <meta property="og:description" content="java J.U.C">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Spring Cloud Config自动刷新机制">
-    <meta property="og:url" content="/2018-02-spring-cloud-refresh-context/">
+    <meta property="og:title" content="详读J.U.C系列(1)之AQS">
+    <meta property="og:url" content="/20180707_aqs/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="spring cloud config自动生效流程">
+    <meta name="twitter:description" content="java J.U.C">
     
     
 
@@ -67,7 +67,7 @@
     
 
     
-      <meta property="og:image" content="https://vitzhou.top/img/spring-cloud/banner.jpeg">
+      <meta property="og:image" content="https://vitzhou.top/img/2018/richu.jpeg">
     
     
     
@@ -232,15 +232,15 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Spring Cloud Config自动刷新机制
+      详读J.U.C系列(1)之AQS
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-06T14:31:23&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-07-08T12:51:42&#43;08:00">
         
-  二月 6, 2018
+  七月 8, 2018
 
       </time>
     
@@ -249,7 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud">Spring Cloud</a>
+      <a class="category-link" href="https://vitzhou.top/categories/java-juc">java JUC</a>
     
   
 
@@ -259,353 +259,497 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>Spring Cloud Config自动刷新的主要流程
-</p>
+              
 
-<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#spring-cloud-config的小坑">Spring Cloud Config的小坑</a></li>
-<li><a href="#关于git">关于git</a></li>
-<li><a href="#自动刷新配置">自动刷新配置</a></li>
-<li><a href="#源码">源码</a>
-<ul>
-<li><a href="#config-server">config server</a></li>
-<li><a href="#config-client">config client</a>
-<ul>
-<li><a href="#添加配置到environment的细节实现">添加配置到Environment的细节实现</a></li>
-<li><a href="#处理environmentchangeevent事件">处理EnvironmentChangeEvent事件</a></li>
-<li><a href="#scope刷新">scope刷新</a></li>
-</ul></li>
-</ul></li>
-</ul></li>
-</ul>
-</nav>
+<h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2>
 
-<h2 id="spring-cloud-config的小坑">Spring Cloud Config的小坑</h2>
+<p>今天起,不间断的读J.U.C.以及DOCKER和k8s。
+&gt; jdk 1.8</p>
+
+<h3 id="aqs-abstractqueuedsynchronizer">AQS(AbstractQueuedSynchronizer)</h3>
+
+<p>整个J.U.C的核心框架就在AQS。我们常用的ConcurrentHashMap等实现都是基于这个类来实现的。那么我们看懂了这个类就看懂了一半J.U.C类库。</p>
 
 <blockquote>
-<p>本文是基于spring-cloud-netflix 1.4.0.RELEASE版本</p>
+<p>看本文之前,请先了解jvm内存模型,以及原子性,可见性,cas等知识(有时间的话,我会补上这一部分),内容有点多,来个葛优躺慢慢看.这篇文章会介绍AQS的所有方法.但是由于AQS是需要子类才能提供可使用的同步器.所以这些方法都是零散的,它们之间的关联性会比较低.但是没有关系,只希望大家对各个方法有印象.在接下来的文章中,将会使用这些方法实现各种功能。</p>
 </blockquote>
 
-<p>在做demo时遇到了个不大不小的坑:
-<em>Spring Cloud Config</em> 的客户端的配置文件不能用&rdquo;application.yml&rdquo;而需要改为&rdquo;bootstrap.yml&rdquo;,否则即便你所有的参数都配对了,你在使用@Value注入配置时也会抛出Could not resolve placeholder···异常。</p>
+<h3 id="读源码">读源码</h3>
 
-<h2 id="关于git">关于git</h2>
+<p>我们先来看下这个类的注解,了解设计的初衷,大意如下:
+1. 提供一个框架，用于实现依赖于先进先出（FIFO）等待队列的阻塞锁和同步器（信号量，事件等）.AQS是大多数同步器的基础.它依赖于单个原子int值表示状态.继承它的子类必须定义更改此状态的受保护的方法，并且要根据获取和释放动作定义状态的语义.该类的方法负责排队和阻塞,子类负责维护状态字段，但是子类仅保证使用getState,setState,compareAndSetState操作同步int值.应将子类定义为非公共内部帮助程序类，用于实现其封闭类的同步属性。类AbstractQueuedSynchronizer未实现任何同步接口。相反，它定义了acquireInterruptibly等方法，可以通过具体的锁和相关的同步器来适当调用它们来实现它们的公共方法
+2. 此类默认支持独占和共享模式.在独占模式下,其他线程尝试获取锁将不会成功.共享模式下,其他线程尝试获取是可能成功的.如果一个线程获取了锁,其他线程尝试获取的话还要判断他是否可以获取.在不同模式下的线程共享FIFO队列.通常，实现子类仅支持这些模式中的一种，但两者都可以在ReadWriteLock中发挥作用。仅支持独占模式或仅支持共享模式的子类无需定义支持未使用模式的方法。
+3. 此类定义了一个嵌套的ConditionObject类.子类可以通过isHeldExclusively获取是否执行独占模式，使用getState获取当前线程的状态对象值,调用的方法release完全释放此对象，并且acquire，给定此保存的状态值，最终将此对象恢复到其先前获取的状态。否则，AbstractQueuedSynchronizer方法会创建这样的条件，因此如果无法满足此约束，请不要使用它。 ConditionObject的行为取决于其同步器实现的语义。
+4. 此类提供内部队列的检查，检测和监视方法，以及condition对象的类似方法。这些可以根据需要使用AbstractQueuedSynchronizer导出到类中，用于它们的同步机制.
+5. 此类的序列化仅存储原子整数(状态属性)，因此反序列化对象具有空线程队列。需要可序列化的子类需要定义readObject方法，该方法在反序列化时将其恢复为已知的初始状态.
+&hellip;..后面的省略</p>
 
-<p>为何spring cloud config会使用git作为存储配置的仓库呢？我想有以下几个考虑点:</p>
+<h4 id="abstractownablesynchronizer">AbstractOwnableSynchronizer</h4>
 
-<ol>
-<li>git自带版本控制</li>
-<li>git自带的branch可以用来支持配置中心的多环境(比如dev,test)</li>
-<li>git自带回滚功能</li>
-<li>git除了key:value之外还可以存储文件</li>
-</ol>
+<pre><code class="language-java">public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable
+</code></pre>
 
-<p>但是也由于Git本身没有事件通知机制所以需要依赖mq来通知各个客户端(而且也只是通知说有配置更新,还需要一次网络交互才能获取到新配置)。总而言之使用git可以带来一些便利,但是也增加了架构的复杂度(需要多一个mq中间件,这也是很多人诟病它的一点吧？)</p>
+<p>从代码可以看出AQS是一个抽象的(abstract),可序列化的类.并且继承自AbstractOwnableSynchronizer.我们再看下AbstractOwnableSynchronizer。</p>
 
-<h2 id="自动刷新配置">自动刷新配置</h2>
+<pre><code class="language-java">public abstract class AbstractOwnableSynchronizer
+    implements java.io.Serializable {
 
-<p>流程:
-<img src="https://vitzhou.top/img/spring-cloud/spring-cloud-config.jpg" alt="" /></p>
+    private static final long serialVersionUID = 3737899427754241961L;
 
-<p><a href="git@github.com:VitZhou/spring-cloud-demo.git">这里</a>是我做的demo,使用了rabbitmq来做消息队列.</p>
+    protected AbstractOwnableSynchronizer() { }
 
-<h2 id="源码">源码</h2>
+    /**
+     * 独占模式下锁的当前拥有者
+     */
+    private transient Thread exclusiveOwnerThread;
 
-<h3 id="config-server">config server</h3>
+    /**
+     * 设置当前拥有独占访问权限的线程。 {@code null}参数表示没有线程拥有访问权限。 此方法不会强制执行任何同步或{@code volatile}字段访问。
+     */
+    protected final void setExclusiveOwnerThread(Thread thread) {
+        exclusiveOwnerThread = thread;
+    }
 
-<p>由上图可知当更新配置之后git会通过webhook调用/bus/refresh接口。 这是自动刷新配置的入口,代码如下:</p>
-
-<pre><code class="language-java">@ManagedResource
-public class RefreshBusEndpoint extends AbstractBusEndpoint {
-	//省略部分不重要代码
-
-	@RequestMapping(value = &quot;refresh&quot;, method = RequestMethod.POST)
-	@ResponseBody
-	@ManagedOperation
-	public void refresh(
-			@RequestParam(value = &quot;destination&quot;, required = false) String destination) {
-		publish(new RefreshRemoteApplicationEvent(this, getInstanceId(), destination));
-	}
+    /**
+     * Returns the thread last set by {@code setExclusiveOwnerThread},
+     * or {@code null} if never set.  This method does not otherwise
+     * impose any synchronization or {@code volatile} field accesses.
+     * @return the owner thread
+     */
+    protected final Thread getExclusiveOwnerThread() {
+        return exclusiveOwnerThread;
+    }
 }
 </code></pre>
 
-<p>当调用了该接口时,会发送一个RefreshRemoteApplicationEvent事件。config server和config client都监听了该事件(也就是说config server也是可以刷新配置的)。</p>
+<p>可见,此类可以设置当前锁有的持有者线程.</p>
 
-<h3 id="config-client">config client</h3>
+<h4 id="node">Node</h4>
 
-<p>事件的监听:</p>
+<p>前面注释中有讲到AQS用到了FIFO先进先出队列.为了实现这个队列,AQS定义了一个静态内部类Node.</p>
 
-<pre><code class="language-java">public class RefreshListener implements ApplicationListener&lt;RefreshRemoteApplicationEvent&gt; {
-    //省略部分不重要代码
-	@Override
-	public void onApplicationEvent(RefreshRemoteApplicationEvent event) {
-		Set&lt;String&gt; keys = contextRefresher.refresh();
-		log.info(&quot;Received remote refresh request. Keys refreshed &quot; + keys);
-	}
-}
-</code></pre>
+<pre><code class="language-java">static final class Node {
+        /** 表示节点在共享模式(允许多个线程持有一把锁)中等待 */
+        static final Node SHARED = new Node();
+        /** 表示节点在独占模式(只能一个线程持有锁)中等待 */
+        static final Node EXCLUSIVE = null;
 
-<p>当发生RefreshRemoteApplicationEvent事件时会调用ContextRefresher的refresh()方法.该方法的主要内容如下</p>
+        /** 表示线程已取消 */
+        static final int CANCELLED =  1;
+        /** 表示下一个节点的线程需要唤醒 */
+        static final int SIGNAL    = -1;
+        /** 表示线程正在等待某个条件 */
+        static final int CONDITION = -2;
+        /**
+         * waitStatus value to indicate the next acquireShared should unconditionally propagate
+         * 大致意思是说如果waitStatus为-3的话,那么下一次共享模式获取锁的时候应该无条件的向后继节点传播
+         */
+        static final int PROPAGATE = -3;
 
-<pre><code class="language-java">public synchronized Set&lt;String&gt; refresh() {
-    Map&lt;String, Object&gt; before = extract(
-            this.context.getEnvironment().getPropertySources());
-    addConfigFilesToEnvironment();
-    Set&lt;String&gt; keys = changes(before,
-            extract(this.context.getEnvironment().getPropertySources())).keySet();
-    this.context.publishEvent(new EnvironmentChangeEvent(keys));
-    this.scope.refreshAll();
-    return keys;
-}
-</code></pre>
+        /**
+         * Status字段仅接受如下状态值:
+         *   SIGNAL:     节点的后继者是阻塞的,所以当前节点被释放或者取消时必须unpark其后继者.
+         *   			 为了避免竞争,acquire方法必须首先指示它们需要的信号，
+         *   			 然后重试原子获取，然后在失败时阻塞
+         *   CANCELLED:  该节点由于超时或终端,它将被CANCELLED.节点将永远不会离开该状态.
+         *   			而且状态为CANCELLED的节点的线程,永远不会再次阻塞。
+         *   CONDITION:  此节点当前处于CONDITION队列中。在传输之前，它不会用作同步队列节点，此时状态
+         *   			 将设置为0.此处使用此值与字段的其他用法无关，但可简化机制。）
+         *   PROPAGATE:  releaseShared应该传播到其他节点。在doReleaseShared中设置
+         *   			（仅限头节点）以确保继续传播，即使其他操作已经介入。
+         *   0:          以上都不是
+         *
+         * 值以数字方式排列以简化使用。非负值意味着节点不需要发信号。因此，大多数代码不需要检查特定值，仅用于符号。
+         *
+         * 对于正常的同步节点，该字段初始化为0，对于条件节点，该字段初始化为CONDITION。
+         * 它使用CAS（或可能的情况下，无条件的易失性写入）进行修改
+         */
+        volatile int waitStatus;
 
-<p></br ></p>
+        /**
+         * 当前节点的前节点,用于检查waitStatus.在入队时设置,出队时取消.header节点永远不会成为cancelled状态.
+         * 因为一个节点仅在获取锁成功时成为header节点.cancelled节点永远不能acquire成功.并且线程仅能取消自身节点。
+         */
+        volatile Node prev;
 
-<ol>
-<li>从上下文指定的环境(对应profile)中的所有配置资源中提取配置(除了standardSources之外的配置)</li>
-</ol>
+        /**
+         * 当前节点的下一个节点,在当前节点释放时取消park的下一个节点.enq操作时不分配next字段，
+         * 直到该节点附加到队列中才分配.所以如果看到null值的next并不表示该节点为尾节
+         * 点.cancelled的节点的next指向本身而不是null
+         */
+        volatile Node next;
 
-<pre><code class="language-java">private Set&lt;String&gt; standardSources = new HashSet&lt;&gt;(
-            Arrays.asList(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME,
-                    StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
-                    StandardServletEnvironment.JNDI_PROPERTY_SOURCE_NAME,
-                    StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME,
-                    StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME));
-</code></pre>
+        /**
+         * 当前节点的线程.使用后取消
+         */
+        volatile Thread thread;
 
-<ol>
-<li>添加配置文件到Environment(这一步比较重要需要细聊,下一小结详解)</li>
-<li>发送一个EnvironmentChangeEvent事件</li>
-<li>刷新当前context的scope</li>
-</ol>
+        /**
+         * 连接到等待condition的下一个节点
+         */
+        Node nextWaiter;
 
-<h4 id="添加配置到environment的细节实现">添加配置到Environment的细节实现</h4>
-
-<pre><code class="language-java">ConfigurableApplicationContext addConfigFilesToEnvironment() {
-        ConfigurableApplicationContext capture = null;
-        try {
-            //拷贝环境
-            StandardEnvironment environment = copyEnvironment(
-                    this.context.getEnvironment());
-            //1
-            SpringApplicationBuilder builder = new SpringApplicationBuilder(Empty.class)
-                    .bannerMode(Mode.OFF).web(false).environment(environment);
-            // Just the listeners that affect the environment (e.g. excluding logging
-            // listener because it has side effects)
-            builder.application()
-                    .setListeners(Arrays.asList(new BootstrapApplicationListener(),
-                            new ConfigFileApplicationListener()));
-            capture = builder.run();
-            //2
-            if (environment.getPropertySources().contains(REFRESH_ARGS_PROPERTY_SOURCE)) {
-                environment.getPropertySources().remove(REFRESH_ARGS_PROPERTY_SOURCE);
-            }
-            MutablePropertySources target = this.context.getEnvironment()
-                    .getPropertySources();
-            String targetName = null;
-            for (PropertySource&lt;?&gt; source : environment.getPropertySources()) {
-                String name = source.getName();
-                if (target.contains(name)) {
-                    targetName = name;
-                }
-                if (!this.standardSources.contains(name)) {
-                    if (target.contains(name)) {
-                        target.replace(name, source);
-                    }
-                    else {
-                        if (targetName != null) {
-                            target.addAfter(targetName, source);
-                        }
-                        else {
-                            // targetName was null so we are at the start of the list
-                            target.addFirst(source);
-                            targetName = name;
-                        }
-                    }
-                }
-            }
-            //3
+        /**
+         * 如果返回true则表示共享模式
+         */
+        final boolean isShared() {
+            return nextWaiter == SHARED;
         }
-        finally {
-            ConfigurableApplicationContext closeable = capture;
-            while (closeable != null) {
-                try {
-                    closeable.close();
-                }
-                catch (Exception e) {
-                    // Ignore;
-                }
-                if (closeable.getParent() instanceof ConfigurableApplicationContext) {
-                    closeable = (ConfigurableApplicationContext) closeable.getParent();
-                }
-                else {
-                    break;
-                }
-            }
+
+        /**
+         * 返回上一个节点，如果为null则抛出NullPointerException
+         */
+        final Node predecessor() throws NullPointerException {
+            Node p = prev;
+            if (p == null)
+                throw new NullPointerException();
+            else
+                return p;
         }
-        return capture;
+
+        Node() {    // 用于建立初始head节点或SHARED标记
+        }
+
+        Node(Thread thread, Node mode) {     // Used by addWaiter
+            this.nextWaiter = mode;
+            this.thread = thread;
+        }
+
+        Node(Thread thread, int waitStatus) { // Used by Condition
+            this.waitStatus = waitStatus;
+            this.thread = thread;
+        }
     }
 </code></pre>
 
-<ol>
-<li>拷贝环境(只是从main环境中拷贝默认配置源和profile)</li>
+<p>AQS使用Node类来实现阻塞同步队列.结合AQS中的几个其他属性构成如下结构:
+<img src="../../static/img/juc/fifo.png" alt="" />
+其中head,state,tail定义如下:</p>
 
-<li><p>从注释1到注释2之间发生了很有意思的事(实在不知道说什么好):</p>
+<pre><code class="language-java">	/**
+    * 等待队列的head节点.仅通过setHead方法修改.如果存在head。则保证state不为cancelled
+    */
+    private transient volatile Node head;
 
-<ol>
-<li>首先他会创建一个新的SpringApplicationBuild出来</li>
-<li>然后通过build.run()方法创建一个新的ConfigurableApplicationContext出来
-为何这么做呢？这又涉及到另外一个类:PropertySourceBootstrapConfiguration,先看下这个类实现的接口:
-<br /></li>
-</ol>
+    /**
+     * 等待队列的队尾节点.延迟初始化,仅在enq方法中添加新节点
+     */
+    private transient volatile Node tail;
 
-<pre><code class="language-java">public class PropertySourceBootstrapConfiguration implements
-        ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt;, Ordered
+    /**
+     * 同步状态
+     */
+    private volatile int state;
 </code></pre>
 
-<p>由于他实现了ApplicationContextInitializer<ConfigurableApplicationContext>接口,所以当ConfigurableApplicationContext初始化时会调用它的public void initialize(ConfigurableApplicationContext applicationContext)方法:</p>
+<h4 id="sethead-出对操作">setHead 出对操作</h4>
 
-<pre><code class="language-java">public void initialize(ConfigurableApplicationContext applicationContext) {
-        CompositePropertySource composite = new CompositePropertySource(
-                BOOTSTRAP_PROPERTY_SOURCE_NAME);
-        AnnotationAwareOrderComparator.sort(this.propertySourceLocators);
-        boolean empty = true;
-        ConfigurableEnvironment environment = applicationContext.getEnvironment();
-        for (PropertySourceLocator locator : this.propertySourceLocators) {
-            PropertySource&lt;?&gt; source = null;
-            source = locator.locate(environment);
-            if (source == null) {
-                continue;
+<pre><code class="language-java">private void setHead(Node node) {
+    head = node;
+    node.thread = null;
+    node.prev = null;
+}
+</code></pre>
+
+<p>仅从上面的代码看,是很难理解AQS是怎么出对的.因为这段代码只是表达了将新节点设置为head,并将thread和prev设置为null而已。以前的head节点(即要被移除队列的节点)的操作在这里并没有表达出来.这里大家只需要记住一点.如果要做出队操作的话基本都会调用该方法.我们再之后的代码中会看到具体是怎么出队的</p>
+
+<h4 id="enq-入队操作">enq 入队操作</h4>
+
+<pre><code class="language-java">private Node enq(final Node node) {
+    for (;;) {//自旋,直到成功加入队尾
+        Node t = tail;
+        if (t == null) { // 初始化队列,设置一个空节点为head节点,并将tail也指向该节点
+            if (compareAndSetHead(new Node()))
+                tail = head;
+        } else {
+        	//正常流程,将节点加到队尾.
+            node.prev = t;
+            if (compareAndSetTail(t, node)) {
+                t.next = node;
+                return t;
             }
-            logger.info(&quot;Located property source: &quot; + source);
-            composite.addPropertySource(source);
-            empty = false;
         }
-    //省略部分代码
-}
-</code></pre>
-
-<p>最重要的一步是locator.locate(environment),该方法如下(ConfigServicePropertySourceLocator类):</p>
-
-<pre><code class="language-java">@Override
-    @Retryable(interceptor = &quot;configServerRetryInterceptor&quot;)
-    public org.springframework.core.env.PropertySource&lt;?&gt; locate(
-            org.springframework.core.env.Environment environment) {
-        ConfigClientProperties properties = this.defaultProperties.override(environment);
-        CompositePropertySource composite = new CompositePropertySource(&quot;configService&quot;);
-        RestTemplate restTemplate = this.restTemplate == null ? getSecureRestTemplate(properties)
-                : this.restTemplate;
-        Exception error = null;
-        String errorBody = null;
-        logger.info(&quot;Fetching config from server at: &quot; + properties.getRawUri());
-        try {
-            String[] labels = new String[] { &quot;&quot; };
-            if (StringUtils.hasText(properties.getLabel())) {
-                labels = StringUtils.commaDelimitedListToStringArray(properties.getLabel());
-            }
-    
-            String state = ConfigClientStateHolder.getState();
-    
-            // Try all the labels until one works
-            for (String label : labels) {
-                Environment result = getRemoteEnvironment(restTemplate,
-                        properties, label.trim(), state);
-//省略不重要的代码
-}
-</code></pre>
-
-<p>该方法主要是从远程获取Environment(其实际就是发送了个rest request到config server),因为该方法不允许失败,所以还添加@Retryable注解(在失败时重试)</p></li>
-
-<li><p>从注释2到3主要是将从远程获取的Environment和当前上下文的Environment做比较,当前Environment有的属性就替换,没有的就新增到当前的Environment中</p></li>
-
-<li><p>最后需要close掉新建出来的ConfigurableApplicationContext。</p></li>
-</ol>
-
-<p>总结一下: config client为了能去远程获取Environment,创建了一个ConfigurableApplicationContext,用来触发ConfigServicePropertySourceLocator的locate方法,随后将新的配置更新到当前环境中，并关闭ConfigurableApplicationContext。</p>
-
-<h4 id="处理environmentchangeevent事件">处理EnvironmentChangeEvent事件</h4>
-
-<p>ConfigurationPropertiesRebinder:</p>
-
-<pre><code class="language-java">@Override
-public void onApplicationEvent(EnvironmentChangeEvent event) {
-    rebind();
-}
-@ManagedOperation
-public void rebind() {
-    this.errors.clear();
-    for (String name : this.beans.getBeanNames()) {
-        rebind(name);
     }
 }
+private static final long tailOffset = unsafe.objectFieldOffset
+                (AbstractQueuedSynchronizer.class.getDeclaredField(&quot;tail&quot;));
+private final boolean compareAndSetTail(Node expect, Node update) {
+    return unsafe.compareAndSwapObject(this, tailOffset, expect, update);
+}
+</code></pre>
 
-@ManagedOperation
-public boolean rebind(String name) {
-    if (!this.beans.getBeanNames().contains(name)) {
-        return false;
+<p>unsafe.objectFieldOffset这个方法可以获取属性相对于对象在内存中的偏移量.而compareAndSetTail方法会比较aqs的tailOffset内存偏移处属性tail是否是expect,如果是则将tail属性更新为update.注意这里只是将node设置到tail属性,并不是入队成功.入队成功是在t.next=node这一步完成的。之前的尾节点的next指向当前节点node.才形成链表,入队成功。</p>
+
+<h4 id="addwaiter-node-mode-添加waiter节点">addWaiter(Node mode) 添加waiter节点</h4>
+
+<pre><code class="language-java">private Node addWaiter(Node mode) {
+    Node node = new Node(Thread.currentThread(), mode);
+    // 尝试快速enq操作,如果失败的话进入完整的enq操作.
+    Node pred = tail;
+    if (pred != null) {//
+        node.prev = pred;
+        if (compareAndSetTail(pred, node)) {
+            pred.next = node;
+            return node;
+        }
     }
-    if (this.applicationContext != null) {
-        try {
-            Object bean = this.applicationContext.getBean(name);
-            if (AopUtils.isCglibProxy(bean)) {
-                bean = getTargetObject(bean);
+    enq(node);
+    return node;
+}
+</code></pre>
+
+<p>根据传入的mode(Node.EXCLUSIVE,Node.SHARED)参数，为当前线程创建节点并将其加入队列. 可以看到该方法首先会尝试一次cas操作.失败之后再进入enq方法进行自旋。因为大多数情况下多线程之间是不会发送竞争的.所以大多数情况下会在第一次cas操作就将节点入队成功了.从而省去了自旋对cpu的消耗.</p>
+
+<h4 id="unparksuccessor-node-node-唤醒后继节点">unparkSuccessor(Node node)  唤醒后继节点</h4>
+
+<pre><code class="language-java">private void unparkSuccessor(Node node) {
+    /*
+     * 如果为负数(即需要等待信号或者条件).则尝试清除预期信号
+     */
+    int ws = node.waitStatus;
+    if (ws &lt; 0)
+        compareAndSetWaitStatus(node, ws, 0);
+
+    /*
+     * 取消挂起线程,通常是在下一个节点。但是如果下一个节点是CANCELLED状态或者为null.则需要从队尾向前搜索不是CANCELLED状态的节点
+     */
+    Node s = node.next;
+    if (s == null || s.waitStatus &gt; 0) {
+        s = null;
+        //从队尾向前遍历前缀节点直到找到非CANCELLED的节点
+        for (Node t = tail; t != null &amp;&amp; t != node; t = t.prev)
+            if (t.waitStatus &lt;= 0)
+                s = t;
+    }
+    //唤醒非cancelled节点的线程.
+    if (s != null)
+        LockSupport.unpark(s.thread);
+}
+</code></pre>
+
+<blockquote>
+<p>LockSupport这个类改天专门聊</p>
+</blockquote>
+
+<p>唤醒操作会遍历出后继节点中没有被取消的线程.</p>
+
+<h4 id="共享模式下的释放操作">共享模式下的释放操作</h4>
+
+<pre><code class="language-java"> 	//共享模式的释放操作.并确保信号向后继节点传播
+    private void doReleaseShared() {
+        for (;;) {
+            Node h = head;
+            //队列不为空且有后继节点
+            if (h != null &amp;&amp; h != tail) {
+                int ws = h.waitStatus;
+                //如果head节点的状态为SIGNAL,则将其状态改为0，并唤醒它的后继节点
+                if (ws == Node.SIGNAL) {//SIGNAL状态表示该节点需要唤醒.
+                    if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))//状态修改失败的话重试
+                        continue;            // loop to recheck cases
+                    unparkSuccessor(h);
+                }
+                //如果head节点状态为0,则将其改为PROPAGATE。失败重试
+                else if (ws == 0 &amp;&amp;
+                         !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                    continue;                // loop on failed CAS
             }
-            this.binder.postProcessBeforeInitialization(bean, name);
-            this.applicationContext.getAutowireCapableBeanFactory()
-                    .initializeBean(bean, name);
-            return true;
+            if (h == head)                   // loop if head changed
+                break;
         }
-        catch (RuntimeException e) {
-            this.errors.put(name, e);
-            throw e;
+    }
+	//简单来说就是出队,并且唤醒后续节点
+    private void setHeadAndPropagate(Node node, int propagate) {
+        Node h = head; // Record old head for check below
+        setHead(node);
+
+        if (propagate &gt; 0 || h == null || h.waitStatus &lt; 0 ||
+            (h = head) == null || h.waitStatus &lt; 0) {
+            Node s = node.next;
+            if (s == null || s.isShared())
+                doReleaseShared();
         }
+    }
+</code></pre>
+
+<h4 id="cancelacquire-node-node">cancelAcquire(Node node)</h4>
+
+<pre><code class="language-java">private void cancelAcquire(Node node) {
+    // Ignore if node doesn't exist
+    if (node == null)
+        return;
+
+    node.thread = null;
+
+    // 跳过cancelled状态的前继节点
+    Node pred = node.prev;
+    while (pred.waitStatus &gt; 0)
+        node.prev = pred = pred.prev;
+
+    Node predNext = pred.next;
+
+    node.waitStatus = Node.CANCELLED;
+
+    // 如果当前节点是尾节点,并将尾节点替换为当前节点的前继节点成功的话
+    // 将前继节点的next置为null。如下图一
+    if (node == tail &amp;&amp; compareAndSetTail(node, pred)) {
+        compareAndSetNext(pred, predNext, null);
+    } else {
+        int ws;
+        if (pred != head &amp;&amp;
+            ((ws = pred.waitStatus) == Node.SIGNAL ||
+             (ws &lt;= 0 &amp;&amp; compareAndSetWaitStatus(pred, ws, Node.SIGNAL))) &amp;&amp;
+            pred.thread != null) {
+            //如下图2
+            Node next = node.next;
+            if (next != null &amp;&amp; next.waitStatus &lt;= 0)
+                compareAndSetNext(pred, predNext, next);
+        } else {
+        	//如果当前节点是head(即当前节点是队列中第二个节点).并且前继节点的线程不为空.则它的
+        	//唤醒后继节点(为什么只有这种情况下才唤醒?估计大家也会有疑问..请带着疑问继续往下看)
+            unparkSuccessor(node);
+        }
+
+        node.next = node; // help GC
+    }
+}
+</code></pre>
+
+<p>图1: <img src="../..//static/img/juc/cancel_node1.jpg" alt="" />
+&gt; 黄色部分表示代码所做处理</p>
+
+<p>图2：<img src="../..//static/img/juc/cancel_node3.jpg" alt="" />
+&gt; 黄色部分表示代码所做处理</p>
+
+<p>取消尝试获取锁操作,会进行如下操作:
+1. 将该节点的线程释放(node.thread=null).
+2. 将该节点的状态设为取消
+3. 如果该节点为队尾节点.则从队列中移除.否则4
+4. 找到当前结点的继任结点，前趋的next指针指向继任结点
+5. 当前结点的next指针指向自己
+&gt; 大家可能注意到了,它之处理了next指针,并没有处理prev.因为它已经将节点的状态设置为取消状态(cancelled)。所以其他操作在操作队列时即便可以通过tail的prev遍历到它,也会因为是cancelled状态而被忽略。这么做是为什么？我还没想明白.为了效率么？</p>
+
+<h4 id="shouldparkafterfailedacquire-node-pred-node-node-尝试获取失败之后是否需要挂起">shouldParkAfterFailedAcquire(Node pred, Node node)尝试获取失败之后是否需要挂起</h4>
+
+<pre><code class="language-java">private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+    int ws = pred.waitStatus;
+    if (ws == Node.SIGNAL)
+        /*
+         * 如果该节点已经设置状态为SIGNAL，则表示它可以安全挂起.
+         */
+        return true;
+    if (ws &gt; 0) {如果当前节点已取消则需要遍历找到一个没有取消的节点
+        /*
+         * 如果前继节点已经取消,则跳过
+         */
+        do {
+            node.prev = pred = pred.prev;
+        } while (pred.waitStatus &gt; 0);
+        pred.next = node;
+    } else {
+        /*
+         * 如果是0或者PROPAGATE或者CONDITION状态.则表示需要等待一个信号但是不挂起.
+         */
+        compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
     }
     return false;
 }
 </code></pre>
 
-<p>当发生EnvironmentChangeEvent事件时会重新初始化bean(包括重新绑定新的配置源以及重新校验metadata等,详情请查看spring core的官方文档)</p>
+<p>只有当前节点为SIGNAL状态时才能挂起线程.因为SIGNAL状态的后继节点会被唤起。避免当前线程挂起之后没有人去竞争锁。</p>
 
-<h4 id="scope刷新">scope刷新</h4>
+<h4 id="parkandcheckinterrupt">parkAndCheckInterrupt()</h4>
 
-<p>RefreshScope：</p>
-
-<pre><code class="language-java">public void refreshAll() {
-    super.destroy();
-    this.context.publishEvent(new RefreshScopeRefreshedEvent());
+<pre><code class="language-java">private final boolean parkAndCheckInterrupt() {
+    LockSupport.park(this);
+    return Thread.interrupted();
 }
 </code></pre>
 
-<p>由于之前的bean重新初始化了,所以这里需要调用GenericScope的destroy().该方法会调用注册在BeanFactory中的bean destroy回调方法。</p>
+<p>挂起当前线程之后(LockSupport.park(this)会阻塞当前线程,直到被唤醒),唤醒之后顺便检查一下该线程是否被中断。</p>
 
-<p>然后发送一个RefreshScopeRefreshedEvent事件。RefreshScopeRefreshedEvent事件的监听处理如下(EurekaDiscoveryClientConfiguration类):</p>
+<p><strong>以上的方法就是共享模式下,常用的方法了.但是他们之间怎么组合使用呢？ 接下来我们继续看一个AQS的方法</strong></p>
 
-<pre><code class="language-java">@EventListener(RefreshScopeRefreshedEvent.class)
-public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
-    //This will force the creation of the EurkaClient bean if not already created
-    //to make sure the client will be reregistered after a refresh event
-    if(eurekaClient != null) {
-        eurekaClient.getApplications();
-    }
-    if (autoRegistration != null) {
-        // register in case meta data changed
-        this.autoRegistration.stop();
-        this.autoRegistration.start();
+<h4 id="acquirequeued-final-node-node-int-arg">acquireQueued(final Node node, int arg)</h4>
+
+<pre><code class="language-java">final boolean acquireQueued(final Node node, int arg) {
+    boolean failed = true;
+    try {
+        boolean interrupted = false;
+        for (;;) {
+            final Node p = node.predecessor();
+            //如果当前节点为第二个节点.并且获取锁成功
+            //则将当前节点设为head.并将之前的head节点出队并将其next指针指向null.
+            //这里回看一下之前的setHead.然后再看如下图1.就可以明白是怎么出对的了
+            if (p == head &amp;&amp; tryAcquire(arg)) {
+                setHead(node);
+                p.next = null; // help GC
+                failed = false;
+                return interrupted;
+            }
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                parkAndCheckInterrupt())
+                interrupted = true;
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
     }
 }
 </code></pre>
 
-<p>每当metadata发生变化就需要重新在eureka注册，实际上只要调用了/bus/refresh接口就会执行这一步骤。</p>
+<p>图1: <img src="../../static/img/juc/remove_head.png" alt="" />
+&gt;图片来自<a href="https://juejin.im/post/5aeb07ab6fb9a07ac36350c8">https://juejin.im/post/5aeb07ab6fb9a07ac36350c8</a></p>
 
-<p>由于调用了/bus/refresh接口就会触发RefreshRemoteApplicationEvent事件，并且config server和
-config client都会监听该事件,而且该事件的处理是不管配置是否更新是否不是该微服务所需要的(即全量的)的都会执行scope的刷新
-.所以只要你微服务使用了config的动态刷新,那么当任何一项配置更新时,你所有微服务都会在eureka中重新注册.
-然后eureka的服务发现也是全量更新和读取的。然后你懂的。。。。。。</p>
+<p>我们先不用关心arg参数是什么.因为在之后的子类中会讲到.这里需要强调一下,tryAcquire(arg)是个抽象方法.在具体的子类中实现.它表示尝试获取锁是否成功。</p>
 
-<p><img src="https://vitzhou.top/img/spring-cloud/spring-cloud-config-seq.png" alt="" /></p>
+<p>从(p == head &amp;&amp; tryAcquire(arg))可以看出如果节点不为第二个节点.则不会去尝试获取锁.由此可见队头才能尝试获取锁(符合FIFO)。</p>
+
+<p>该方法会不断重试,直到获取锁成功(前面的Node都释放锁了,等到它拿锁才能竞争到)。或者当前线程被中断。如果它在尝试获取时失败了的话会被阻塞(挂起).直到有人唤醒,然后再重试(这里并不是自旋.只是重试)。</p>
+
+<p>如果该线程被中断了就取消获取。</p>
+
+<p><strong>之后的很多方法大体一致,只有细微差别.大家可以自己看。区别比较大的我才会继续写</strong></p>
+
+<h4 id="doacquirenanos-int-arg-long-nanostimeout">doAcquireNanos(int arg, long nanosTimeout)</h4>
+
+<pre><code class="language-java">private boolean doAcquireNanos(int arg, long nanosTimeout)
+            throws InterruptedException {
+    if (nanosTimeout &lt;= 0L)
+        return false;
+    final long deadline = System.nanoTime() + nanosTimeout;
+    final Node node = addWaiter(Node.EXCLUSIVE);
+    boolean failed = true;
+    try {
+        for (;;) {
+            final Node p = node.predecessor();
+            if (p == head &amp;&amp; tryAcquire(arg)) {
+                setHead(node);
+                p.next = null; // help GC
+                failed = false;
+                return true;
+            }
+            nanosTimeout = deadline - System.nanoTime();
+            if (nanosTimeout &lt;= 0L)
+                return false;
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                nanosTimeout &gt; spinForTimeoutThreshold)
+                LockSupport.parkNanos(this, nanosTimeout);
+            if (Thread.interrupted())
+                throw new InterruptedException();
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+</code></pre>
+
+<p>跟acquireQueued大体一致.唯一不同的是它的挂起操作有最大等待时间nanosTimeout.超过这个时间之后线程会自动唤醒.这里的for循环才是自旋.</p>
+
+<p><strong>aqs中阻塞模式获取锁的方法到此基本上重要的都读完了.下篇我们继续看共享模式下是怎么获取的。以及一些其他重要的方法其什么作用</strong></p>
+
               
             </div>
           </div>
@@ -617,7 +761,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-juc/">java JUC</a>
 
                   </div>
                 
@@ -630,7 +774,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -638,7 +782,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -665,7 +809,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -710,7 +854,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180211_eureka_client_registry/" data-tooltip="Eureka客户端注册流程">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -718,7 +862,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -745,7 +889,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+          <a class="post-action-btn btn btn--default" href="#">
         
           <i class="fa fa-list"></i>
         </a>
@@ -1048,9 +1192,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/2018-02-spring-cloud-refresh-context\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20180707_aqs\/';
           
-            this.page.identifier = '\/2018-02-spring-cloud-refresh-context\/'
+            this.page.identifier = '\/20180707_aqs\/'
           
         };
         (function() {
