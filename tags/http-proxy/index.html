@@ -117,7 +117,7 @@
         </a>
         <h4 class="sidebar-profile-name">Vit Zhou/周圣华</h4>
         
-          <h5 class="sidebar-profile-bio">如果耐不住寂寞,就看不到繁华</h5>
+          <h5 class="sidebar-profile-bio">梦想,不是浮躁.而是沉淀和积累</h5>
         
       </div>
     
@@ -311,7 +311,7 @@
     
     <h4 id="about-card-name">Vit Zhou/周圣华</h4>
     
-      <div id="about-card-bio">如果耐不住寂寞,就看不到繁华</div>
+      <div id="about-card-bio">梦想,不是浮躁.而是沉淀和积累</div>
     
     
       <div id="about-card-job">
@@ -360,12 +360,7 @@
                   Jul 7, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">详读J.U.C系列(1)之AQS 今天起,不间断的读J.U.C.以及DOCKER和k8s。 &gt; jdk 1.8
-AQS(AbstractQueuedSynchronizer) 整个J.U.C的核心框架就在AQS。我们常用的ConcurrentHashMap等实现都是基于这个类来实现的。那么我们看懂了这个类就看懂了一半J.U.C类库。
- 看本文之前,请先了解jvm内存模型,以及原子性,可见性,cas等知识(有时间的话,我会补上这一部分),内容有点多,来个葛优躺慢慢看.这篇文章会介绍AQS的所有方法.但是由于AQS是需要子类才能提供可使用的同步器.所以这些方法都是零散的,它们之间的关联性会比较低.但是没有关系,只希望大家对各个方法有印象.在接下来的文章中,将会使用这些方法实现各种功能。
- 读源码 我们先来看下这个类的注解,了解设计的初衷,大意如下: 1. 提供一个框架，用于实现依赖于先进先出（FIFO）等待队列的阻塞锁和同步器（信号量，事件等）.AQS是大多数同步器的基础.它依赖于单个原子int值表示状态.继承它的子类必须定义更改此状态的受保护的方法，并且要根据获取和释放动作定义状态的语义.该类的方法负责排队和阻塞,子类负责维护状态字段，但是子类仅保证使用getState,setState,compareAndSetState操作同步int值.应将子类定义为非公共内部帮助程序类，用于实现其封闭类的同步属性。类AbstractQueuedSynchronizer未实现任何同步接口。相反，它定义了acquireInterruptibly等方法，可以通过具体的锁和相关的同步器来适当调用它们来实现它们的公共方法 2. 此类默认支持独占和共享模式.在独占模式下,其他线程尝试获取锁将不会成功.共享模式下,其他线程尝试获取是可能成功的.如果一个线程获取了锁,其他线程尝试获取的话还要判断他是否可以获取.在不同模式下的线程共享FIFO队列.通常，实现子类仅支持这些模式中的一种，但两者都可以在ReadWriteLock中发挥作用。仅支持独占模式或仅支持共享模式的子类无需定义支持未使用模式的方法。 3. 此类定义了一个嵌套的ConditionObject类.子类可以通过isHeldExclusively获取是否执行独占模式，使用getState获取当前线程的状态对象值,调用的方法release完全释放此对象，并且acquire，给定此保存的状态值，最终将此对象恢复到其先前获取的状态。否则，AbstractQueuedSynchronizer方法会创建这样的条件，因此如果无法满足此约束，请不要使用它。 ConditionObject的行为取决于其同步器实现的语义。 4. 此类提供内部队列的检查，检测和监视方法，以及condition对象的类似方法。这些可以根据需要使用AbstractQueuedSynchronizer导出到类中，用于它们的同步机制. 5. 此类的序列化仅存储原子整数(状态属性)，因此反序列化对象具有空线程队列。需要可序列化的子类需要定义readObject方法，该方法在反序列化时将其恢复为已知的初始状态. &hellip;..后面的省略
-AbstractOwnableSynchronizer public abstract class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer implements java.io.Serializable  从代码可以看出AQS是一个抽象的(abstract),可序列化的类.并且继承自AbstractOwnableSynchronizer.我们再看下AbstractOwnableSynchronizer。
-public abstract class AbstractOwnableSynchronizer implements java.io.Serializable { private static final long serialVersionUID = 3737899427754241961L; protected AbstractOwnableSynchronizer() { } /** * 独占模式下锁的当前拥有者 */ private transient Thread exclusiveOwnerThread; /** * 设置当前拥有独占访问权限的线程。 {@code null}参数表示没有线程拥有访问权限。 此方法不会强制执行任何同步或{@code volatile}字段访问。 */ protected final void setExclusiveOwnerThread(Thread thread) { exclusiveOwnerThread = thread; } /** * Returns the thread last set by {@code setExclusiveOwnerThread}, * or {@code null} if never set.</div>
+              <div class="media-content hide-xs font-merryweather"><h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
