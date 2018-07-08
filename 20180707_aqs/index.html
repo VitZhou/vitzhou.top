@@ -425,7 +425,7 @@
 </code></pre>
 
 <p>AQS使用Node类来实现阻塞同步队列.结合AQS中的几个其他属性构成如下结构:
-<img src="../../static/img/juc/fifo.png" alt="" />
+<img src="https://vitzhou.top/img/juc/fifo.png" alt="" />
 其中head,state,tail定义如下:</p>
 
 <pre><code class="language-java">	/**
@@ -616,10 +616,10 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 }
 </code></pre>
 
-<p>图1: <img src="../..//static/img/juc/cancel_node1.jpg" alt="" />
+<p>图1: <img src="https://vitzhou.top/img/juc/cancel_node1.jpg" alt="" />
 &gt; 黄色部分表示代码所做处理</p>
 
-<p>图2：<img src="../..//static/img/juc/cancel_node3.jpg" alt="" />
+<p>图2：<img src="https://vitzhou.top/img/juc/cancel_node3.jpg" alt="" />
 &gt; 黄色部分表示代码所做处理</p>
 
 <p>取消尝试获取锁操作,会进行如下操作:
@@ -699,8 +699,11 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 }
 </code></pre>
 
-<p>图1: <img src="../../static/img/juc/remove_head.png" alt="" />
-&gt;图片来自<a href="https://juejin.im/post/5aeb07ab6fb9a07ac36350c8">https://juejin.im/post/5aeb07ab6fb9a07ac36350c8</a></p>
+<p>图1: <img src="https://vitzhou.top/img/juc/remove_head.png" alt="" /></p>
+
+<blockquote>
+<p>图片来自<a href="https://juejin.im/post/5aeb07ab6fb9a07ac36350c8">https://juejin.im/post/5aeb07ab6fb9a07ac36350c8</a></p>
+</blockquote>
 
 <p>我们先不用关心arg参数是什么.因为在之后的子类中会讲到.这里需要强调一下,tryAcquire(arg)是个抽象方法.在具体的子类中实现.它表示尝试获取锁是否成功。</p>
 
