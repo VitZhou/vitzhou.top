@@ -267,7 +267,7 @@
 <p>用了快半年的Prometheus了.但是经常出现too many open file错误.基本上跑半个月就会出问题.之前一直以为是prometheus本身的问题,由于太忙了.再加上清理了它的存储文件之后又能跑半个月.所以暂时就放下了。但是昨天晚上又挂了.不能忍了·。废话不多说.直接谷歌。然后在github上找到了这个issue.<a href="https://github.com/prometheus/prometheus/issues/1873">https://github.com/prometheus/prometheus/issues/1873</a>.   细细看完,发现这个问题是上古世纪的问题.官方已经解决了。但是我这为何还出现这么古老的问题(注意只是问题,不是bug哈。是我姿势不对没用好它)呢？ 在issue中,作者给了排查意见.于是乎开启&rdquo;大家一起找茬&rdquo;之旅</p>
 
 <blockquote>
-<p>这个问题原因在issue上有说,我简单概述下.这个问题是由于prometheus打开文件时如果系统限制了它的fd数量的话就会出现too man open file. 所以关键要确认fd数量的limit</p>
+<p>这个问题原因在issue上有说,我简单概述下.这个问题是由于prometheus打开存储文件时如果打开文件数超过系统限制它的fd数量的话就会出现too many open file. 所以关键要确认fd数量的limit</p>
 </blockquote>
 
 <h3 id="定位问题">定位问题</h3>
