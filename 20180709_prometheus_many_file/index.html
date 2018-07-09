@@ -1,5 +1,9 @@
 
 
+  
+    
+  
+
 
   
 
@@ -18,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Java Thread Pool</title>
+    <title>Prometheus Too Man Open file</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="Prometheus Too Man Open file, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -41,19 +45,17 @@
     </script>
     <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/tags/java-thread-pool/index.xml">
-    
 
     
-    <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
-    <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="description" content="Prometheus Too Man Open file">
+    <meta property="og:description" content="Prometheus Too Man Open file">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Java Thread Pool">
-    <meta property="og:url" content="/tags/java-thread-pool/">
+    <meta property="og:title" content="Prometheus Too Man Open file">
+    <meta property="og:url" content="/20180709_prometheus_many_file/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="twitter:description" content="Prometheus Too Man Open file">
     
     
 
@@ -64,6 +66,8 @@
       <meta property="og:image" content="//www.gravatar.com/avatar/ccfaa5056cb19a47376367385b8d75c1?s=640">
     
 
+    
+      <meta property="og:image" content="https://vitzhou.top/img/prometheus/prometheus.png">
     
     
     
@@ -88,7 +92,7 @@
 
   <body>
     <div id="blog">
-      <header id="header" data-behavior="2">
+      <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
     <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
@@ -108,7 +112,7 @@
   
 </header>
 
-      <nav id="sidebar" data-behavior="2">
+      <nav id="sidebar" data-behavior="5">
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
@@ -217,40 +221,26 @@
 </nav>
 
       
-        
 
-      
-      <div id="main" data-behavior="2"
+      <div id="main" data-behavior="5"
         class="
                hasCoverMetaIn
                ">
-        
-          <section class="postShorten-group main-content-wrap">
-            
-            
-              
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
   
-    
+    <h1 class="post-title" itemprop="headline">
+      Prometheus Too Man Open file
+    </h1>
   
-
-
   
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">
-          ThreadPoolExecutor的Reject策略
-        </a>
-      </h1>
-      
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-21T14:00:01&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-07-09T10:25:50&#43;08:00">
         
-  二月 21, 2018
+  七月 9, 2018
 
       </time>
     
@@ -259,150 +249,144 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
+      <a class="category-link" href="https://vitzhou.top/categories/prometheus">Prometheus</a>
     
   
 
   </div>
 
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>今天我们专门聊聊ThreadPoolExecutor的拒绝策略
-</p>
-      <p>
-        <a href="https://vitzhou.top/20180221_threadpoolexcutor_reject/" class="postShorten-excerpt_link link">阅读全文</a>
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>Prometheus Too many open file问题定位</p>
+
+<p>
+<!-- top --></p>
+
+<p>用了快半年的Prometheus了.但是经常出现too many open file错误.基本上跑半个月就会出问题.之前一直以为是prometheus本身的问题,由于太忙了.再加上清理了它的存储文件之后又能跑半个月.所以暂时就放下了。但是昨天晚上又挂了.不能忍了·。废话不多说.直接谷歌。然后在github上找到了这个issue.<a href="https://github.com/prometheus/prometheus/issues/1873">https://github.com/prometheus/prometheus/issues/1873</a>.   细细看完,发现这个问题是上古世纪的问题.官方已经解决了。但是我这为何还出现这么古老的问题(注意只是问题,不是bug哈。是我姿势不对没用好它)呢？ 在issue中,作者给了排查意见.于是乎开启&rdquo;大家一起找茬&rdquo;之旅</p>
+
+<blockquote>
+<p>这个问题原因在issue上有说,我简单概述下.这个问题是由于prometheus打开文件时如果系统限制了它的fd数量的话就会出现too man open file. 所以关键要确认fd数量的limit</p>
+</blockquote>
+
+<h3 id="定位问题">定位问题</h3>
+
+<ol>
+<li>根据作者提示.我先去看了系统有没有限制文件打开数量：
+<img src="https://vitzhou.top/img/prometheus/1.jpeg" alt="" />
+发现系统级的数量是65535足够用.而prometheus上看的确实这样:
+<img src="https://vitzhou.top/img/prometheus/2.jpeg" alt="" /></li>
+<li>怎么回事？会不会是Prometheus本身的限制？这个问题我觉得基本可以不用考虑,因为之前已经说了这个问题出现在上古世纪,官方已经解决了。那是不是Prometheus的进程被限制了呢？验证一下:
+<img src="https://vitzhou.top/img/prometheus/3.png" alt="" /></li>
+<li>发现确实进程上被限制了.然后查看了下同机器上部署的pushgateway发现:
+<img src="https://vitzhou.top/img/prometheus/4.png" alt="" /></li>
+<li>为何它是正常的？后来一想,它们俩的启动方式不一样.pushgateway是root权限直接启动的.而prometheus是交给了systemd管理.那么问题会不会出在systemd? 说实话我对systemd不熟.所以继续谷歌.然后找到了这个<a href="http://smilejay.com/2016/06/centos-7-systemd-conf-limits/帖子.照着帖子上的说明.做了下尝试:">http://smilejay.com/2016/06/centos-7-systemd-conf-limits/帖子.照着帖子上的说明.做了下尝试:</a>
+<img src="https://vitzhou.top/img/prometheus/5.jpg" alt="" />
+<code>shell
+system reload promethues
+syetem restart promethues
+</code>
+之后发现:
+<img src="https://vitzhou.top/img/prometheus/6.png" alt="" />
+生效了！
+然后去prometheus上看了看.
+<img src="https://vitzhou.top/img/prometheus/7.jpeg" alt="" />
+ok！搞定。 然后剩下的事情就只有交给时间检验了。</li>
+</ol>
+
+<blockquote>
+<p>部分图片太小,请放大web再看·</p>
+</blockquote>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/prometheus/">Prometheus</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读J.U.C系列(1)之AQS">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
         
-      </p>
-    </div>
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
   </div>
-  
-    <a href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="https://vitzhou.top/img/spring-cloud/threadpool/7.jpg"/>
-      </div>
-    </a>
-  
-</article>
+
 
             
               
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180218_threadpoolexecutor2/">
-          ThreadPoolExecutor(二)
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-02-18T18:16:38&#43;08:00">
-        
-  二月 18, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>接着上文继续看ThreadPoolExecutor
-</p>
-      <p>
-        <a href="https://vitzhou.top/20180218_threadpoolexecutor2/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="https://vitzhou.top/20180218_threadpoolexecutor2/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="https://vitzhou.top/img/spring-cloud/threadpool/6.jpg"/>
-      </div>
-    </a>
-  
-</article>
-
-            
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
               
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180217_threadpoolexecutor/">
-          ThreadPoolExecutor(一)
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-02-18T11:07:44&#43;08:00">
-        
-  二月 18, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java">Java</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
-</p>
-      <p>
-        <a href="https://vitzhou.top/20180217_threadpoolexecutor/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="https://vitzhou.top/20180217_threadpoolexecutor/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="https://vitzhou.top/img/spring-cloud/threadpool/5.jpg"/>
-      </div>
-    </a>
-  
-</article>
-
             
-            
-
-          </section>
-        
+          </div>
+        </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
     &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
@@ -410,6 +394,66 @@
 </footer>
 
       </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读J.U.C系列(1)之AQS">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
     </div>
     
     <div id="about">
@@ -685,6 +729,32 @@ $(document).ready(function() {
 });
 </script>
 
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20180709_prometheus_many_file\/';
+          
+            this.page.identifier = '\/20180709_prometheus_many_file\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
 
 
 
