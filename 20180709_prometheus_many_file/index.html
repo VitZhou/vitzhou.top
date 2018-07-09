@@ -281,7 +281,7 @@
 <img src="https://vitzhou.top/img/prometheus/3.png" alt="" /></li>
 <li>发现确实进程上被限制了.然后查看了下同机器上部署的pushgateway发现:
 <img src="https://vitzhou.top/img/prometheus/4.png" alt="" /></li>
-<li>为何它是正常的？后来一想,它们俩的启动方式不一样.pushgateway是root权限直接启动的.而prometheus是交给了systemd管理.那么问题会不会出在systemd? 说实话我对systemd不熟.所以继续谷歌.然后找到了这个<a href="http://smilejay.com/2016/06/centos-7-systemd-conf-limits/帖子.照着帖子上的说明.做了下尝试:">http://smilejay.com/2016/06/centos-7-systemd-conf-limits/帖子.照着帖子上的说明.做了下尝试:</a>
+<li>为何它是正常的？后来一想,它们俩的启动方式不一样.pushgateway是root权限直接启动的.而prometheus是交给了systemd管理.那么问题会不会出在systemd? 说实话我对systemd不熟.所以继续谷歌.然后找到了这个<a href="http://smilejay.com/2016/06/centos-7-systemd-conf-limits">http://smilejay.com/2016/06/centos-7-systemd-conf-limits</a> 帖子.照着帖子上的说明.做了下尝试:
 <img src="https://vitzhou.top/img/prometheus/5.jpg" alt="" /></li>
 </ol>
 
