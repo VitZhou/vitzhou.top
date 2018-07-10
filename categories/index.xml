@@ -2,83 +2,83 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on 周圣华的博客</title>
-    <link>https://vitzhou.top/categories/</link>
+    <link>vitzhou.top/categories/</link>
     <description>Recent content in Categories on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     
-	<atom:link href="https://vitzhou.top/categories/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="vitzhou.top/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Golang</title>
-      <link>https://vitzhou.top/categories/golang/</link>
+      <link>vitzhou.top/categories/golang/</link>
       <pubDate>Tue, 29 May 2018 18:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/golang/</guid>
+      <guid>vitzhou.top/categories/golang/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Http 2</title>
-      <link>https://vitzhou.top/categories/http-2/</link>
+      <link>vitzhou.top/categories/http-2/</link>
       <pubDate>Wed, 21 Mar 2018 20:41:02 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/http-2/</guid>
+      <guid>vitzhou.top/categories/http-2/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Java</title>
-      <link>https://vitzhou.top/categories/java/</link>
+      <link>vitzhou.top/categories/java/</link>
       <pubDate>Fri, 29 Jun 2018 22:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/java/</guid>
+      <guid>vitzhou.top/categories/java/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Java Juc</title>
-      <link>https://vitzhou.top/categories/java-juc/</link>
-      <pubDate>Sun, 08 Jul 2018 12:51:42 +0800</pubDate>
+      <link>vitzhou.top/categories/java-juc/</link>
+      <pubDate>Tue, 10 Jul 2018 12:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/java-juc/</guid>
+      <guid>vitzhou.top/categories/java-juc/</guid>
       <description></description>
     </item>
     
     <item>
       <title>K8s</title>
-      <link>https://vitzhou.top/categories/k8s/</link>
+      <link>vitzhou.top/categories/k8s/</link>
       <pubDate>Fri, 27 Apr 2018 18:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/k8s/</guid>
+      <guid>vitzhou.top/categories/k8s/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Prometheus</title>
-      <link>https://vitzhou.top/categories/prometheus/</link>
+      <link>vitzhou.top/categories/prometheus/</link>
       <pubDate>Mon, 09 Jul 2018 10:25:50 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/prometheus/</guid>
+      <guid>vitzhou.top/categories/prometheus/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Spring Cloud</title>
-      <link>https://vitzhou.top/categories/spring-cloud/</link>
+      <link>vitzhou.top/categories/spring-cloud/</link>
       <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/spring-cloud/</guid>
+      <guid>vitzhou.top/categories/spring-cloud/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Spring Cloud Eureka</title>
-      <link>https://vitzhou.top/categories/spring-cloud-eureka/</link>
+      <link>vitzhou.top/categories/spring-cloud-eureka/</link>
       <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
       
-      <guid>https://vitzhou.top/categories/spring-cloud-eureka/</guid>
+      <guid>vitzhou.top/categories/spring-cloud-eureka/</guid>
       <description></description>
     </item>
     

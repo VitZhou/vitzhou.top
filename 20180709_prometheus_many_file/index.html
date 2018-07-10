@@ -43,7 +43,7 @@
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
-    <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
+    <link rel="icon" href="vitzhou.top/images/author.jpeg">
     
 
     
@@ -67,7 +67,7 @@
     
 
     
-      <meta property="og:image" content="https://vitzhou.top/img/prometheus/prometheus.png">
+      <meta property="og:image" content="/img/prometheus/prometheus.png">
     
     
     
@@ -75,12 +75,12 @@
     
 
     
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
     
     
-    <link rel="stylesheet" href="https://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    <link rel="stylesheet" href="vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
     
     
 
@@ -95,17 +95,17 @@
       <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
-    <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
+    <a class="header-title-link" href="vitzhou.top/">周圣华的博客</a>
   </div>
   
     
       <a class="header-right-picture "
-         href="https://vitzhou.top/#about">
+         href="vitzhou.top/#about">
     
     
     
       
-        <img class="header-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+        <img class="header-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
       
     
     </a>
@@ -116,8 +116,8 @@
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
-        <a href="https://vitzhou.top/#about">
-          <img class="sidebar-profile-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" />
+        <a href="vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" />
         </a>
         <h4 class="sidebar-profile-name">Vit Zhou/周圣华</h4>
         
@@ -129,7 +129,7 @@
       
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/">
+      <a class="sidebar-button-link " href="vitzhou.top/">
     
       <i class="sidebar-button-icon fa fa-lg fa-home"></i>
       
@@ -139,7 +139,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/categories">
+      <a class="sidebar-button-link " href="vitzhou.top/categories">
     
       <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
       
@@ -149,7 +149,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/tags">
+      <a class="sidebar-button-link " href="vitzhou.top/tags">
     
       <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
       
@@ -159,7 +159,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/archives">
+      <a class="sidebar-button-link " href="vitzhou.top/archives">
     
       <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
       
@@ -169,7 +169,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/#about">
+      <a class="sidebar-button-link " href="vitzhou.top/#about">
     
       <i class="sidebar-button-icon fa fa-lg fa-question"></i>
       
@@ -249,7 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/prometheus">Prometheus</a>
+      <a class="category-link" href="vitzhou.top/categories/prometheus">Prometheus</a>
     
   
 
@@ -274,26 +274,26 @@
 
 <ol>
 <li>根据作者提示.我先去看了系统有没有限制文件打开数量：
-<img src="https://vitzhou.top/img/prometheus/1.jpeg" alt="" />
+<img src="vitzhou.top/img/prometheus/1.jpeg" alt="" />
 发现系统级的数量是65535足够用.而prometheus上看的确实这样:
-<img src="https://vitzhou.top/img/prometheus/2.jpeg" alt="" /></li>
+<img src="vitzhou.top/img/prometheus/2.jpeg" alt="" /></li>
 <li>怎么回事？会不会是Prometheus本身的限制？这个问题我觉得基本可以不用考虑,因为之前已经说了这个问题出现在上古世纪,官方已经解决了。那是不是Prometheus的进程被限制了呢？验证一下:
-<img src="https://vitzhou.top/img/prometheus/3.png" alt="" /></li>
+<img src="vitzhou.top/img/prometheus/3.png" alt="" /></li>
 <li>发现确实进程上被限制了.然后查看了下同机器上部署的pushgateway发现:
-<img src="https://vitzhou.top/img/prometheus/4.png" alt="" /></li>
+<img src="vitzhou.top/img/prometheus/4.png" alt="" /></li>
 
 <li><p>为何它是正常的？后来一想,它们俩的启动方式不一样.pushgateway是root权限直接启动的.而prometheus是交给了systemd管理.那么问题会不会出在systemd? 说实话我对systemd不熟.所以继续谷歌.然后找到了这个<a href="http://smilejay.com/2016/06/centos-7-systemd-conf-limits">http://smilejay.com/2016/06/centos-7-systemd-conf-limits</a> 帖子.照着帖子上的说明.做了下尝试:
-<img src="https://vitzhou.top/img/prometheus/5.jpg" alt="" /></p>
+<img src="vitzhou.top/img/prometheus/5.jpg" alt="" /></p>
 
 <pre><code class="language-shell">system reload promethues
 syetem restart promethues
 </code></pre>
 
 <p>之后发现:
-<img src="https://vitzhou.top/img/prometheus/6.png" alt="" />
+<img src="vitzhou.top/img/prometheus/6.png" alt="" />
 生效了！
 然后去prometheus上看了看.
-<img src="https://vitzhou.top/img/prometheus/7.jpeg" alt="" />
+<img src="vitzhou.top/img/prometheus/7.jpeg" alt="" />
 ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
 
 <blockquote>
@@ -311,7 +311,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/prometheus/">Prometheus</a>
+  <a class="tag tag--primary tag--small" href="vitzhou.top/tags/prometheus/">Prometheus</a>
 
                   </div>
                 
@@ -324,7 +324,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_aqs_2/" data-tooltip="详读JUC系列(2)之AQS">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -332,7 +332,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读J.U.C系列(1)之AQS">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180707_aqs/" data-tooltip="详读JUC系列(1)之AQS">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -404,7 +404,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_aqs_2/" data-tooltip="详读JUC系列(2)之AQS">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -412,7 +412,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读J.U.C系列(1)之AQS">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180707_aqs/" data-tooltip="详读JUC系列(1)之AQS">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -464,7 +464,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
       <i class="fa fa-remove"></i>
     </div>
     
-      <img id="about-card-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+      <img id="about-card-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
     
     <h4 id="about-card-name">Vit Zhou/周圣华</h4>
     
@@ -509,7 +509,24 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180709_prometheus_many_file/">
+              <a class="link-unstyled" href="vitzhou.top/20180709_aqs_2/">
+                <h3 class="media-heading">详读JUC系列(2)之AQS</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Jul 7, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>AQS(二)</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="vitzhou.top/20180709_prometheus_many_file/">
                 <h3 class="media-heading">Prometheus Too Many Open file问题</h3>
               </a>
               <span class="media-meta">
@@ -526,8 +543,8 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180707_aqs/">
-                <h3 class="media-heading">详读J.U.C系列(1)之AQS</h3>
+              <a class="link-unstyled" href="vitzhou.top/20180707_aqs/">
+                <h3 class="media-heading">详读JUC系列(1)之AQS</h3>
               </a>
               <span class="media-meta">
                 <span class="media-date text-small">
@@ -543,7 +560,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180629_java_proxy/">
+              <a class="link-unstyled" href="vitzhou.top/20180629_java_proxy/">
                 <h3 class="media-heading">Java 动态代理详解</h3>
               </a>
               <span class="media-meta">
@@ -560,7 +577,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180529_http_proxy/">
+              <a class="link-unstyled" href="vitzhou.top/20180529_http_proxy/">
                 <h3 class="media-heading">HTTP proxy</h3>
               </a>
               <span class="media-meta">
@@ -581,7 +598,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180428_k8s_network_sc/">
+              <a class="link-unstyled" href="vitzhou.top/20180428_k8s_network_sc/">
                 <h3 class="media-heading">记一次k8s的网络实践</h3>
               </a>
               <span class="media-meta">
@@ -600,7 +617,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180328_prometheus_config/">
+              <a class="link-unstyled" href="vitzhou.top/20180328_prometheus_config/">
                 <h3 class="media-heading">Prometheus命令</h3>
               </a>
               <span class="media-meta">
@@ -619,7 +636,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180321_http2collection/">
+              <a class="link-unstyled" href="vitzhou.top/20180321_http2collection/">
                 <h3 class="media-heading">http2资料收集</h3>
               </a>
               <span class="media-meta">
@@ -637,7 +654,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">
+              <a class="link-unstyled" href="vitzhou.top/20180221_threadpoolexcutor_reject/">
                 <h3 class="media-heading">ThreadPoolExecutor的Reject策略</h3>
               </a>
               <span class="media-meta">
@@ -655,7 +672,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180218_threadpoolexecutor2/">
+              <a class="link-unstyled" href="vitzhou.top/20180218_threadpoolexecutor2/">
                 <h3 class="media-heading">ThreadPoolExecutor(二)</h3>
               </a>
               <span class="media-meta">
@@ -670,24 +687,6 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
             <hr>
           </div>
         
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180217_threadpoolexecutor/">
-                <h3 class="media-heading">ThreadPoolExecutor(一)</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Feb 2, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"><p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
-</p></div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
       </div>
     </div>
     <div class="modal-footer">
@@ -695,7 +694,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         13 posts found
+         14 posts found
       </p>
     </div>
   </div>
@@ -703,7 +702,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
     
   
     
-    <div id="cover" style="background-image:url('https://vitzhou.top/images/cover1.jpg');"></div>
+    <div id="cover" style="background-image:url('vitzhou.top/images/cover1.jpg');"></div>
   
 
 
@@ -715,7 +714,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
 
 
-<script src="https://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+<script src="vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
 
 
 
@@ -736,7 +735,7 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180709_prometheus_many_file\/';
+          this.page.url = 'vitzhou.top\/20180709_prometheus_many_file\/';
           
             this.page.identifier = '\/20180709_prometheus_many_file\/'
           

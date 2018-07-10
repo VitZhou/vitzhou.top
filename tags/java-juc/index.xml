@@ -2,21 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java Juc on 周圣华的博客</title>
-    <link>https://vitzhou.top/tags/java-juc/</link>
+    <link>vitzhou.top/tags/java-juc/</link>
     <description>Recent content in Java Juc on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 08 Jul 2018 12:51:42 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 10 Jul 2018 12:51:42 +0800</lastBuildDate>
     
-	<atom:link href="https://vitzhou.top/tags/java-juc/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="vitzhou.top/tags/java-juc/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>详读J.U.C系列(1)之AQS</title>
-      <link>https://vitzhou.top/20180707_aqs/</link>
+      <title>详读JUC系列(2)之AQS</title>
+      <link>vitzhou.top/20180709_aqs_2/</link>
+      <pubDate>Tue, 10 Jul 2018 12:51:42 +0800</pubDate>
+      
+      <guid>vitzhou.top/20180709_aqs_2/</guid>
+      <description>&lt;p&gt;AQS(二)&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>详读JUC系列(1)之AQS</title>
+      <link>vitzhou.top/20180707_aqs/</link>
       <pubDate>Sun, 08 Jul 2018 12:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/20180707_aqs/</guid>
+      <guid>vitzhou.top/20180707_aqs/</guid>
       <description>&lt;h2 id=&#34;详读j-u-c系列-1-之aqs&#34;&gt;详读J.U.C系列(1)之AQS&lt;/h2&gt;</description>
     </item>
     

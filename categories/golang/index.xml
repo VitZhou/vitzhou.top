@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Golang on 周圣华的博客</title>
-    <link>https://vitzhou.top/categories/golang/</link>
+    <link>vitzhou.top/categories/golang/</link>
     <description>Recent content in Golang on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Tue, 29 May 2018 18:51:42 +0800</lastBuildDate>
     
-	<atom:link href="https://vitzhou.top/categories/golang/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="vitzhou.top/categories/golang/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>HTTP proxy</title>
-      <link>https://vitzhou.top/20180529_http_proxy/</link>
+      <link>vitzhou.top/20180529_http_proxy/</link>
       <pubDate>Tue, 29 May 2018 18:51:42 +0800</pubDate>
       
-      <guid>https://vitzhou.top/20180529_http_proxy/</guid>
+      <guid>vitzhou.top/20180529_http_proxy/</guid>
       <description>&lt;p&gt;最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用&lt;/p&gt;
 
 &lt;p&gt;原文地址:&lt;a href=&#34;https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c&#34;&gt;https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c&lt;/a&gt;&lt;/p&gt;

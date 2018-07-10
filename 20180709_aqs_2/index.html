@@ -1,5 +1,9 @@
 
 
+  
+    
+  
+
 
   
 
@@ -18,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>周圣华的博客</title>
+    <title>详读JUC系列(2)之AQS</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="java JUC, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -41,19 +45,17 @@
     </script>
     <link rel="icon" href="vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="vitzhou.top/index.xml">
-    
 
     
-    <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
-    <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="description" content="java JUC">
+    <meta property="og:description" content="java JUC">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="周圣华的博客">
-    <meta property="og:url" content="/">
+    <meta property="og:title" content="详读JUC系列(2)之AQS">
+    <meta property="og:url" content="/20180709_aqs_2/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="twitter:description" content="java JUC">
     
     
 
@@ -64,6 +66,8 @@
       <meta property="og:image" content="//www.gravatar.com/avatar/ccfaa5056cb19a47376367385b8d75c1?s=640">
     
 
+    
+      <meta property="og:image" content="/img/2018/richu.jpeg">
     
     
     
@@ -88,7 +92,7 @@
 
   <body>
     <div id="blog">
-      <header id="header" data-behavior="2">
+      <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
     <a class="header-title-link" href="vitzhou.top/">周圣华的博客</a>
@@ -108,7 +112,7 @@
   
 </header>
 
-      <nav id="sidebar" data-behavior="2">
+      <nav id="sidebar" data-behavior="5">
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
@@ -218,31 +222,20 @@
 
       
 
-      <div id="main" data-behavior="2"
+      <div id="main" data-behavior="5"
         class="
                hasCoverMetaIn
                ">
-        <section class="postShorten-group main-content-wrap">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
           
           
-            
+            <div class="post-header main-content-wrap text-left">
   
-    
+    <h1 class="post-title" itemprop="headline">
+      详读JUC系列(2)之AQS
+    </h1>
   
-
-
   
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180709_aqs_2/">
-          详读JUC系列(2)之AQS
-        </a>
-      </h1>
-      
   <div class="postShorten-meta post-meta">
     
       <time itemprop="datePublished" datetime="2018-07-10T12:51:42&#43;08:00">
@@ -262,389 +255,343 @@
 
   </div>
 
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>AQS(二)</p>
-      <p>
-        <a href="vitzhou.top/20180709_aqs_2/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180709_aqs_2/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/2018/richu.jpeg"/>
-      </div>
-    </a>
-  
-</article>
-
+</div>
           
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>AQS(二)</p>
+
+<p>
+<!-- top --></p>
+
+<h2 id="aqs-二">AQS(二)</h2>
+
+<p>上篇读了AQS的一些基础方法.以及独占模式下获取锁的方式.本文我们会把AQS剩余部分看完.</p>
+
+<pre><code class="language-java">private void doAcquireShared(int arg) {
+	//添加一个队尾节点
+    final Node node = addWaiter(Node.SHARED);
+    boolean failed = true;
+    try {
+        boolean interrupted = false;
+        for (;;) {
+            final Node p = node.predecessor();
+            if (p == head) {//如果当前节点是第二节点则尝试获取
+                int r = tryAcquireShared(arg);//大于等于0表示获取到锁
+                if (r &gt;= 0) {
+                	//获取到锁的话讲当前节点设置为头结点,并向后r个节点传播
+                    setHeadAndPropagate(node, r);
+                    p.next = null; // help GC
+                    if (interrupted)
+                        selfInterrupt();
+                    failed = false;
+                    return;
+                }
+            }
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                parkAndCheckInterrupt())
+                interrupted = true;
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+</code></pre>
+
+<p>共享模式跟上一篇的独占模式大体一致.只是获取锁的方式有点区别。</p>
+
+<p>AQS有很多方法.有一部分方法是需要子类实现的.所以这里这部分方式不再写.还有一部分方法本身很简单,也不再写.接下来,我会找些比较重要的内容。</p>
+
+<h4 id="获取队列中的第一个线程-等待时间最久的那个">获取队列中的第一个线程(等待时间最久的那个)</h4>
+
+<pre><code class="language-java"> public final Thread getFirstQueuedThread() {
+    // handle only fast path, else relay
+    return (head == tail) ? null : fullGetFirstQueuedThread();
+}
+
+private Thread fullGetFirstQueuedThread() {
+    Node h, s;
+    Thread st;
+    //通常情况下队列中的第一个线程是head.next(head节点的线程为Null.因为head的节点都是当前线程的节点.回顾setHead方法)
+    if (((h = head) != null &amp;&amp; (s = h.next) != null &amp;&amp;
+         s.prev == head &amp;&amp; (st = s.thread) != null) ||
+        ((h = head) != null &amp;&amp; (s = h.next) != null &amp;&amp;
+         s.prev == head &amp;&amp; (st = s.thread) != null))
+        return st;
+
+	//如果head.next中没有找到的话,就从队尾开始向头部遍历.找出最前面的线程
+    Node t = tail;
+    Thread firstThread = null;
+    while (t != null &amp;&amp; t != head) {
+        Thread tt = t.thread;
+        if (tt != null)
+            firstThread = tt;
+        t = t.prev;
+    }
+    return firstThread;
+}
+</code></pre>
+
+<h4 id="当前队列大小-估计值">当前队列大小(估计值)</h4>
+
+<pre><code class="language-java">public final int getQueueLength() {
+        int n = 0;
+        for (Node p = tail; p != null; p = p.prev) {
+            if (p.thread != null)
+                ++n;
+        }
+        return n;
+    }
+</code></pre>
+
+<p>可以看到这个方法并没有对队列加锁.所以如果并发的情况下,当前线程在遍历队列的时候,有其他线程会对队列进行操作.所以它返回的n是不一定等于队列的长度的。</p>
+
+<h3 id="conditionobject">ConditionObject</h3>
+
+<p>先看它的定义</p>
+
+<pre><code class="language-java">public class ConditionObject implements Condition, java.io.Serializable {}
+</code></pre>
+
+<p>可以看到ConditionObject实现了Condition接口.
+Condition可以将Object的monitor(这个以后会说)的方法（wait、notify 和 notifyAll）分解成截然不同的对象，以便通过将这些对象与任意 Lock 实现组合使用。</p>
+
+<h4 id="添加一个条件节点-addconditionwaiter">添加一个条件节点（addConditionWaiter）</h4>
+
+<pre><code class="language-java">private Node addConditionWaiter() {
+    Node t = lastWaiter;
+    // 如果最后一个节点不是CONDITION状态，则将队列(condition队列)中已取消等待condition的节点退出队列(只要队尾节点是非Condition的就需要从头到尾都检查一遍)
+    if (t != null &amp;&amp; t.waitStatus != Node.CONDITION) {
+        unlinkCancelledWaiters();
+        t = lastWaiter;
+    }
+    //添加一个新节点.如果队列为空则将其设置为头结点,否则加到队尾
+    Node node = new Node(Thread.currentThread(), Node.CONDITION);
+    if (t == null)
+        firstWaiter = node;
+    else
+        t.nextWaiter = node;
+    lastWaiter = node;
+    return node;
+}
+</code></pre>
+
+<h4 id="unlinkcancelledwaiters">unlinkCancelledWaiters</h4>
+
+<pre><code class="language-java">private void unlinkCancelledWaiters() {
+    Node t = firstWaiter;
+    Node trail = null;
+    while (t != null) {
+        Node next = t.nextWaiter;
+        if (t.waitStatus != Node.CONDITION) {
+            t.nextWaiter = null;
+            if (trail == null)//如果第一个节点就是非CONDITION节点则,将first.next节点设置为头节点
+                firstWaiter = next;
+            else
+                trail.nextWaiter = next;
+            if (next == null)
+                lastWaiter = trail;
+        }
+        else
+            trail = t;
+        t = next;
+    }
+}
+</code></pre>
+
+<p>比较容易看.就是从头到尾检查每个节点是不是CONDITION状态.如果不是就清除出队</p>
+
+<h3 id="发送信号">发送信号</h3>
+
+<pre><code class="language-java"> public final void signal() {
+    if (!isHeldExclusively())
+        throw new IllegalMonitorStateException();
+    Node first = firstWaiter;
+    if (first != null)
+        doSignal(first);
+}
+
+private void doSignal(Node first) {
+    do {
+        if ( (firstWaiter = first.nextWaiter) == null)
+            lastWaiter = null;
+        first.nextWaiter = null;
+    } while (!transferForSignal(first) &amp;&amp;
+             (first = firstWaiter) != null);
+}
+
+final boolean transferForSignal(Node node) {
+    /*
+     * 如果不能更改状态值,则表示该节点已经被取消了
+     */
+    if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
+        return false;
+
+    /*
+     * 将节点加入队尾.如果已取消或者设置状态失败.则唤醒该线程重新同步.
+     */
+    Node p = enq(node);
+    int ws = p.waitStatus;
+    if (ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
+        LockSupport.unpark(node.thread);
+    return true;
+}
+</code></pre>
+
+<p>signal方法会将在条件队列中等待最久的节点加入到同步队列队尾.</p>
+
+<h4 id="awaituninterruptibly">awaitUninterruptibly</h4>
+
+<pre><code class="language-java"> public final void awaitUninterruptibly() {
+    Node node = addConditionWaiter(); //添加一个条件等待节点
+    int savedState = fullyRelease(node);//保存锁状态
+    boolean interrupted = false;
+    while (!isOnSyncQueue(node)) {
+        //如果不在同步队列中则挂起当前线程
+        LockSupport.park(this);
+        if (Thread.interrupted())
+            interrupted = true;
+    }
+    if (acquireQueued(node, savedState) || interrupted)//当前线程被其它线程中断了的话,中断当前线程
+        selfInterrupt();
+}
+</code></pre>
+
+<h4 id="awaituntil">awaitUntil</h4>
+
+<pre><code class="language-java">public final boolean awaitUntil(Date deadline)
+                throws InterruptedException {
+    long abstime = deadline.getTime(); //获取绝对时间
+    if (Thread.interrupted())
+        throw new InterruptedException();
+    Node node = addConditionWaiter();
+    int savedState = fullyRelease(node);
+    boolean timedout = false;
+    int interruptMode = 0;
+    while (!isOnSyncQueue(node)) {//如果不再队列就不断重试
+        if (System.currentTimeMillis() &gt; abstime) {//如果当前时间大于deadline则
+            timedout = transferAfterCancelledWait(node);
+            break;
+        }
+        LockSupport.parkUntil(this, abstime);//挂起当前线程，abstime是挂起多久时间。
+        if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+            break;
+    }
+    if (acquireQueued(node, savedState) &amp;&amp; interruptMode != THROW_IE)
+        interruptMode = REINTERRUPT;
+    if (node.nextWaiter != null)
+        unlinkCancelledWaiters();
+    if (interruptMode != 0)
+        reportInterruptAfterWait(interruptMode);
+    return !timedout;
+}
+
+final boolean transferAfterCancelledWait(Node node) {
+    if (compareAndSetWaitStatus(node, Node.CONDITION, 0)) {//如果取消等待contion了就将该节点加入同步队列队尾。并返回true
+        enq(node);
+        return true;
+    }
+
+    //如果不在同步队列的话就自旋,直到加入到同步队列
+    while (!isOnSyncQueue(node))
+        Thread.yield();//自旋的时候主动让出cpu
+    return false;
+}
+</code></pre>
+
+<p>指定等待到某个时间点就不再等待.</p>
+
+<p>AQS的主要方法到此就结束了.鉴于很多同学反馈的基础不好,看不太懂.下周开始我们先聊聊并发的理论基础(jvm线程模型,可见性,原子性等)</p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
             
-  
-    
-  
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="vitzhou.top/tags/java-juc/">java JUC</a>
 
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180709_prometheus_many_file/">
-          Prometheus Too Many Open file问题
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-09T10:25:50&#43;08:00">
-        
-  七月 9, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/prometheus">Prometheus</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>Prometheus Too many open file问题定位</p>
-      <p>
-        <a href="vitzhou.top/20180709_prometheus_many_file/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180709_prometheus_many_file/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/prometheus/prometheus.png"/>
-      </div>
-    </a>
-  
-</article>
-
-          
+                  </div>
+                
+              
             
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180707_aqs/">
-          详读JUC系列(1)之AQS
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-08T12:51:42&#43;08:00">
-        
-  七月 8, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/java-juc">java JUC</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2>
-      <p>
-        <a href="vitzhou.top/20180707_aqs/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180707_aqs/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/2018/richu.jpeg"/>
-      </div>
-    </a>
-  
-</article>
-
-          
             
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180629_java_proxy/">
-          Java 动态代理详解
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
         </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-06-29T22:51:42&#43;08:00">
-        
-  六月 29, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/java">java</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>今天我们聊聊java动态代理</p>
-      <p>
-        <a href="vitzhou.top/20180629_java_proxy/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180629_java_proxy/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/2018/richu.jpeg"/>
-      </div>
-    </a>
-  
-</article>
-
-          
-            
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180529_http_proxy/">
-          HTTP proxy
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-05-29T18:51:42&#43;08:00">
-        
-  五月 29, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/golang">golang</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用</p>
-
-<p>原文地址:<a href="https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c">https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c</a></p>
-
-<p></p>
-      <p>
-        <a href="vitzhou.top/20180529_http_proxy/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180529_http_proxy/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/k8s/33.jpg"/>
-      </div>
-    </a>
-  
-</article>
-
-          
-            
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180428_k8s_network_sc/">
-          记一次k8s的网络实践
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-04-27T18:51:42&#43;08:00">
-        
-  四月 27, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/k8s">k8s</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>众所周知k8s的网络一直是个很头疼的问题,这两天我也遇到了网络的问题.本文记录这几天所遇到的问题,以及解决方案</p>
-
-<p></p>
-      <p>
-        <a href="vitzhou.top/20180428_k8s_network_sc/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180428_k8s_network_sc/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/k8s/33.jpg"/>
-      </div>
-    </a>
-  
-</article>
-
-          
-            
-  
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-left" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="vitzhou.top/20180328_prometheus_config/">
-          Prometheus命令
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-03-28T20:51:05&#43;08:00">
-        
-  三月 28, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="vitzhou.top/categories/prometheus">Prometheus</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>最近在用Prometheus收集数据,虽然网上资料现在有不少,但是命令和参数的描述都不够详细.这里简单记录我最近用到的一些配置</p>
-
-<p></p>
-      <p>
-        <a href="vitzhou.top/20180328_prometheus_config/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-    <a href="vitzhou.top/20180328_prometheus_config/">
-      <div class="postShorten-thumbnailimg">
-        <img alt="" itemprop="image" src="vitzhou.top/img/k8s/44.jpg"/>
-      </div>
-    </a>
-  
-</article>
-
-          
-          
-  <div class="pagination-bar">
-    <ul class="pagination">
-      
-        
-        
-          <li class="pagination-next">
-            <a class="btn btn--default btn--small" href="vitzhou.top/page/2/">
-              <span>下一页</span>
-              <i class="fa fa-angle-right text-base icon-ml"></i>
-            </a>
-          </li>
-        
-      
-      <li class="pagination-number">第 1 页 共 2 页</li>
+      </li>
     </ul>
   </div>
 
 
-        </section>
+            
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
+            
+          </div>
+        </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
     &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
@@ -652,6 +599,66 @@
 </footer>
 
       </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
     </div>
     
     <div id="about">
@@ -927,8 +934,35 @@ $(document).ready(function() {
 </script>
 
 
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'vitzhou.top\/20180709_aqs_2\/';
+          
+            this.page.identifier = '\/20180709_aqs_2\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
+
 
 
     
   </body>
 </html>
+

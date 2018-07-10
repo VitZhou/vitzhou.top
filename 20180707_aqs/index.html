@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>详读J.U.C系列(1)之AQS</title>
+    <title>详读JUC系列(1)之AQS</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="java JUC, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
@@ -43,19 +43,19 @@
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
-    <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
+    <link rel="icon" href="vitzhou.top/images/author.jpeg">
     
 
     
-    <meta name="description" content="java J.U.C">
-    <meta property="og:description" content="java J.U.C">
+    <meta name="description" content="java JUC">
+    <meta property="og:description" content="java JUC">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="详读J.U.C系列(1)之AQS">
+    <meta property="og:title" content="详读JUC系列(1)之AQS">
     <meta property="og:url" content="/20180707_aqs/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="java J.U.C">
+    <meta name="twitter:description" content="java JUC">
     
     
 
@@ -67,7 +67,7 @@
     
 
     
-      <meta property="og:image" content="https://vitzhou.top/img/2018/richu.jpeg">
+      <meta property="og:image" content="/img/2018/richu.jpeg">
     
     
     
@@ -75,12 +75,12 @@
     
 
     
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
-    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
     
     
-    <link rel="stylesheet" href="https://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    <link rel="stylesheet" href="vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
     
     
 
@@ -95,17 +95,17 @@
       <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
-    <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
+    <a class="header-title-link" href="vitzhou.top/">周圣华的博客</a>
   </div>
   
     
       <a class="header-right-picture "
-         href="https://vitzhou.top/#about">
+         href="vitzhou.top/#about">
     
     
     
       
-        <img class="header-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+        <img class="header-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
       
     
     </a>
@@ -116,8 +116,8 @@
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
-        <a href="https://vitzhou.top/#about">
-          <img class="sidebar-profile-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" />
+        <a href="vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" />
         </a>
         <h4 class="sidebar-profile-name">Vit Zhou/周圣华</h4>
         
@@ -129,7 +129,7 @@
       
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/">
+      <a class="sidebar-button-link " href="vitzhou.top/">
     
       <i class="sidebar-button-icon fa fa-lg fa-home"></i>
       
@@ -139,7 +139,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/categories">
+      <a class="sidebar-button-link " href="vitzhou.top/categories">
     
       <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
       
@@ -149,7 +149,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/tags">
+      <a class="sidebar-button-link " href="vitzhou.top/tags">
     
       <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
       
@@ -159,7 +159,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/archives">
+      <a class="sidebar-button-link " href="vitzhou.top/archives">
     
       <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
       
@@ -169,7 +169,7 @@
 
   <li class="sidebar-button">
     
-      <a class="sidebar-button-link " href="https://vitzhou.top/#about">
+      <a class="sidebar-button-link " href="vitzhou.top/#about">
     
       <i class="sidebar-button-icon fa fa-lg fa-question"></i>
       
@@ -232,7 +232,7 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      详读J.U.C系列(1)之AQS
+      详读JUC系列(1)之AQS
     </h1>
   
   
@@ -249,7 +249,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/java-juc">java JUC</a>
+      <a class="category-link" href="vitzhou.top/categories/java-juc">java JUC</a>
     
   
 
@@ -263,8 +263,11 @@
 
 <p>
 <!-- top -->
-今天起,不间断的读J.U.C.以及DOCKER和k8s。
-&gt; jdk 1.8</p>
+今天起,不间断的读JUC.以及DOCKER和k8s。</p>
+
+<blockquote>
+<p>jdk 1.8</p>
+</blockquote>
 
 <h3 id="aqs-abstractqueuedsynchronizer">AQS(AbstractQueuedSynchronizer)</h3>
 
@@ -276,13 +279,20 @@
 
 <h3 id="读源码">读源码</h3>
 
-<p>我们先来看下这个类的注解,了解设计的初衷,大意如下:
-1. 提供一个框架，用于实现依赖于先进先出（FIFO）等待队列的阻塞锁和同步器（信号量，事件等）.AQS是大多数同步器的基础.它依赖于单个原子int值表示状态.继承它的子类必须定义更改此状态的受保护的方法，并且要根据获取和释放动作定义状态的语义.该类的方法负责排队和阻塞,子类负责维护状态字段，但是子类仅保证使用getState,setState,compareAndSetState操作同步int值.应将子类定义为非公共内部帮助程序类，用于实现其封闭类的同步属性。类AbstractQueuedSynchronizer未实现任何同步接口。相反，它定义了acquireInterruptibly等方法，可以通过具体的锁和相关的同步器来适当调用它们来实现它们的公共方法
-2. 此类默认支持独占和共享模式.在独占模式下,其他线程尝试获取锁将不会成功.共享模式下,其他线程尝试获取是可能成功的.如果一个线程获取了锁,其他线程尝试获取的话还要判断他是否可以获取.在不同模式下的线程共享FIFO队列.通常，实现子类仅支持这些模式中的一种，但两者都可以在ReadWriteLock中发挥作用。仅支持独占模式或仅支持共享模式的子类无需定义支持未使用模式的方法。
-3. 此类定义了一个嵌套的ConditionObject类.子类可以通过isHeldExclusively获取是否执行独占模式，使用getState获取当前线程的状态对象值,调用的方法release完全释放此对象，并且acquire，给定此保存的状态值，最终将此对象恢复到其先前获取的状态。否则，AbstractQueuedSynchronizer方法会创建这样的条件，因此如果无法满足此约束，请不要使用它。 ConditionObject的行为取决于其同步器实现的语义。
-4. 此类提供内部队列的检查，检测和监视方法，以及condition对象的类似方法。这些可以根据需要使用AbstractQueuedSynchronizer导出到类中，用于它们的同步机制.
-5. 此类的序列化仅存储原子整数(状态属性)，因此反序列化对象具有空线程队列。需要可序列化的子类需要定义readObject方法，该方法在反序列化时将其恢复为已知的初始状态.
-&hellip;..后面的省略</p>
+<p>我们先来看下这个类的注解,了解设计的初衷,大意如下:</p>
+
+<ol>
+<li><p>提供一个框架，用于实现依赖于先进先出（FIFO）等待队列的阻塞锁和同步器（信号量，事件等）.AQS是大多数同步器的基础.它依赖于单个原子int值表示状态.继承它的子类必须定义更改此状态的受保护的方法，并且要根据获取和释放动作定义状态的语义.该类的方法负责排队和阻塞,子类负责维护状态字段，但是子类仅保证使用getState,setState,compareAndSetState操作同步int值.应将子类定义为非公共内部帮助程序类，用于实现其封闭类的同步属性。类AbstractQueuedSynchronizer未实现任何同步接口。相反，它定义了acquireInterruptibly等方法，可以通过具体的锁和相关的同步器来适当调用它们来实现它们的公共方法</p></li>
+
+<li><p>此类默认支持独占和共享模式.在独占模式下,其他线程尝试获取锁将不会成功.共享模式下,其他线程尝试获取是可能成功的.如果一个线程获取了锁,其他线程尝试获取的话还要判断他是否可以获取.在不同模式下的线程共享FIFO队列.通常，实现子类仅支持这些模式中的一种，但两者都可以在ReadWriteLock中发挥作用。仅支持独占模式或仅支持共享模式的子类无需定义支持未使用模式的方法。</p></li>
+
+<li><p>此类定义了一个嵌套的ConditionObject类.子类可以通过isHeldExclusively获取是否执行独占模式，使用getState获取当前线程的状态对象值,调用的方法release完全释放此对象，并且acquire，给定此保存的状态值，最终将此对象恢复到其先前获取的状态。否则，AbstractQueuedSynchronizer方法会创建这样的条件，因此如果无法满足此约束，请不要使用它。 ConditionObject的行为取决于其同步器实现的语义。</p></li>
+
+<li><p>此类提供内部队列的检查，检测和监视方法，以及condition对象的类似方法。这些可以根据需要使用AbstractQueuedSynchronizer导出到类中，用于它们的同步机制.</p></li>
+
+<li><p>此类的序列化仅存储原子整数(状态属性)，因此反序列化对象具有空线程队列。需要可序列化的子类需要定义readObject方法，该方法在反序列化时将其恢复为已知的初始状态.
+&hellip;..后面的省略</p></li>
+</ol>
 
 <h4 id="abstractownablesynchronizer">AbstractOwnableSynchronizer</h4>
 
@@ -344,7 +354,7 @@
         static final int CONDITION = -2;
         /**
          * waitStatus value to indicate the next acquireShared should unconditionally propagate
-         * 大致意思是说如果waitStatus为-3的话,那么下一次共享模式获取锁的时候应该无条件的向后继节点传播
+         * 大致意思是说如果waitStatus为-3的话,那么下一次获取锁的机会可以向后继节点传播
          */
         static final int PROPAGATE = -3;
 
@@ -425,7 +435,7 @@
 </code></pre>
 
 <p>AQS使用Node类来实现阻塞同步队列.结合AQS中的几个其他属性构成如下结构:
-<img src="https://vitzhou.top/img/juc/fifo.png" alt="" />
+<img src="vitzhou.top/img/juc/fifo.png" alt="" />
 其中head,state,tail定义如下:</p>
 
 <pre><code class="language-java">	/**
@@ -458,7 +468,7 @@
 <h4 id="enq-入队操作">enq 入队操作</h4>
 
 <pre><code class="language-java">private Node enq(final Node node) {
-    for (;;) {//自旋,直到成功加入队尾
+    for (;;) {//不断重试,直到成功加入队尾
         Node t = tail;
         if (t == null) { // 初始化队列,设置一个空节点为head节点,并将tail也指向该节点
             if (compareAndSetHead(new Node()))
@@ -545,7 +555,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
             if (h != null &amp;&amp; h != tail) {
                 int ws = h.waitStatus;
                 //如果head节点的状态为SIGNAL,则将其状态改为0，并唤醒它的后继节点
-                if (ws == Node.SIGNAL) {//SIGNAL状态表示该节点需要唤醒.
+                if (ws == Node.SIGNAL) {//SIGNAL状态表示该节点的后继节点需要唤醒
                     if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))//状态修改失败的话重试
                         continue;            // loop to recheck cases
                     unparkSuccessor(h);
@@ -616,19 +626,35 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 }
 </code></pre>
 
-<p>图1: <img src="https://vitzhou.top/img/juc/cancel_node1.jpg" alt="" />
-&gt; 黄色部分表示代码所做处理</p>
+<p>图1: <img src="vitzhou.top/img/juc/cancel_node1.jpg" alt="" /></p>
 
-<p>图2：<img src="https://vitzhou.top/img/juc/cancel_node3.jpg" alt="" />
-&gt; 黄色部分表示代码所做处理</p>
+<blockquote>
+<p>黄色部分表示代码所做处理</p>
+</blockquote>
 
-<p>取消尝试获取锁操作,会进行如下操作:
-1. 将该节点的线程释放(node.thread=null).
-2. 将该节点的状态设为取消
-3. 如果该节点为队尾节点.则从队列中移除.否则4
-4. 找到当前结点的继任结点，前趋的next指针指向继任结点
-5. 当前结点的next指针指向自己
-&gt; 大家可能注意到了,它之处理了next指针,并没有处理prev.因为它已经将节点的状态设置为取消状态(cancelled)。所以其他操作在操作队列时即便可以通过tail的prev遍历到它,也会因为是cancelled状态而被忽略。这么做是为什么？我还没想明白.为了效率么？</p>
+<p>图2：<img src="vitzhou.top/img/juc/cancel_node3.jpg" alt="" /></p>
+
+<blockquote>
+<p>黄色部分表示代码所做处理</p>
+</blockquote>
+
+<p>取消尝试获取锁操作,会进行如下操作:</p>
+
+<ol>
+<li><p>将该节点的线程释放(node.thread=null).</p></li>
+
+<li><p>将该节点的状态设为取消</p></li>
+
+<li><p>如果该节点为队尾节点.则从队列中移除.否则</p></li>
+
+<li><p>找到当前结点的继任结点，前趋的next指针指向继任结点</p></li>
+
+<li><p>当前结点的next指针指向自己</p></li>
+</ol>
+
+<blockquote>
+<p>大家可能注意到了,它之处理了next指针,并没有处理prev.因为它已经将节点的状态设置为取消状态(cancelled)。所以其他操作在操作队列时即便可以通过tail的prev遍历到它,也会因为是cancelled状态而被忽略。这么做是为什么？我还没想明白.为了效率么？</p>
+</blockquote>
 
 <h4 id="shouldparkafterfailedacquire-node-pred-node-node-尝试获取失败之后是否需要挂起">shouldParkAfterFailedAcquire(Node pred, Node node)尝试获取失败之后是否需要挂起</h4>
 
@@ -699,7 +725,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 }
 </code></pre>
 
-<p>图1: <img src="https://vitzhou.top/img/juc/remove_head.png" alt="" /></p>
+<p>图1: <img src="vitzhou.top/img/juc/remove_head.png" alt="" /></p>
 
 <blockquote>
 <p>图片来自<a href="https://juejin.im/post/5aeb07ab6fb9a07ac36350c8">https://juejin.im/post/5aeb07ab6fb9a07ac36350c8</a></p>
@@ -763,7 +789,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-juc/">java JUC</a>
+  <a class="tag tag--primary tag--small" href="vitzhou.top/tags/java-juc/">java JUC</a>
 
                   </div>
                 
@@ -776,7 +802,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -784,7 +810,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -856,7 +882,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180709_prometheus_many_file/" data-tooltip="Prometheus Too Many Open file问题">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -864,7 +890,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="vitzhou.top/20180629_java_proxy/" data-tooltip="Java 动态代理详解">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -916,7 +942,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
       <i class="fa fa-remove"></i>
     </div>
     
-      <img id="about-card-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+      <img id="about-card-picture" src="vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
     
     <h4 id="about-card-name">Vit Zhou/周圣华</h4>
     
@@ -961,7 +987,24 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180709_prometheus_many_file/">
+              <a class="link-unstyled" href="vitzhou.top/20180709_aqs_2/">
+                <h3 class="media-heading">详读JUC系列(2)之AQS</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Jul 7, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>AQS(二)</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="vitzhou.top/20180709_prometheus_many_file/">
                 <h3 class="media-heading">Prometheus Too Many Open file问题</h3>
               </a>
               <span class="media-meta">
@@ -978,8 +1021,8 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180707_aqs/">
-                <h3 class="media-heading">详读J.U.C系列(1)之AQS</h3>
+              <a class="link-unstyled" href="vitzhou.top/20180707_aqs/">
+                <h3 class="media-heading">详读JUC系列(1)之AQS</h3>
               </a>
               <span class="media-meta">
                 <span class="media-date text-small">
@@ -995,7 +1038,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180629_java_proxy/">
+              <a class="link-unstyled" href="vitzhou.top/20180629_java_proxy/">
                 <h3 class="media-heading">Java 动态代理详解</h3>
               </a>
               <span class="media-meta">
@@ -1012,7 +1055,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180529_http_proxy/">
+              <a class="link-unstyled" href="vitzhou.top/20180529_http_proxy/">
                 <h3 class="media-heading">HTTP proxy</h3>
               </a>
               <span class="media-meta">
@@ -1033,7 +1076,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180428_k8s_network_sc/">
+              <a class="link-unstyled" href="vitzhou.top/20180428_k8s_network_sc/">
                 <h3 class="media-heading">记一次k8s的网络实践</h3>
               </a>
               <span class="media-meta">
@@ -1052,7 +1095,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180328_prometheus_config/">
+              <a class="link-unstyled" href="vitzhou.top/20180328_prometheus_config/">
                 <h3 class="media-heading">Prometheus命令</h3>
               </a>
               <span class="media-meta">
@@ -1071,7 +1114,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180321_http2collection/">
+              <a class="link-unstyled" href="vitzhou.top/20180321_http2collection/">
                 <h3 class="media-heading">http2资料收集</h3>
               </a>
               <span class="media-meta">
@@ -1089,7 +1132,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">
+              <a class="link-unstyled" href="vitzhou.top/20180221_threadpoolexcutor_reject/">
                 <h3 class="media-heading">ThreadPoolExecutor的Reject策略</h3>
               </a>
               <span class="media-meta">
@@ -1107,7 +1150,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
           <div class="media">
             
             <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180218_threadpoolexecutor2/">
+              <a class="link-unstyled" href="vitzhou.top/20180218_threadpoolexecutor2/">
                 <h3 class="media-heading">ThreadPoolExecutor(二)</h3>
               </a>
               <span class="media-meta">
@@ -1122,24 +1165,6 @@ private final boolean compareAndSetTail(Node expect, Node update) {
             <hr>
           </div>
         
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180217_threadpoolexecutor/">
-                <h3 class="media-heading">ThreadPoolExecutor(一)</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Feb 2, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"><p>之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
-</p></div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
       </div>
     </div>
     <div class="modal-footer">
@@ -1147,7 +1172,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         13 posts found
+         14 posts found
       </p>
     </div>
   </div>
@@ -1155,7 +1180,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
     
   
     
-    <div id="cover" style="background-image:url('https://vitzhou.top/images/cover1.jpg');"></div>
+    <div id="cover" style="background-image:url('vitzhou.top/images/cover1.jpg');"></div>
   
 
 
@@ -1167,7 +1192,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
 
 
-<script src="https://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+<script src="vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
 
 
 
@@ -1188,7 +1213,7 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180707_aqs\/';
+          this.page.url = 'vitzhou.top\/20180707_aqs\/';
           
             this.page.identifier = '\/20180707_aqs\/'
           
