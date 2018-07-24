@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Work on 周圣华的博客</title>
-    <link>https:vitzhou.top/tags/work/</link>
+    <link>https://vitzhou.top/tags/work/</link>
     <description>Recent content in Work on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Wed, 28 Mar 2018 20:51:05 +0800</lastBuildDate>
     
-	<atom:link href="https:vitzhou.top/tags/work/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://vitzhou.top/tags/work/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Prometheus命令</title>
-      <link>https:vitzhou.top/20180328_prometheus_config/</link>
+      <link>https://vitzhou.top/20180328_prometheus_config/</link>
       <pubDate>Wed, 28 Mar 2018 20:51:05 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180328_prometheus_config/</guid>
+      <guid>https://vitzhou.top/20180328_prometheus_config/</guid>
       <description>&lt;p&gt;最近在用Prometheus收集数据,虽然网上资料现在有不少,但是命令和参数的描述都不够详细.这里简单记录我最近用到的一些配置&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>

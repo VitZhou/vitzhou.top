@@ -2,57 +2,74 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on 周圣华的博客</title>
-    <link>https:vitzhou.top/post/</link>
+    <link>https://vitzhou.top/post/</link>
     <description>Recent content in Posts on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 10 Jul 2018 12:51:42 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 24 Jul 2018 20:23:08 +0800</lastBuildDate>
     
-	<atom:link href="https:vitzhou.top/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://vitzhou.top/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>ReetrantLock源码解析</title>
+      <link>https://vitzhou.top/20180724_reetrantlock/</link>
+      <pubDate>Tue, 24 Jul 2018 20:23:08 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180724_reetrantlock/</guid>
+      <description>ReetrantLock源码解析
+&amp;lt;&amp;ndash;top&amp;ndash;&amp;gt;
+前言 首先这篇文章开头之前需要说明白一些概念:可重入锁,公平锁,非公平锁 - 可重入锁: 也叫做递归锁，指的是同一线程 外层函数获得锁之后 ，内层递归函数仍然有获取该锁的代码，但不受影响(太难理解了,换种简单描述:如果某个线程试图获取一个已经由它自己持有的锁时，那么这个请求会立刻成功).重入锁可以避免死锁比如如下代码:
+public class Widget { public synchronized void doSomething(){ // do something } } public class LoggingWidget extends Widget { public synchronized void doSomething() { super.doSomething(); } }  这里涉及到了重写,子类重写了父类的doSomething()方法.如果synchronized不是重入锁的话,那么子类的doSomething方法就很有可能会产生死锁.因为synchronized修饰方法时,synchronized其实是对象锁(等效于synchronized(this)).那么子类和父类使用的是同一把锁.当调用子类的doSomething时,锁被获取了,然后super.doSomething()时,又尝试去获取这把锁,此时锁已经被拿,所以只能在这等锁释放.但是子类的doSomething方法必须要执行完super.doSomething()之后才能释放锁.所以就造成了死锁。
+ 公平锁: 指的是按照先来后到的顺序,公平的获取.先来的先得,后来的后得。 非公平锁: 与公平锁相反.不需要排队，大家一起竞争,谁抢到了就是谁的。  公平锁在大并发的场景下,非常浪费性能,因为他需要排队,唤醒线程等操作.
+ReetrantLock 它和synchronized都是重入锁.ReetrantLock有两种实现(公平和非公平)。
+public class ReentrantLock implements Lock, java.io.Serializable  由此可以看出,它实现了一个Lock接口和可序列化接口。
+Lock 先看下Lock接口的定义:
+public interface Lock { void lock(); void lockInterruptibly() throws InterruptedException; boolean tryLock(); boolean tryLock(long time, TimeUnit unit) throws InterruptedException; void unlock(); Condition newCondition(); }   lock(): 获取锁.</description>
+    </item>
+    
+    <item>
       <title>详读JUC系列(2)之AQS</title>
-      <link>https:vitzhou.top/20180709_aqs_2/</link>
+      <link>https://vitzhou.top/20180709_aqs_2/</link>
       <pubDate>Tue, 10 Jul 2018 12:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180709_aqs_2/</guid>
+      <guid>https://vitzhou.top/20180709_aqs_2/</guid>
       <description>&lt;p&gt;AQS(二)&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Prometheus Too Many Open file问题</title>
-      <link>https:vitzhou.top/20180709_prometheus_many_file/</link>
+      <link>https://vitzhou.top/20180709_prometheus_many_file/</link>
       <pubDate>Mon, 09 Jul 2018 10:25:50 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180709_prometheus_many_file/</guid>
+      <guid>https://vitzhou.top/20180709_prometheus_many_file/</guid>
       <description>&lt;p&gt;Prometheus Too many open file问题定位&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>详读JUC系列(1)之AQS</title>
-      <link>https:vitzhou.top/20180707_aqs/</link>
+      <link>https://vitzhou.top/20180707_aqs/</link>
       <pubDate>Sun, 08 Jul 2018 12:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180707_aqs/</guid>
+      <guid>https://vitzhou.top/20180707_aqs/</guid>
       <description>&lt;h2 id=&#34;详读j-u-c系列-1-之aqs&#34;&gt;详读J.U.C系列(1)之AQS&lt;/h2&gt;</description>
     </item>
     
     <item>
       <title>Java 动态代理详解</title>
-      <link>https:vitzhou.top/20180629_java_proxy/</link>
+      <link>https://vitzhou.top/20180629_java_proxy/</link>
       <pubDate>Fri, 29 Jun 2018 22:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180629_java_proxy/</guid>
+      <guid>https://vitzhou.top/20180629_java_proxy/</guid>
       <description>&lt;p&gt;今天我们聊聊java动态代理&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>HTTP proxy</title>
-      <link>https:vitzhou.top/20180529_http_proxy/</link>
+      <link>https://vitzhou.top/20180529_http_proxy/</link>
       <pubDate>Tue, 29 May 2018 18:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180529_http_proxy/</guid>
+      <guid>https://vitzhou.top/20180529_http_proxy/</guid>
       <description>&lt;p&gt;最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用&lt;/p&gt;
 
 &lt;p&gt;原文地址:&lt;a href=&#34;https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c&#34;&gt;https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c&lt;/a&gt;&lt;/p&gt;
@@ -62,10 +79,10 @@
     
     <item>
       <title>记一次k8s的网络实践</title>
-      <link>https:vitzhou.top/20180428_k8s_network_sc/</link>
+      <link>https://vitzhou.top/20180428_k8s_network_sc/</link>
       <pubDate>Fri, 27 Apr 2018 18:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180428_k8s_network_sc/</guid>
+      <guid>https://vitzhou.top/20180428_k8s_network_sc/</guid>
       <description>&lt;p&gt;众所周知k8s的网络一直是个很头疼的问题,这两天我也遇到了网络的问题.本文记录这几天所遇到的问题,以及解决方案&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>
@@ -73,10 +90,10 @@
     
     <item>
       <title>Prometheus命令</title>
-      <link>https:vitzhou.top/20180328_prometheus_config/</link>
+      <link>https://vitzhou.top/20180328_prometheus_config/</link>
       <pubDate>Wed, 28 Mar 2018 20:51:05 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180328_prometheus_config/</guid>
+      <guid>https://vitzhou.top/20180328_prometheus_config/</guid>
       <description>&lt;p&gt;最近在用Prometheus收集数据,虽然网上资料现在有不少,但是命令和参数的描述都不够详细.这里简单记录我最近用到的一些配置&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>
@@ -84,70 +101,70 @@
     
     <item>
       <title>http2资料收集</title>
-      <link>https:vitzhou.top/20180321_http2collection/</link>
+      <link>https://vitzhou.top/20180321_http2collection/</link>
       <pubDate>Wed, 21 Mar 2018 20:41:02 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180321_http2collection/</guid>
+      <guid>https://vitzhou.top/20180321_http2collection/</guid>
       <description>&lt;p&gt;今天开始学习http2,先搜集一些资料
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>ThreadPoolExecutor的Reject策略</title>
-      <link>https:vitzhou.top/20180221_threadpoolexcutor_reject/</link>
+      <link>https://vitzhou.top/20180221_threadpoolexcutor_reject/</link>
       <pubDate>Wed, 21 Feb 2018 14:00:01 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180221_threadpoolexcutor_reject/</guid>
+      <guid>https://vitzhou.top/20180221_threadpoolexcutor_reject/</guid>
       <description>&lt;p&gt;今天我们专门聊聊ThreadPoolExecutor的拒绝策略
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>ThreadPoolExecutor(二)</title>
-      <link>https:vitzhou.top/20180218_threadpoolexecutor2/</link>
+      <link>https://vitzhou.top/20180218_threadpoolexecutor2/</link>
       <pubDate>Sun, 18 Feb 2018 18:16:38 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180218_threadpoolexecutor2/</guid>
+      <guid>https://vitzhou.top/20180218_threadpoolexecutor2/</guid>
       <description>&lt;p&gt;接着上文继续看ThreadPoolExecutor
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>ThreadPoolExecutor(一)</title>
-      <link>https:vitzhou.top/20180217_threadpoolexecutor/</link>
+      <link>https://vitzhou.top/20180217_threadpoolexecutor/</link>
       <pubDate>Sun, 18 Feb 2018 11:07:44 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180217_threadpoolexecutor/</guid>
+      <guid>https://vitzhou.top/20180217_threadpoolexecutor/</guid>
       <description>&lt;p&gt;之前去面试被问及到线程池的细节,各种被虐。今天将这个短板补上来.
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Eureka Client配置详解</title>
-      <link>https:vitzhou.top/20180213_eureka_client_config/</link>
+      <link>https://vitzhou.top/20180213_eureka_client_config/</link>
       <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180213_eureka_client_config/</guid>
+      <guid>https://vitzhou.top/20180213_eureka_client_config/</guid>
       <description>&lt;p&gt;这次我们来详细聊聊eureka client服务的配置
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Eureka客户端注册流程</title>
-      <link>https:vitzhou.top/20180211_eureka_client_registry/</link>
+      <link>https://vitzhou.top/20180211_eureka_client_registry/</link>
       <pubDate>Sun, 11 Feb 2018 15:09:33 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180211_eureka_client_registry/</guid>
+      <guid>https://vitzhou.top/20180211_eureka_client_registry/</guid>
       <description>&lt;p&gt;本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看&lt;a href=&#34;http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/&#34;&gt;这里&lt;/a&gt;入门.
 &lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Spring Cloud Config自动刷新机制</title>
-      <link>https:vitzhou.top/2018-02-spring-cloud-refresh-context/</link>
+      <link>https://vitzhou.top/2018-02-spring-cloud-refresh-context/</link>
       <pubDate>Tue, 06 Feb 2018 14:31:23 +0800</pubDate>
       
-      <guid>https:vitzhou.top/2018-02-spring-cloud-refresh-context/</guid>
+      <guid>https://vitzhou.top/2018-02-spring-cloud-refresh-context/</guid>
       <description>&lt;p&gt;Spring Cloud Config自动刷新的主要流程
 &lt;/p&gt;</description>
     </item>

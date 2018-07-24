@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>K8s on 周圣华的博客</title>
-    <link>https:vitzhou.top/tags/k8s/</link>
+    <link>https://vitzhou.top/tags/k8s/</link>
     <description>Recent content in K8s on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Fri, 27 Apr 2018 18:51:42 +0800</lastBuildDate>
     
-	<atom:link href="https:vitzhou.top/tags/k8s/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://vitzhou.top/tags/k8s/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>记一次k8s的网络实践</title>
-      <link>https:vitzhou.top/20180428_k8s_network_sc/</link>
+      <link>https://vitzhou.top/20180428_k8s_network_sc/</link>
       <pubDate>Fri, 27 Apr 2018 18:51:42 +0800</pubDate>
       
-      <guid>https:vitzhou.top/20180428_k8s_network_sc/</guid>
+      <guid>https://vitzhou.top/20180428_k8s_network_sc/</guid>
       <description>&lt;p&gt;众所周知k8s的网络一直是个很头疼的问题,这两天我也遇到了网络的问题.本文记录这几天所遇到的问题,以及解决方案&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>
