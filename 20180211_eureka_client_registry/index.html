@@ -802,22 +802,14 @@ scheduledPeriodicRef.set(next);
             
             <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20180724_reetrantlock/">
-                <h3 class="media-heading">ReetrantLock源码解析</h3>
+                <h3 class="media-heading">详读JUC系列之ReetrantLock</h3>
               </a>
               <span class="media-meta">
                 <span class="media-date text-small">
                   Jul 7, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">ReetrantLock源码解析
-&lt;&ndash;top&ndash;&gt;
-前言 首先这篇文章开头之前需要说明白一些概念:可重入锁,公平锁,非公平锁 - 可重入锁: 也叫做递归锁，指的是同一线程 外层函数获得锁之后 ，内层递归函数仍然有获取该锁的代码，但不受影响(太难理解了,换种简单描述:如果某个线程试图获取一个已经由它自己持有的锁时，那么这个请求会立刻成功).重入锁可以避免死锁比如如下代码:
-public class Widget { public synchronized void doSomething(){ // do something } } public class LoggingWidget extends Widget { public synchronized void doSomething() { super.doSomething(); } }  这里涉及到了重写,子类重写了父类的doSomething()方法.如果synchronized不是重入锁的话,那么子类的doSomething方法就很有可能会产生死锁.因为synchronized修饰方法时,synchronized其实是对象锁(等效于synchronized(this)).那么子类和父类使用的是同一把锁.当调用子类的doSomething时,锁被获取了,然后super.doSomething()时,又尝试去获取这把锁,此时锁已经被拿,所以只能在这等锁释放.但是子类的doSomething方法必须要执行完super.doSomething()之后才能释放锁.所以就造成了死锁。
- 公平锁: 指的是按照先来后到的顺序,公平的获取.先来的先得,后来的后得。 非公平锁: 与公平锁相反.不需要排队，大家一起竞争,谁抢到了就是谁的。  公平锁在大并发的场景下,非常浪费性能,因为他需要排队,唤醒线程等操作.
-ReetrantLock 它和synchronized都是重入锁.ReetrantLock有两种实现(公平和非公平)。
-public class ReentrantLock implements Lock, java.io.Serializable  由此可以看出,它实现了一个Lock接口和可序列化接口。
-Lock 先看下Lock接口的定义:
-public interface Lock { void lock(); void lockInterruptibly() throws InterruptedException; boolean tryLock(); boolean tryLock(long time, TimeUnit unit) throws InterruptedException; void unlock(); Condition newCondition(); }   lock(): 获取锁.</div>
+              <div class="media-content hide-xs font-merryweather"><p>详读JUC系列之ReetrantLock</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>

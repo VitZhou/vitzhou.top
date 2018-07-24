@@ -6,10 +6,19 @@
     <description>Recent content in Java Juc on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 10 Jul 2018 12:51:42 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 24 Jul 2018 20:23:08 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/categories/java-juc/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>详读JUC系列之ReetrantLock</title>
+      <link>https://vitzhou.top/20180724_reetrantlock/</link>
+      <pubDate>Tue, 24 Jul 2018 20:23:08 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180724_reetrantlock/</guid>
+      <description>&lt;p&gt;详读JUC系列之ReetrantLock&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>详读JUC系列(2)之AQS</title>
