@@ -583,10 +583,15 @@ static final class FairSync extends Sync
 
 <h2 id="总结">总结</h2>
 
-<p>ReentrantLock是个可重入锁,它可以有公平和非公平两种实现.其中Lock方法会在获取不到锁时加入到aqs的等待队列中.直到获取到锁,或者线程被其他线程中断。而tryLock获取不到会直接返回,并返回false。
-ReentrantLock是以独占模式获取锁的
-ReentrantLock也是其他juc中的类的基类(今后的博客中可以看到)
-从acquire(1)可以看出1即是aqs中大多数方法的的参数arg。该值同一个线程获取锁的次数.如是一个线程第一次且获取到了锁,则状态state为1,如果该线程又重入了1次,则状态state为2.通过state状态可以记录锁被同一个线程获取了几次,再释放锁时则需要将state归为0，才表示释放成功（获取几次就需要释放几次.否则就会产生死锁）</p>
+<ul>
+<li><p>ReentrantLock是个可重入锁,它可以有公平和非公平两种实现.其中Lock方法会在获取不到锁时加入到aqs的等待队列中.直到获取到锁,或者线程被其他线程中断。而tryLock获取不到会直接返回,并返回false。</p></li>
+
+<li><p>ReentrantLock是以独占模式获取锁的</p></li>
+
+<li><p>ReentrantLock也是其他juc中的类的基类(今后的博客中可以看到)</p></li>
+
+<li><p>从acquire(1)可以看出1即是aqs中大多数方法的的参数arg。该值同一个线程获取锁的次数.如是一个线程第一次且获取到了锁,则状态state为1,如果该线程又重入了1次,则状态state为2.通过state状态可以记录锁被同一个线程获取了几次,再释放锁时则需要将state归为0，才表示释放成功（获取几次就需要释放几次.否则就会产生死锁）</p></li>
+</ul>
               
             </div>
           </div>
