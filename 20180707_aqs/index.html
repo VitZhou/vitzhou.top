@@ -262,7 +262,32 @@
               <h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2>
 
 <p>
-<!-- top -->
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</a>
+<ul>
+<li><a href="#aqs-abstractqueuedsynchronizer">AQS(AbstractQueuedSynchronizer)</a></li>
+<li><a href="#读源码">读源码</a>
+<ul>
+<li><a href="#abstractownablesynchronizer">AbstractOwnableSynchronizer</a></li>
+<li><a href="#node">Node</a></li>
+<li><a href="#sethead-出对操作">setHead 出对操作</a></li>
+<li><a href="#enq-入队操作">enq 入队操作</a></li>
+<li><a href="#addwaiter-node-mode-添加waiter节点">addWaiter(Node mode) 添加waiter节点</a></li>
+<li><a href="#unparksuccessor-node-node-唤醒后继节点">unparkSuccessor(Node node)  唤醒后继节点</a></li>
+<li><a href="#共享模式下的释放操作">共享模式下的释放操作</a></li>
+<li><a href="#cancelacquire-node-node">cancelAcquire(Node node)</a></li>
+<li><a href="#shouldparkafterfailedacquire-node-pred-node-node-尝试获取失败之后是否需要挂起">shouldParkAfterFailedAcquire(Node pred, Node node)尝试获取失败之后是否需要挂起</a></li>
+<li><a href="#parkandcheckinterrupt">parkAndCheckInterrupt()</a></li>
+<li><a href="#acquirequeued-final-node-node-int-arg">acquireQueued(final Node node, int arg)</a></li>
+<li><a href="#doacquirenanos-int-arg-long-nanostimeout">doAcquireNanos(int arg, long nanosTimeout)</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
 今天起,不间断的读JUC.以及DOCKER和k8s。</p>
 
 <blockquote>
@@ -837,7 +862,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#">
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
         
           <i class="fa fa-list"></i>
         </a>
@@ -917,7 +942,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#">
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
         
           <i class="fa fa-list"></i>
         </a>
@@ -995,7 +1020,8 @@ private final boolean compareAndSetTail(Node expect, Node update) {
                   Jul 7, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>详读JUC系列之ReetrantLock</p></div>
+              <div class="media-content hide-xs font-merryweather"><p>详读JUC系列之ReetrantLock
+</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>

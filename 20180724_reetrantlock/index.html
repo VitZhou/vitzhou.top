@@ -259,10 +259,41 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>详读JUC系列之ReetrantLock</p>
+              <p>详读JUC系列之ReetrantLock
+</p>
 
-<p>
-<!-- top --></p>
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li><a href="#reetrantlock源码解析">ReetrantLock源码解析</a>
+<ul>
+<li><a href="#前言">前言</a>
+<ul>
+<li><a href="#reetrantlock">ReetrantLock</a></li>
+<li><a href="#lock">Lock</a></li>
+<li><a href="#sync">Sync</a>
+<ul>
+<li><a href="#sync源码">Sync源码</a></li>
+<li><a href="#nonfairsync">NonfairSync</a></li>
+<li><a href="#fairsync">FairSync</a></li>
+</ul></li>
+<li><a href="#其他重要的方法">其他重要的方法</a>
+<ul>
+<li><a href="#reentrantlock">ReentrantLock()</a></li>
+<li><a href="#public-reentrantlock-boolean-fair">public ReentrantLock(boolean fair)</a></li>
+<li><a href="#lockinterruptibly">lockInterruptibly()</a></li>
+<li><a href="#trylock">tryLock()</a></li>
+<li><a href="#unlock">unlock()</a></li>
+<li><a href="#haswaiters-condition-condition">hasWaiters(Condition condition)</a></li>
+<li><a href="#getwaitqueuelength-condition-condition">getWaitQueueLength(Condition condition)</a></li>
+<li><a href="#getwaitingthreads-condition-condition">getWaitingThreads(Condition condition)</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#总结">总结</a></li>
+</ul></li>
+</ul>
+</nav>
+
+<h1 id="reetrantlock源码解析">ReetrantLock源码解析</h1>
 
 <h2 id="前言">前言</h2>
 
@@ -399,6 +430,8 @@ static final class FairSync extends Sync
     }
 </code></pre>
 
+<h4 id="nonfairsync">NonfairSync</h4>
+
 <pre><code class="language-java">static final class NonfairSync extends Sync {
     private static final long serialVersionUID = 7316153563782823691L;
 
@@ -423,6 +456,137 @@ static final class FairSync extends Sync
 <li>cquire会回调到该类的tryAcquire。如果还是获取失败则进入asq的acquireQueued方法.进行自旋.直到当前线程被其他线程中断或者获取锁成功(acquireQueued细节回看前一篇博客)。</li>
 </ol></li>
 </ul>
+
+<h4 id="fairsync">FairSync</h4>
+
+<pre><code class="language-java">static final class FairSync extends Sync {
+    private static final long serialVersionUID = -3000897897090466540L;
+
+    final void lock() {
+        acquire(1);
+    }
+
+    /**
+     * Fair version of tryAcquire.  Don't grant access unless
+     * recursive call or no waiters or is first.
+     */
+    protected final boolean tryAcquire(int acquires) {
+        final Thread current = Thread.currentThread();
+        int c = getState();
+        if (c == 0) {
+            if (!hasQueuedPredecessors() &amp;&amp;
+                compareAndSetState(0, acquires)) {
+                setExclusiveOwnerThread(current);
+                return true;
+            }
+        }
+        else if (current == getExclusiveOwnerThread()) {
+            int nextc = c + acquires;
+            if (nextc &lt; 0)
+                throw new Error(&quot;Maximum lock count exceeded&quot;);
+            setState(nextc);
+            return true;
+        }
+        return false;
+    }
+}
+</code></pre>
+
+<p>hasQueuedPredecessors()该方法返回是否有比当前线程等待更久的线程(即当前线程在aqs的等待队列中是不是head节点)。
+从代码可以看出,公平锁会判断当前线程是不是有资格获取锁(等待最久的线程才能获取锁)，让先等待的线程先拿到锁,从而达到公平。</p>
+
+<h3 id="其他重要的方法">其他重要的方法</h3>
+
+<h4 id="reentrantlock">ReentrantLock()</h4>
+
+<pre><code class="language-java">public ReentrantLock() {
+    sync = new NonfairSync();
+}
+</code></pre>
+
+<p>可以看出ReentrantLock默认是使用的非公平锁.</p>
+
+<h4 id="public-reentrantlock-boolean-fair">public ReentrantLock(boolean fair)</h4>
+
+<pre><code class="language-java">public ReentrantLock(boolean fair) {
+    sync = fair ? new FairSync() : new NonfairSync();
+}
+</code></pre>
+
+<p>也可以指定是否公平</p>
+
+<h4 id="lockinterruptibly">lockInterruptibly()</h4>
+
+<pre><code class="language-java">public void lockInterruptibly() throws InterruptedException {
+    sync.acquireInterruptibly(1);
+}
+</code></pre>
+
+<p>该方法以独占模式获取锁,如果被中断了的话抛出InterruptedException异常.否则至少尝试一次tryAcquire尝试获取锁.如果成功则返回.否则线程会排队,直到获取锁或者被其他线程中断。</p>
+
+<h4 id="trylock">tryLock()</h4>
+
+<pre><code class="language-java">public boolean tryLock() {
+    return sync.nonfairTryAcquire(1);
+}
+</code></pre>
+
+<p>尝试获取锁,获取到了返回true,否则返回false.</p>
+
+<h4 id="unlock">unlock()</h4>
+
+<pre><code class="language-java">public void unlock() {
+    sync.release(1);
+}
+</code></pre>
+
+<p>释放锁.会使用到aqs的release方法。</p>
+
+<h4 id="haswaiters-condition-condition">hasWaiters(Condition condition)</h4>
+
+<pre><code class="language-java">public boolean hasWaiters(Condition condition) {
+    if (condition == null)
+        throw new NullPointerException();
+    if (!(condition instanceof AbstractQueuedSynchronizer.ConditionObject))
+        throw new IllegalArgumentException(&quot;not owner&quot;);
+    return sync.hasWaiters((AbstractQueuedSynchronizer.ConditionObject)condition);
+}
+</code></pre>
+
+<p>查看是否有线程在等待condition条件.但是由于中断和超时随时会发送.所以该方法并不能保证将来的信号可以唤醒到线程(可能被中断了,没有线程可以唤醒)。该方法在之后的类中会被多次用到。</p>
+
+<h4 id="getwaitqueuelength-condition-condition">getWaitQueueLength(Condition condition)</h4>
+
+<pre><code class="language-java"> public int getWaitQueueLength(Condition condition) {
+    if (condition == null)
+        throw new NullPointerException();
+    if (!(condition instanceof AbstractQueuedSynchronizer.ConditionObject))
+        throw new IllegalArgumentException(&quot;not owner&quot;);
+    return sync.getWaitQueueLength((AbstractQueuedSynchronizer.ConditionObject)condition);
+}
+</code></pre>
+
+<p>返回在等待该条件的线程数.由于超时和中断随时会发送,所以该方法返回的值只是个估计值相对值.该方法在之后的类中会被多次用到。</p>
+
+<h4 id="getwaitingthreads-condition-condition">getWaitingThreads(Condition condition)</h4>
+
+<pre><code class="language-java">protected Collection&lt;Thread&gt; getWaitingThreads(Condition condition) {
+    if (condition == null)
+        throw new NullPointerException();
+    if (!(condition instanceof AbstractQueuedSynchronizer.ConditionObject))
+        throw new IllegalArgumentException(&quot;not owner&quot;);
+    return sync.getWaitingThreads((AbstractQueuedSynchronizer.ConditionObject)condition);
+}
+</code></pre>
+
+<p>返回在等待condition条件的线程集合.但是由于线程的状态随时可能会更改.所以返回值只是个估计值.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>ReentrantLock是个可重入锁,它可以有公平和非公平两种实现.其中Lock方法会在获取不到锁时加入到aqs的等待队列中.直到获取到锁,或者线程被其他线程中断。而tryLock获取不到会直接返回,并返回false。
+ReentrantLock是以独占模式获取锁的
+ReentrantLock也是其他juc中的类的基类(今后的博客中可以看到)
+从acquire(1)可以看出1即是aqs中大多数方法的的参数arg。该值同一个线程获取锁的次数.如是一个线程第一次且获取到了锁,则状态state为1,如果该线程又重入了1次,则状态state为2.通过state状态可以记录锁被同一个线程获取了几次,再释放锁时则需要将state归为0，才表示释放成功（获取几次就需要释放几次.否则就会产生死锁）</p>
               
             </div>
           </div>
@@ -482,7 +646,7 @@ static final class FairSync extends Sync
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#">
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
         
           <i class="fa fa-list"></i>
         </a>
@@ -562,7 +726,7 @@ static final class FairSync extends Sync
       
       <li class="post-action">
         
-          <a class="post-action-btn btn btn--default" href="#">
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
         
           <i class="fa fa-list"></i>
         </a>
@@ -640,7 +804,8 @@ static final class FairSync extends Sync
                   Jul 7, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>详读JUC系列之ReetrantLock</p></div>
+              <div class="media-content hide-xs font-merryweather"><p>详读JUC系列之ReetrantLock
+</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
