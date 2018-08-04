@@ -377,10 +377,6 @@ public static void main(String[] args) {
 <pre><code class="language-java">
 private final int threadLocalHashCode = nextHashCode();
 
-/**
- * The next hash code to be given out. Updated atomically. Starts at
- * zero.
- */
 private static AtomicInteger nextHashCode =
     new AtomicInteger();
 
@@ -411,7 +407,7 @@ private static int nextHashCode() {
 
 <h3 id="结构">结构</h3>
 
-<p><img src="./img/juc/thread_local.jpg" alt="" /></p>
+<p><img src="../img/juc/thread_local.jpg" alt="" /></p>
 
 <h3 id="threadlocal">ThreadLocal</h3>
 

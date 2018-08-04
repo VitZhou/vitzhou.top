@@ -391,7 +391,7 @@ public void clear() {
 </code></pre>
 
 <p>debug如下图：
-<img src="./img/juc/threadlocal2.jpg" alt="" />
+<img src="../img/juc/threadlocal2.jpg" alt="" />
 可以看到虽然key为null了,但是value并没有为null.是内存泄漏了.但是回顾源码,threadLocal在set,get,remove时会去清除旧条目.但是System.gc()之后并没有调用相关方法.没有触发清除动作.</p>
 
 <p>我稍微改了下代码:</p>
@@ -411,7 +411,7 @@ public void clear() {
 </code></pre>
 
 <p>debug如图:
-<img src="./img/juc/threadlocal3.jpg" alt="" />
+<img src="../img/juc/threadlocal3.jpg" alt="" />
 可以看到内存哈希表里面并没有数据了. 也就说上面的话只对了一半.如果不合理使用threadLocal的话会导致内存溢出.所以在使用threadLocal时一定在用完之后调用remove方法.</p>
 
 <p>调用remove方法除了可以防止内存溢出之外,还可以保证线程数据的干净.在线程池中的线程如果使用threadLocal,但是没有及时remove的话,由于线程池中的线程的重用,会将上一个请求的数据带入到线程这一次请求.典型的就是Tomcate的线程池,自定义用threadLocal存放session的话,会发现A用户拿到了B用户的数据.就是由于没有及时remove导致的。</p>
