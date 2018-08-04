@@ -6,10 +6,30 @@
     <description>Recent content on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 24 Jul 2018 20:23:08 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 04 Aug 2018 14:58:15 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>ThreadLocal详解(二)</title>
+      <link>https://vitzhou.top/20180804_threadlocal/</link>
+      <pubDate>Sat, 04 Aug 2018 14:58:15 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180804_threadlocal/</guid>
+      <description>&lt;p&gt;接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。
+
+&lt;!--toc--&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>ThreadLocal详解(一)</title>
+      <link>https://vitzhou.top/20180728_threadlocal/</link>
+      <pubDate>Sat, 28 Jul 2018 23:02:44 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180728_threadlocal/</guid>
+      <description>&lt;p&gt;最近工作中正好使用了ThreadLocal,之前对它底层实现不是非常清晰.今天正好看一遍&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>详读JUC系列之ReetrantLock</title>

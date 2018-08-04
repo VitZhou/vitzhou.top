@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Eureka客户端注册流程</title>
+    <title>ThreadLocal详解(一)</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="Spring Cloud, Spring Cloud Eureka, Spring Cloud Eureka registry, Eureka, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="java, ThreadLocal, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,15 @@
     
 
     
-    <meta name="description" content="spring cloud eureka注册流程">
-    <meta property="og:description" content="spring cloud eureka注册流程">
+    <meta name="description" content="java ,ThreadLocal">
+    <meta property="og:description" content="java ,ThreadLocal">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Eureka客户端注册流程">
-    <meta property="og:url" content="/20180211_eureka_client_registry/">
+    <meta property="og:title" content="ThreadLocal详解(一)">
+    <meta property="og:url" content="/20180728_threadlocal/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="spring cloud eureka注册流程">
+    <meta name="twitter:description" content="java ,ThreadLocal">
     
     
 
@@ -230,15 +230,15 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Eureka客户端注册流程
+      ThreadLocal详解(一)
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-02-11T15:09:33&#43;08:00">
+      <time itemprop="datePublished" datetime="2018-07-28T23:02:44&#43;08:00">
         
-  二月 11, 2018
+  七月 28, 2018
 
       </time>
     
@@ -247,9 +247,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud">Spring Cloud</a>, 
-    
-      <a class="category-link" href="https://vitzhou.top/categories/spring-cloud-eureka">Spring Cloud Eureka</a>
+      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
     
   
 
@@ -259,335 +257,439 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看<a href="http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/">这里</a>入门.
-</p>
+              <p>最近工作中正好使用了ThreadLocal,之前对它底层实现不是非常清晰.今天正好看一遍</p>
 
+<p>
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
 <ul>
 <li>
 <ul>
-<li><a href="#入口">入口</a>
+<li><a href="#用法">用法</a></li>
+<li><a href="#源码解析">源码解析</a>
 <ul>
-<li><a href="#eurekaautoserviceregistration">EurekaAutoServiceRegistration</a></li>
-<li><a href="#serviceregistry">ServiceRegistry</a></li>
+<li><a href="#threadlocalmap哈希表">ThreadLocalMap哈希表</a></li>
+<li><a href="#重要的几个基础方法">重要的几个基础方法</a>
+<ul>
+<li><a href="#threadlocals">threadLocals</a></li>
+<li><a href="#nexthashcode">nextHashCode</a></li>
+<li><a href="#nextindex">nextIndex</a></li>
+</ul></li>
+<li><a href="#结构">结构</a></li>
+<li><a href="#threadlocal">ThreadLocal</a>
+<ul>
+<li><a href="#set">set</a>
+<ul>
+<li><a href="#getmap-t">getMap(t)</a></li>
+<li><a href="#createmap-t-value">createMap(t, value)</a></li>
+<li><a href="#map-set-this-value">map.set(this, value)</a></li>
+<li><a href="#replacestaleentry">replaceStaleEntry</a></li>
+<li><a href="#expungestaleentry">expungeStaleEntry</a></li>
+<li><a href="#cleansomeslots">cleanSomeSlots</a></li>
+<li><a href="#rehash">rehash</a></li>
+<li><a href="#resize">resize</a></li>
+</ul></li>
+</ul></li>
 </ul></li>
 </ul></li>
 </ul>
-</nav>
+</nav></p>
 
-<h2 id="入口">入口</h2>
+<h2 id="用法">用法</h2>
+
+<p>有时候我们需要为每个线程设置一些属性(比如说sessionId).并且这些属性在上下文中都会用到. 那么这些属性就需要做到线程隔离.这时候ThreadLocal就登场了.它可以在线程内存储一些属性.而不会其他线程获取到(即各个线程只能获取自己的,从而达到线程隔离的目的).</p>
+
+<pre><code class="language-java">public class SessionContext {
+    private static final ThreadLocal&lt;String&gt; SESSIONS = new ThreadLocal&lt;&gt;();
+
+    public static void setSessionId(String sessionId) {
+        SESSIONS.set(sessionId);
+    }
+
+    public static String get() {
+        return SESSIONS.get();
+    }
+
+    public static void remove() {
+        SESSIONS.remove();
+    }
+}
+````
+```java
+public static void main(String[] args) {
+    String sessionId = RequestContext.get();
+    try{
+        //do something
+    }finally {
+        RequestContext.remove();
+    }
+}
+</code></pre>
 
 <blockquote>
-<p>本文是基于spring-cloud-netflix 1.4.0.RELEASE版本</p>
+<p>使用完了之后一定要注意调用remove()方法</p>
 </blockquote>
 
-<p>spring cloud的入口都相对容易找.eureka客户端注册的入口类是EurekaDiscoveryClientConfiguration和EurekaClientAutoConfiguration:</p>
+<h2 id="源码解析">源码解析</h2>
 
-<p>EurekaDiscoveryClientConfiguration:</p>
+<h3 id="threadlocalmap哈希表">ThreadLocalMap哈希表</h3>
 
-<pre><code class="language-java">@Configuration
-@EnableConfigurationProperties
-@ConditionalOnClass(EurekaClientConfig.class)
-@ConditionalOnProperty(value = &quot;eureka.client.enabled&quot;, matchIfMissing = true)
-public class EurekaDiscoveryClientConfiguration {
-    //省略
-}
-</code></pre>
+<pre><code class="language-java">static class ThreadLocalMap {
+    static class Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt; {
+        /** The value associated with this ThreadLocal. */
+        Object value;
 
-<p>由注解@ConditionalOnClass(EurekaClientConfig.class)可知:只要EurekaClientConfig类在classpath下就会实例化该bean.</p>
+        private Entry[] table;
 
-<p>EurekaClientAutoConfiguration:</p>
-
-<pre><code class="language-java">@Configuration
-@EnableConfigurationProperties
-@ConditionalOnClass(EurekaClientConfig.class)
-@Import(DiscoveryClientOptionalArgsConfiguration.class)
-@ConditionalOnBean(EurekaDiscoveryClientConfiguration.Marker.class)
-@ConditionalOnProperty(value = &quot;eureka.client.enabled&quot;, matchIfMissing = true)
-@AutoConfigureBefore({ NoopDiscoveryClientAutoConfiguration.class,
-		CommonsClientAutoConfiguration.class, ServiceRegistryAutoConfiguration.class })
-@AutoConfigureAfter(name = {&quot;org.springframework.cloud.autoconfigure.RefreshAutoConfiguration&quot;,
-		&quot;org.springframework.cloud.netflix.eureka.EurekaDiscoveryClientConfiguration&quot;,
-		&quot;org.springframework.cloud.client.serviceregistry.AutoServiceRegistrationAutoConfiguration&quot;})
-public class EurekaClientAutoConfiguration {
-    //省略
-}
-</code></pre>
-
-<p>由@ConditionalOnBean(EurekaDiscoveryClientConfiguration.Marker.class)可以看出EurekaClientAutoConfiguration的实例化依赖于EurekaDiscoveryClientConfiguration。所以只要你依赖了spring-cloud-starter-eureka包就会启动EurekaClientAutoConfiguration,而该类初始化了eurekaServiceRegistry和discoveryClient。
-所以即便你不加@EnableDiscoveryClient注解在你的Application启动类上,只要你加载了它的依赖就会自动做服务注册和发现。</p>
-
-<p>EurekaDiscoveryClientConfiguration类还做了两件事:</p>
-
-<p>一件是监听RefreshScopeRefreshedEvent事件(跟自动配置相关),另外一件是实例化EurekaHealthCheckHandler(跟健康检查相关)</p>
-
-<p>先着重看第一件事:</p>
-
-<pre><code class="language-java">@Configuration
-@ConditionalOnClass(RefreshScopeRefreshedEvent.class)
-protected static class EurekaClientConfigurationRefresher {
-
-    @Autowired(required = false)
-    private EurekaClient eurekaClient;
-
-    @Autowired(required = false)
-    private EurekaAutoServiceRegistration autoRegistration;
-
-    @EventListener(RefreshScopeRefreshedEvent.class)
-    public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
-        //This will force the creation of the EurkaClient bean if not already created
-        //to make sure the client will be reregistered after a refresh event
-        if(eurekaClient != null) {
-            eurekaClient.getApplications();
-        }
-        if (autoRegistration != null) {
-            // register in case meta data changed
-            this.autoRegistration.stop();
-            this.autoRegistration.start();
+        Entry(ThreadLocal&lt;?&gt; k, Object v) {
+            super(k);
+            value = v;
         }
     }
+    ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
+        table = new Entry[INITIAL_CAPACITY];
+        int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);
+        table[i] = new Entry(firstKey, firstValue);
+        size = 1;
+        setThreshold(INITIAL_CAPACITY);
+    }
 }
 </code></pre>
 
-<p>可以看到这里用到了EurekaAutoServiceRegistration,从名字就可以看出这个是Eureka 自动注册的关键类了。</p>
+<p>table是哈希表，即ThreadLocalMap内部的存储结构为Entry[]哈希表.</p>
 
-<h3 id="eurekaautoserviceregistration">EurekaAutoServiceRegistration</h3>
+<p>可以看到在这个ThreadLocalMap数据结构中ThreadLocal是key,而存储对象是value.</p>
 
-<p>先看它的实现的接口:</p>
+<p>ThreadLocalMap是ThreadLocal的内部类,它又有个内部类Entry.该Entry继承自WeakReference.在java gc的时候,如果该对象只被弱引用引用了的话会被回收,而不管内存是否足够(但是有个前提,就是弱引用本身没有被外部引用所引用)。为何entry要这么设计？这么设计的优缺点在哪？ 我们后面解答.</p>
 
-<pre><code class="language-java">public class EurekaAutoServiceRegistration implements AutoServiceRegistration, SmartLifecycle, Ordered {
-    private int order = 0;
-    //...省略
+<h3 id="重要的几个基础方法">重要的几个基础方法</h3>
+
+<h4 id="threadlocals">threadLocals</h4>
+
+<pre><code class="language-java">ThreadLocal.ThreadLocalMap threadLocals = null;
+</code></pre>
+
+<blockquote>
+<p>该属性位于Thread中。由此可见每个线程内部都有一个ThreadLocalMap。</p>
+</blockquote>
+
+<h4 id="nexthashcode">nextHashCode</h4>
+
+<pre><code class="language-java">
+private final int threadLocalHashCode = nextHashCode();
+
+/**
+ * The next hash code to be given out. Updated atomically. Starts at
+ * zero.
+ */
+private static AtomicInteger nextHashCode =
+    new AtomicInteger();
+
+private static final int HASH_INCREMENT = 0x61c88647;
+
+private static int nextHashCode() {
+    return nextHashCode.getAndAdd(HASH_INCREMENT);
 }
 </code></pre>
 
-<p>由于实现了SmartLifecycle接口,该类会在所有的bean实例化之后被调用其start()方法:</p>
+<p>由于ThreadLocalMap中的key是ThreadLocal为了解决相同线程使用连续threadLocals时的冲突问题.在ThreadLocal中解决哈希碰撞的方法为开放寻址法.至于HASH_INCREMENT为什么是0x61c88647,在这里我们不纠结哈希算法本身。
+&gt; 建议先看一遍<a href="http://alexyyek.github.io/2014/12/14/hashCollapse/">开放寻址法</a>的线性探测思路,因为threadlocal后面很多内容都是根据这个思想来做的</p>
 
-<pre><code class="language-java">@Override
-public void start() {
-    // only set the port if the nonSecurePort or securePort is 0 and this.port != 0
-    if (this.port.get() != 0) {
-        if (this.registration.getNonSecurePort() == 0) {
-            this.registration.setNonSecurePort(this.port.get());
+<h4 id="nextindex">nextIndex</h4>
+
+<pre><code class="language-java">private static int nextIndex(int i, int len) {
+    return ((i + 1 &lt; len) ? i + 1 : 0);
+}
+</code></pre>
+
+<blockquote>
+<p>在ThreadLocalMap中</p>
+</blockquote>
+
+<p>i是ThreadLocal中哈希表的下标,len为哈希表的长度.该方法的作用是根据下标i返回下一个下标i+1。如果下一个下标大于等于len则回到哈希表的头部(符合开放寻址法的思想)，与之相反的方法是prevIndex(int i, int len)</p>
+
+<p>以上方法都会在接下来的操作中不断出现。</p>
+
+<h3 id="结构">结构</h3>
+
+<p><img src="./img/juc/thread_local.jpg" alt="" /></p>
+
+<h3 id="threadlocal">ThreadLocal</h3>
+
+<p>我们先依照ThreadLocal的set,get,remove依次看下去.</p>
+
+<h4 id="set">set</h4>
+
+<pre><code class="language-java">public void set(T value) {
+	//获取当前线程
+    Thread t = Thread.currentThread();
+    //从当前线程中获取threadLocalMap
+    ThreadLocalMap map = getMap(t);
+    if (map != null)//如果存在直接set该value，并用当前ThreadLocal(this)作为key
+        map.set(this, value);
+    else//如果不存在就需要创建map
+        createMap(t, value);
+}
+</code></pre>
+
+<p>这个方法内容还是比较简单的,不细说</p>
+
+<h5 id="getmap-t">getMap(t)</h5>
+
+<pre><code class="language-java">ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+</code></pre>
+
+<p>前面已经说过Thread内部有个属性threadLocals指向一个ThreadLocalMap.</p>
+
+<h5 id="createmap-t-value">createMap(t, value)</h5>
+
+<pre><code class="language-java">void createMap(Thread t, T firstValue) {
+    t.threadLocals = new ThreadLocalMap(this, firstValue);
+}
+</code></pre>
+
+<pre><code class="language-java">private static final int INITIAL_CAPACITY = 16;
+
+ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
+    table = new Entry[INITIAL_CAPACITY]; //new一个大小为16的Entry数组
+    int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);//获取初始下标i
+    table[i] = new Entry(firstKey, firstValue);//将key,value存入entry，然后将entry放到tabled的i位置
+    size = 1;
+    setThreshold(INITIAL_CAPACITY);//设置阈值,阈值为INITIAL_CAPACITY的2/3
+}
+</code></pre>
+
+<p>创建ThreadMap的过程其实就是初始化哈希表的过程.阈值是用于判断什么时候哈希表该扩容的.HashMap里面就有类似的设置.这里的过程也是比较容易懂的。</p>
+
+<h5 id="map-set-this-value">map.set(this, value)</h5>
+
+<pre><code class="language-java">private void set(ThreadLocal&lt;?&gt; key, Object value) {
+    Entry[] tab = table;
+    int len = tab.length;
+    int i = key.threadLocalHashCode &amp; (len-1); //下一个下标
+	//遍历哈希表table,直到找到一个空位置,如果当前位置有存放entry，则需要对entry进行操作
+    for (Entry e = tab[i];
+         e != null;
+         e = tab[i = nextIndex(i, len)]) {
+        ThreadLocal&lt;?&gt; k = e.get();
+
+        if (k == key) {//如果key相等表示之前已经存放了相同key的值,此时只需要覆盖原来的值即可(更新value)
+            e.value = value;
+            return;
         }
 
-        if (this.registration.getSecurePort() == 0 &amp;&amp; this.registration.isSecure()) {
-            this.registration.setSecurePort(this.port.get());
+        if (k == null) {//由于key为弱引用,所以它是会被回收的.如果它被回收了,则说明该entry已经是个过期的数据
+        	//替换旧数据
+            replaceStaleEntry(key, value, i);
+            return;
         }
     }
-
-    // only initialize if nonSecurePort is greater than 0 and it isn't already running
-    // because of containerPortInitializer below
-    if (!this.running.get() &amp;&amp; this.registration.getNonSecurePort() &gt; 0) {
-
-        this.serviceRegistry.register(this.registration);
-
-        this.context.publishEvent(
-                new InstanceRegisteredEvent&lt;&gt;(this, this.registration.getInstanceConfig()));
-        this.running.set(true);
-    }
+	//没有发现key相同的entry,也没有发现可以存放数据的过期的entry.但是发现了空插槽
+    //则需要新建entry存放数据，并将其放入空插槽
+    tab[i] = new Entry(key, value);
+    int sz = ++size;
+    //如果没有清理过entry并且table的容量超过了阈值,则需要重新哈希并扩容。
+    if (!cleanSomeSlots(i, sz) &amp;&amp; sz &gt;= threshold)
+        rehash();
 }
 </code></pre>
 
-<p>该方法比较简单,就是第一次运行时将客户端信息注册。
-至于注册信息具体有哪些,我会专门写篇博客来讲，请期待&hellip;</p>
+<p>由于ThreadLocalMap对key的设计,所以这里需要进行旧数据的清除.我们接下需要重点解释下replaceStaleEntry以及rehash。</p>
 
-<h3 id="serviceregistry">ServiceRegistry</h3>
+<h5 id="replacestaleentry">replaceStaleEntry</h5>
 
-<pre><code class="language-java">@Override
-public void register(EurekaRegistration reg) {
-    maybeInitializeClient(reg);
+<pre><code class="language-java">private void replaceStaleEntry(ThreadLocal&lt;?&gt; key, Object value,int staleSlot) {
+    Entry[] tab = table;
+    int len = tab.length;
+    Entry e;
 
-    if (log.isInfoEnabled()) {
-        log.info(&quot;Registering application &quot; + reg.getInstanceConfig().getAppname()
-                + &quot; with eureka with status &quot;
-                + reg.getInstanceConfig().getInitialStatus());
+    int slotToExpunge = staleSlot;//第一个旧条目的下标
+    //根据当前的旧entry的下标，往前遍历table.找出空插槽,并记录下来
+    for (int i = prevIndex(staleSlot, len);
+         (e = tab[i]) != null;
+         i = prevIndex(i, len))
+        if (e.get() == null)
+            slotToExpunge = i;
+
+    //向后遍历,直到遇到空插槽
+    for (int i = nextIndex(staleSlot, len);
+         (e = tab[i]) != null;
+         i = nextIndex(i, len)) {
+        ThreadLocal&lt;?&gt; k = e.get();
+
+		//如果向后遍历的过程中找到了相同的key，则需要将该entry跟旧entry替换,以便整理哈希表
+        if (k == key) {
+            e.value = value;
+
+            tab[i] = tab[staleSlot];//将旧entry换到当前插槽,以便下面清理插槽
+            tab[staleSlot] = e;
+
+            // 如果第一个旧条目就是staleSlot,则将当前插槽下标记为清除插槽的起始下标
+            if (slotToExpunge == staleSlot)
+                slotToExpunge = i;
+            //清理插槽
+            cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
+            return;
+        }
+
+        //如果在向后遍历的过程中找到的key为null,并且第一条旧entry是staleSlot,则需要重新标记slotToExpunge
+        if (k == null &amp;&amp; slotToExpunge == staleSlot)
+            slotToExpunge = i;
     }
 
-    reg.getApplicationInfoManager()
-            .setInstanceStatus(reg.getInstanceConfig().getInitialStatus());
+    // 如果没有找到key,则创建个新的entry放到旧的entry位置
+    tab[staleSlot].value = null;
+    tab[staleSlot] = new Entry(key, value);
 
-    if (reg.getHealthCheckHandler() != null) {
-        reg.getEurekaClient().registerHealthCheck(reg.getHealthCheckHandler());
-    }
+    // 如果发现任何其他旧条目,则需要清理插槽
+    if (slotToExpunge != staleSlot)
+        cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
 }
 </code></pre>
 
-<p>这里最重要的一步是在ApplicationInfoManager中设置当前的状态.那么设置状态又发生了什么呢？ 接下来继续看ApplicationInfoManager类:</p>
+<p>整个过程如果理解了开放寻址法然后来看,还是比较简单的.接下来我们看看它是怎么清理旧的过期的entry的.</p>
 
-<pre><code class="language-java"> public synchronized void setInstanceStatus(InstanceStatus status) {
-    InstanceStatus next = instanceStatusMapper.map(status);
-    if (next == null) {
-        return;
-    }
+<h5 id="expungestaleentry">expungeStaleEntry</h5>
 
-    InstanceStatus prev = instanceInfo.setStatus(next);
-    if (prev != null) {
-        for (StatusChangeListener listener : listeners.values()) {
-            try {
-                listener.notify(new StatusChangeEvent(prev, next));
-            } catch (Exception e) {
-                logger.warn(&quot;failed to notify listener: {}&quot;, listener.getId(), e);
+<pre><code class="language-java">private int expungeStaleEntry(int staleSlot) {
+    Entry[] tab = table;
+    int len = tab.length;
+
+    //清理staleSlot位置插槽
+    tab[staleSlot].value = null;
+    tab[staleSlot] = null;
+    size--;
+
+
+    Entry e;
+    int i;
+    for (i = nextIndex(staleSlot, len);
+         (e = tab[i]) != null;
+         i = nextIndex(i, len)) {//向后遍历table,直到遇到空插槽
+        ThreadLocal&lt;?&gt; k = e.get();
+        if (k == null) {//如果key为null就将其抹去
+            e.value = null;
+            tab[i] = null;
+            size--;
+        } else {
+            int h = k.threadLocalHashCode &amp; (len - 1);
+            if (h != i) {//如果len发送了变化(有entry减少),则需要进行重新哈希
+                tab[i] = null;
+
+                // Unlike Knuth 6.4 Algorithm R, we must scan until
+                // null because multiple entries could have been stale.
+                while (tab[h] != null)
+                    h = nextIndex(h, len);
+                tab[h] = e;
             }
         }
     }
+    return i;
 }
 </code></pre>
 
-<p>instanceStatusMapper.map(status)这一步应该是为未来留下的接口,现有的实现只是return status。instanceInfo.setStatus(next)会将参数next和之前的状态进行比较.如果不一致就实例信息是脏数据isInstanceInfoDirty标记为true,并记录最后修改时间lastDirtyTimestamp,并返回之前的状态:</p>
+<p>清楚过期entry的过程是找出key为null的entry，将其设置为空即可。key不为null则重新哈希.并返回遍历过程中遇到的空插槽的下标.</p>
 
-<pre><code class="language-java">public synchronized InstanceStatus setStatus(InstanceStatus status) {
-    if (this.status != status) {
-        InstanceStatus prev = this.status;
-        this.status = status;
-        setIsDirty();
-        return prev;
-    }
-    return null;
-}
-</code></pre>
+<p>由于哈希的散列分布并不是连续的,可能会出现多个连续空间.所以根据staleSlot为下标向后遍历并抹去了旧的entry,并不能把哈希表里面所有的旧entry抹去.所以还需要再cleanSomeSlots</p>
 
-<p>如果有状态返回,则表示状态发生了变化,则需要通知所有的监听者发生了StatusChangeEvent事件.
-&gt; 目前没看到该事件有监听器负责监听并处理，那么服务注册是怎么发送到服务端的呢？继续往下看</p>
+<h5 id="cleansomeslots">cleanSomeSlots</h5>
 
-<pre><code class="language-java">public void registerStatusChangeListener(StatusChangeListener listener) {
-    listeners.put(listener.getId(), listener);
-}
-</code></pre>
-
-<p>通过查找ApplicationInfoManager的registerStatusChangeListener方法的使用可以看到:</p>
-
-<p><img src="https://vitzhou.top/img/spring-cloud/eureka-client/1.jpg" alt="" /></p>
-
-<p>跳进去可以看到:</p>
-
-<pre><code class="language-java">statusChangeListener = new ApplicationInfoManager.StatusChangeListener() {
-        @Override
-        public String getId() {
-            return &quot;statusChangeListener&quot;;
+<pre><code class="language-java">private boolean cleanSomeSlots(int i, int n) {
+    boolean removed = false;
+    Entry[] tab = table;
+    int len = tab.length;
+    do {
+        i = nextIndex(i, len);
+        Entry e = tab[i];
+        if (e != null &amp;&amp; e.get() == null) {
+            n = len;
+            removed = true;
+            i = expungeStaleEntry(i);
         }
-    
-        @Override
-        public void notify(StatusChangeEvent statusChangeEvent) {
-            if (InstanceStatus.DOWN == statusChangeEvent.getStatus() ||
-                    InstanceStatus.DOWN == statusChangeEvent.getPreviousStatus()) {
-                // log at warn level if DOWN was involved
-                logger.warn(&quot;Saw local status change event {}&quot;, statusChangeEvent);
+    } while ( (n &gt;&gt;&gt;= 1) != 0);
+    return removed;
+}
+</code></pre>
+
+<p>该方法会扫描哈希表中log2(n)个entry.如果找到了空的插槽就会调用expungeStaleEntry来清除该下标i以及它之后的空插槽.</p>
+
+<p>清理旧entry到此就结束了.接下来我们看下rehash</p>
+
+<h5 id="rehash">rehash</h5>
+
+<pre><code class="language-java">private void rehash() {
+	//清除所有旧条目
+    expungeStaleEntries();
+
+    // 写得很奇葩。。。。其实就是size&gt;=threashold * 0.75(等于len * 0.75 * 0.75)
+    //清除完所有旧条目之后还是容量太小就扩容
+    if (size &gt;= threshold - threshold / 4)
+        resize();
+}
+
+private void expungeStaleEntries() {
+    Entry[] tab = table;
+    int len = tab.length;
+    for (int j = 0; j &lt; len; j++) {//遍历所有条目,并清除旧条目
+        Entry e = tab[j];
+        if (e != null &amp;&amp; e.get() == null)
+            expungeStaleEntry(j);
+    }
+}
+</code></pre>
+
+<p>重新哈希的时候会遍历所有节点,并清除旧条目。然后判断容量是否超过了阈值的0.75倍,如果超过了就需要扩容.扩容步骤如下:</p>
+
+<h5 id="resize">resize</h5>
+
+<pre><code class="language-java">private void resize() {
+    Entry[] oldTab = table;
+    int oldLen = oldTab.length;
+    int newLen = oldLen * 2;//容量直接翻倍
+    Entry[] newTab = new Entry[newLen];
+    int count = 0;
+	//将旧的哈希表中的条目移动到新的哈希表中
+    for (int j = 0; j &lt; oldLen; ++j) {
+        Entry e = oldTab[j];
+        if (e != null) {
+            ThreadLocal&lt;?&gt; k = e.get();
+            if (k == null) {
+                e.value = null; // Help the GC,不多解释
             } else {
-                logger.info(&quot;Saw local status change event {}&quot;, statusChangeEvent);
-            }
-            instanceInfoReplicator.onDemandUpdate();
-        }
-    };
-    
-    if (clientConfig.shouldOnDemandUpdateStatusChange()) {
-        applicationInfoManager.registerStatusChangeListener(statusChangeListener);
-    }
-</code></pre>
-
-<p>setInstanceStatus方法中的notify实际上是就做了两件事,1是记录状态的变化，2是调用instanceInfoReplicator.onDemandUpdate()方法。其实现如下:</p>
-
-<pre><code class="language-java">public boolean onDemandUpdate() {
-    if (rateLimiter.acquire(burstSize, allowedRatePerMinute)) {
-        scheduler.submit(new Runnable() {
-            @Override
-            public void run() {
-                logger.debug(&quot;Executing on-demand update of local InstanceInfo&quot;);
-
-                Future latestPeriodic = scheduledPeriodicRef.get();
-                if (latestPeriodic != null &amp;&amp; !latestPeriodic.isDone()) {
-                    logger.debug(&quot;Canceling the latest scheduled update, it will be rescheduled at the end of on demand update&quot;);
-                    latestPeriodic.cancel(false);
-                }
-
-                InstanceInfoReplicator.this.run();
-            }
-        });
-        return true;
-    } else {
-        logger.warn(&quot;Ignoring onDemand update due to rate limiter&quot;);
-        return false;
-    }
-}
-</code></pre>
-
-<p>简单说明下rateLimiter.acquire(burstSize, allowedRatePerMinute)这个限流是通过你配置参数中的replicationIntervalSeconds来指定的。防止单位时间内状态变化太快。</p>
-
-<p>该方法的主要内容是像scheduler提交一个作业.该作业的内容是将scheduledPeriodicRef中没有完成的作业取消.
-&gt; 实际上scheduledPeriodicRef中的未完成作业就是scheduler中未完成的作业:</p>
-
-<pre><code class="language-java">Future next = scheduler.schedule(this, replicationIntervalSeconds, TimeUnit.SECONDS);
-scheduledPeriodicRef.set(next);
-</code></pre>
-
-<p>然后调用this.run():</p>
-
-<pre><code class="language-java">public void run() {
-    try {
-        discoveryClient.refreshInstanceInfo();
-
-        Long dirtyTimestamp = instanceInfo.isDirtyWithTime();
-        if (dirtyTimestamp != null) {
-            discoveryClient.register();
-            instanceInfo.unsetIsDirty(dirtyTimestamp);
-        }
-    } catch (Throwable t) {
-        logger.warn(&quot;There was a problem with the instance info replicator&quot;, t);
-    } finally {
-        Future next = scheduler.schedule(this, replicationIntervalSeconds, TimeUnit.SECONDS);
-        scheduledPeriodicRef.set(next);
-    }
-}
-</code></pre>
-
-<p>它首先会刷新本地的实例信息discoveryClient.refreshInstanceInfo()(这一步的细节在服务发现博客再细聊),然后通过isInstanceInfoDirty和lastDirtyTimestamp来判断是否是脏数据,如果是的话就调用discoveryClient.register()注册到eureka server中。
-然后继续看discoveryClient.register()：</p>
-
-<pre><code class="language-java">boolean register() throws Throwable {
-    logger.info(PREFIX + appPathIdentifier + &quot;: registering service...&quot;);
-    EurekaHttpResponse&lt;Void&gt; httpResponse;
-    try {
-        httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
-    } catch (Exception e) {
-        logger.warn(&quot;{} - registration failed {}&quot;, PREFIX + appPathIdentifier, e.getMessage(), e);
-        throw e;
-    }
-    if (logger.isInfoEnabled()) {
-        logger.info(&quot;{} - registration status: {}&quot;, PREFIX + appPathIdentifier, httpResponse.getStatusCode());
-    }
-    return httpResponse.getStatusCode() == 204;
-}
-</code></pre>
-
-<p>eurekaTransport.registrationClient.register(instanceInfo)最终会调到AbstractJerseyEurekaHttpClient的register方法:</p>
-
-<pre><code class="language-java">public EurekaHttpResponse&lt;Void&gt; register(InstanceInfo info) {
-        String urlPath = &quot;apps/&quot; + info.getAppName();
-        ClientResponse response = null;
-        try {
-            Builder resourceBuilder = jerseyClient.resource(serviceUrl).path(urlPath).getRequestBuilder();
-            addExtraHeaders(resourceBuilder);
-            response = resourceBuilder
-                    .header(&quot;Accept-Encoding&quot;, &quot;gzip&quot;)
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .post(ClientResponse.class, info);
-            return anEurekaHttpResponse(response.getStatus()).headers(headersOf(response)).build();
-        } finally {
-            if (logger.isDebugEnabled()) {
-                logger.debug(&quot;Jersey HTTP POST {}/{} with instance {}; statusCode={}&quot;, serviceUrl, urlPath, info.getId(),
-                        response == null ? &quot;N/A&quot; : response.getStatus());
-            }
-            if (response != null) {
-                response.close();
+                int h = k.threadLocalHashCode &amp; (newLen - 1);
+                while (newTab[h] != null)//找到空插槽,将条目放入
+                    h = nextIndex(h, newLen);
+                newTab[h] = e;
+                count++;
             }
         }
     }
+
+    setThreshold(newLen);//更改阈值
+    size = count;
+    table = newTab;//引用指向新的哈希表.
+}
 </code></pre>
 
-<p>这里主要是通过rest(url:<a href="http://host:port/eureka/apps/{appName})请求将注册信息注册到eureka">http://host:port/eureka/apps/{appName})请求将注册信息注册到eureka</a> server中。</p>
+<p>整个set过程到此结束。总结下,在set值流程如下:
+1. 从当前线程中拿ThreadLocalMap
+2. 如果不存在则创建ThreadLocalMap
+    1. 创建一个容量为16哈希表.
+    2. 创建一个新条目,并存放到哈希表中
+3. 如果已经存在则将值放入哈希表中
+    1. 根据nextHashCode遍历哈希表直到遇到空插槽.
+    1. 如果遍历的过程找发现有条目的key为空的旧条目.则需要替换旧条目
+    1. 替换也需要遍历哈希表,如果过程中如果遇到了key相同的条目则,将value值替换,并清除旧条目
+    2. 如果没有遇到相同key的条目时,直接创建一个新条目替换当前条目(因为当前插槽中存放的是个旧条目)
+        1. 根据下标向后遍历,清除遍历到的旧的插槽,直到遇到下一个空插槽。
+        1. 由于哈希散列的不连续性,所以还需要进行一次遍历log2(n)个条目的遍历,以便尽可能清除旧条目
+    1. 如果遍历后没有找到相同key的条目,也没有发现旧条目,则创建一个新条目存放值，然后放入哈希表中
+    2. 如果此时的哈希表大小超过了阈值,则需要进行rehash.
+    3. rehash时会遍历整个哈希表,清除所有的旧条目.
+    4. 如果清除了所有旧条目还是容量不够就扩容。</p>
 
-<p>小结:总得来说eureka client的服务注册的流程还是挺简单的。通过状态的变化来notify ApplicationInfoManager的匿名StatusChangeListener监听器,监听器通过scheduler调度进行注册客户端实例信息.</p>
+<p>看到这里,threadLocal其实已经明白了一大半了.因为接下来的get和remove都会用到清楚条目的方法.接下来的内容还很长,我打算分开两篇博客.请期待下一篇</p>
               
             </div>
           </div>
@@ -599,9 +701,7 @@ scheduledPeriodicRef.set(next);
                   <div class="post-footer-tags">
                     <span class="text-color-light text-small">标签</span><br/>
                     
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud/">Spring Cloud</a>
-
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring-cloud-eureka/">Spring Cloud Eureka</a>
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java/">java</a>
 
                   </div>
                 
@@ -614,7 +714,7 @@ scheduledPeriodicRef.set(next);
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180804_threadlocal/" data-tooltip="ThreadLocal详解(二)">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -622,7 +722,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180724_reetrantlock/" data-tooltip="详读JUC系列之ReetrantLock">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -694,7 +794,7 @@ scheduledPeriodicRef.set(next);
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180213_eureka_client_config/" data-tooltip="Eureka Client配置详解">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180804_threadlocal/" data-tooltip="ThreadLocal详解(二)">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -702,7 +802,7 @@ scheduledPeriodicRef.set(next);
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180724_reetrantlock/" data-tooltip="详读JUC系列之ReetrantLock">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -1025,9 +1125,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180211_eureka_client_registry\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20180728_threadlocal\/';
           
-            this.page.identifier = '\/20180211_eureka_client_registry\/'
+            this.page.identifier = '\/20180728_threadlocal\/'
           
         };
         (function() {

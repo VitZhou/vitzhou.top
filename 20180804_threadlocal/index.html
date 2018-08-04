@@ -1,5 +1,9 @@
 
 
+  
+    
+  
+
 
   
 
@@ -18,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Archives</title>
+    <title>ThreadLocal详解(二)</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="java, ThreadLocal, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -41,19 +45,17 @@
     </script>
     <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/archives/index.xml">
-    
 
     
-    <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
-    <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="description" content="java ,ThreadLocal">
+    <meta property="og:description" content="java ,ThreadLocal">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Archives">
-    <meta property="og:url" content="/archives/">
+    <meta property="og:title" content="ThreadLocal详解(二)">
+    <meta property="og:url" content="/20180804_threadlocal/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="twitter:description" content="java ,ThreadLocal">
     
     
 
@@ -88,7 +90,7 @@
 
   <body>
     <div id="blog">
-      <header id="header" data-behavior="2">
+      <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
     <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
@@ -108,7 +110,7 @@
   
 </header>
 
-      <nav id="sidebar" data-behavior="2">
+      <nav id="sidebar" data-behavior="5">
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
@@ -216,129 +218,359 @@
   </div>
 </nav>
 
-      <div id="main" data-behavior="2"
+      
+
+      <div id="main" data-behavior="5"
         class="
                hasCoverMetaIn
                ">
-        <div id="archives" class="main-content-wrap">
-          <form id="filter-form" action="#">
-            <input name="date" type="text" class="form-control input--xlarge" placeholder="搜索日期 (YYYY/MM/DD)" autofocus="autofocus">
-          </form>
-          <h5 class="archive-result text-color-base text-xlarge" data-message-zero="" data-message-one="" data-message-other=""></h5>
-<section class="boxes">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
   
+    <h1 class="post-title" itemprop="headline">
+      ThreadLocal详解(二)
+    </h1>
+  
+  
+  <div class="postShorten-meta post-meta">
     
-    <div class="archive archive-year box" data-date="2018">
-      <h4 class="archive-title" style="text-decoration: none;">2018</h4>
-      
-        <ul class="archive-posts archive-month" data-date="201808">
-          <h5 class="archive-title" style="text-decoration: none;">八月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180804">
-              <a class="archive-post-title" href="https://vitzhou.top/20180804_threadlocal/">ThreadLocal详解(二)</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201807">
-          <h5 class="archive-title" style="text-decoration: none;">七月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180728">
-              <a class="archive-post-title" href="https://vitzhou.top/20180728_threadlocal/">ThreadLocal详解(一)</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180724">
-              <a class="archive-post-title" href="https://vitzhou.top/20180724_reetrantlock/">详读JUC系列之ReetrantLock</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180710">
-              <a class="archive-post-title" href="https://vitzhou.top/20180709_aqs_2/">详读JUC系列(2)之AQS</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180709">
-              <a class="archive-post-title" href="https://vitzhou.top/20180709_prometheus_many_file/">Prometheus Too Many Open file问题</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180708">
-              <a class="archive-post-title" href="https://vitzhou.top/20180707_aqs/">详读JUC系列(1)之AQS</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201806">
-          <h5 class="archive-title" style="text-decoration: none;">六月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180629">
-              <a class="archive-post-title" href="https://vitzhou.top/20180629_java_proxy/">Java 动态代理详解</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201805">
-          <h5 class="archive-title" style="text-decoration: none;">五月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180529">
-              <a class="archive-post-title" href="https://vitzhou.top/20180529_http_proxy/">HTTP proxy</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201804">
-          <h5 class="archive-title" style="text-decoration: none;">四月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180427">
-              <a class="archive-post-title" href="https://vitzhou.top/20180428_k8s_network_sc/">记一次k8s的网络实践</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201803">
-          <h5 class="archive-title" style="text-decoration: none;">三月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180328">
-              <a class="archive-post-title" href="https://vitzhou.top/20180328_prometheus_config/">Prometheus命令</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180321">
-              <a class="archive-post-title" href="https://vitzhou.top/20180321_http2collection/">http2资料收集</a>
-            </li>
-          
-        </ul>
-      
-        <ul class="archive-posts archive-month" data-date="201802">
-          <h5 class="archive-title" style="text-decoration: none;">二月</h5>
-          
-            <li class="archive-post archive-day" data-date="20180221">
-              <a class="archive-post-title" href="https://vitzhou.top/20180221_threadpoolexcutor_reject/">ThreadPoolExecutor的Reject策略</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180218">
-              <a class="archive-post-title" href="https://vitzhou.top/20180218_threadpoolexecutor2/">ThreadPoolExecutor(二)</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180218">
-              <a class="archive-post-title" href="https://vitzhou.top/20180217_threadpoolexecutor/">ThreadPoolExecutor(一)</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180213">
-              <a class="archive-post-title" href="https://vitzhou.top/20180213_eureka_client_config/">Eureka Client配置详解</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180211">
-              <a class="archive-post-title" href="https://vitzhou.top/20180211_eureka_client_registry/">Eureka客户端注册流程</a>
-            </li>
-          
-            <li class="archive-post archive-day" data-date="20180206">
-              <a class="archive-post-title" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/">Spring Cloud Config自动刷新机制</a>
-            </li>
-          
-        </ul>
-      
-    </div>
+      <time itemprop="datePublished" datetime="2018-08-04T14:58:15&#43;08:00">
+        
+  八月 4, 2018
+
+      </time>
+    
+    
   
-</section>
-        </div>
+  
+    <span>发布在</span>
+    
+      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
+    
+  
+
+  </div>
+
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。
+
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#get">get</a>
+<ul>
+<li><a href="#map-getentry-this">map.getEntry(this)</a>
+<ul>
+<li><a href="#getentryaftermiss-key-i-e">getEntryAfterMiss(key, i, e)</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#remove">remove</a>
+<ul>
+<li><a href="#m-remove-this">m.remove(this)</a></li>
+</ul></li>
+<li><a href="#内存溢出">内存溢出</a></li>
+</ul></li>
+</ul>
+</nav></p>
+
+<h2 id="get">get</h2>
+
+<pre><code class="language-java">public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings(&quot;unchecked&quot;)
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    return setInitialValue();
+}
+</code></pre>
+
+<p>内容比较简单,不再追诉.</p>
+
+<h3 id="map-getentry-this">map.getEntry(this)</h3>
+
+<pre><code class="language-java">private Entry getEntry(ThreadLocal&lt;?&gt; key) {
+	//threadLocal的下一个nextHashCode与哈希表的长度计算出下标
+    int i = key.threadLocalHashCode &amp; (table.length - 1);
+    Entry e = table[i];
+    if (e != null &amp;&amp; e.get() == key)//如果找到了直接返回
+        return e;
+    else
+        return getEntryAfterMiss(key, i, e);
+}
+</code></pre>
+
+<h4 id="getentryaftermiss-key-i-e">getEntryAfterMiss(key, i, e)</h4>
+
+<pre><code class="language-java">private Entry getEntryAfterMiss(ThreadLocal&lt;?&gt; key, int i, Entry e) {
+    Entry[] tab = table;
+    int len = tab.length;
+
+    while (e != null) {//向后遍历直到遇到空插槽
+        ThreadLocal&lt;?&gt; k = e.get();
+        if (k == key) //找到了直接返回
+            return e;
+        if (k == null)//旧条目需要清除
+            expungeStaleEntry(i);
+        else
+            i = nextIndex(i, len);
+        e = tab[i];//下一个条目
+    }
+    return null;
+}
+</code></pre>
+
+<p>根据开放寻址法,如果遍历到了空插槽还没找到条目,则表示查找失败,直接返回空。</p>
+
+<p>查找还是比较简单的.</p>
+
+<h2 id="remove">remove</h2>
+
+<pre><code class="language-java">public void remove() {
+     ThreadLocalMap m = getMap(Thread.currentThread());
+     if (m != null)
+         m.remove(this);
+ }
+</code></pre>
+
+<h3 id="m-remove-this">m.remove(this)</h3>
+
+<pre><code class="language-java">private void remove(ThreadLocal&lt;?&gt; key) {
+    Entry[] tab = table;
+    int len = tab.length;
+    int i = key.threadLocalHashCode &amp; (len-1);
+    for (Entry e = tab[i];
+         e != null;
+         e = tab[i = nextIndex(i, len)]) {//向后遍历直到遇到空插槽
+        if (e.get() == key) {//找到了的话进行clear,并清除该插槽
+            e.clear();//将引用置为null.以便expungeStaleEntry方法可以清除它
+            expungeStaleEntry(i);
+            return;
+        }
+    }
+}
+
+public void clear() {
+    this.referent = null;
+}
+</code></pre>
+
+<p>从上面可以看出get,set,remove方法都会清除旧条目.但是由于Thread有个threadLocals引用指向了ThreadLocal的table,而table又存放着entry.</p>
+
+<h2 id="内存溢出">内存溢出</h2>
+
+<p>很多文章都说thread使用不当的话会导致内存溢出,因为虽然ThreadLocalMap的key虽然为软引用,但是value是强引用.如果value值在被使用的话会导致gc无法回收条目。</p>
+
+<p>但是实际上真的如此吗？</p>
+
+<p>我写了个例子:</p>
+
+<pre><code class="language-java"> public static void main(String[] args) throws InterruptedException {
+    CountDownLatch countDownLatch = new CountDownLatch(1);
+    Thread thread = new Thread(() -&gt; {
+        ThreadLocal&lt;String&gt; threadLocal = new ThreadLocal&lt;&gt;();
+        threadLocal.set(&quot;a&quot;);
+        threadLocal = null;
+        System.gc();
+        countDownLatch.countDown();
+    });
+    thread.start();
+    countDownLatch.await();
+}
+</code></pre>
+
+<p>debug如下图：
+<img src="./img/juc/threadlocal2.jpg" alt="" />
+可以看到虽然key为null了,但是value并没有为null.是内存泄漏了.但是回顾源码,threadLocal在set,get,remove时会去清除旧条目.但是System.gc()之后并没有调用相关方法.没有触发清除动作.</p>
+
+<p>我稍微改了下代码:</p>
+
+<pre><code class="language-java"> public static void main(String[] args) throws InterruptedException {
+    CountDownLatch countDownLatch = new CountDownLatch(1);
+    Thread thread = new Thread(() -&gt; {
+        ThreadLocal&lt;String&gt; threadLocal = new ThreadLocal&lt;&gt;();
+        threadLocal.set(&quot;a&quot;);
+        threadLocal.remove();
+        System.gc();
+        countDownLatch.countDown();
+    });
+    thread.start();
+    countDownLatch.await();
+}
+</code></pre>
+
+<p>debug如图:
+<img src="./img/juc/threadlocal3.jpg" alt="" />
+可以看到内存哈希表里面并没有数据了. 也就说上面的话只对了一半.如果不合理使用threadLocal的话会导致内存溢出.所以在使用threadLocal时一定在用完之后调用remove方法.</p>
+
+<p>调用remove方法除了可以防止内存溢出之外,还可以保证线程数据的干净.在线程池中的线程如果使用threadLocal,但是没有及时remove的话,由于线程池中的线程的重用,会将上一个请求的数据带入到线程这一次请求.典型的就是Tomcate的线程池,自定义用threadLocal存放session的话,会发现A用户拿到了B用户的数据.就是由于没有及时remove导致的。</p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java/">java</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180728_threadlocal/" data-tooltip="ThreadLocal详解(一)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+            
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
+            
+          </div>
+        </article>
+        <footer id="footer" class="main-content-wrap">
+  <span class="copyrights">
+    &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
+  </span>
+</footer>
+
       </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180728_threadlocal/" data-tooltip="ThreadLocal详解(一)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
     </div>
     
     <div id="about">
@@ -613,6 +845,32 @@ $(document).ready(function() {
 });
 </script>
 
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20180804_threadlocal\/';
+          
+            this.page.identifier = '\/20180804_threadlocal\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
 
 
 
