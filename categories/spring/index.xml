@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Spring on 周圣华的博客</title>
+    <link>https://vitzhou.top/categories/spring/</link>
+    <description>Recent content in Spring on 周圣华的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 22 Aug 2018 20:58:15 +0800</lastBuildDate>
+    
+	<atom:link href="https://vitzhou.top/categories/spring/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Spring Transactional</title>
+      <link>https://vitzhou.top/20180822_transation/</link>
+      <pubDate>Wed, 22 Aug 2018 20:58:15 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180822_transation/</guid>
+      <description>&lt;p&gt;今天遇到了个Spring的&lt;code&gt;@Transactional&lt;/code&gt;注解用法的问题(从此也可以看出自己数据库的薄弱,还是需要补这个基础).经过一个下午的源码阅读和debug终于解开了心中所惑,遂写下来记录一下.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

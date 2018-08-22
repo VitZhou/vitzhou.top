@@ -6,10 +6,19 @@
     <description>Recent content on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 04 Aug 2018 14:58:15 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 22 Aug 2018 20:58:15 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Spring Transactional</title>
+      <link>https://vitzhou.top/20180822_transation/</link>
+      <pubDate>Wed, 22 Aug 2018 20:58:15 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20180822_transation/</guid>
+      <description>&lt;p&gt;今天遇到了个Spring的&lt;code&gt;@Transactional&lt;/code&gt;注解用法的问题(从此也可以看出自己数据库的薄弱,还是需要补这个基础).经过一个下午的源码阅读和debug终于解开了心中所惑,遂写下来记录一下.&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>ThreadLocal详解(二)</title>

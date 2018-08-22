@@ -1,5 +1,9 @@
 
 
+  
+    
+  
+
 
   
 
@@ -18,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Posts</title>
+    <title>Spring Transactional</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="spring, spring Transactional, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -41,19 +45,17 @@
     </script>
     <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/post/index.xml">
-    
 
     
-    <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
-    <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="description" content="spring ,Transactional">
+    <meta property="og:description" content="spring ,Transactional">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Posts">
-    <meta property="og:url" content="/post/">
+    <meta property="og:title" content="Spring Transactional">
+    <meta property="og:url" content="/20180822_transation/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="twitter:description" content="spring ,Transactional">
     
     
 
@@ -88,7 +90,7 @@
 
   <body>
     <div id="blog">
-      <header id="header" data-behavior="2">
+      <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
     <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
@@ -108,7 +110,7 @@
   
 </header>
 
-      <nav id="sidebar" data-behavior="2">
+      <nav id="sidebar" data-behavior="5">
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
@@ -218,35 +220,20 @@
 
       
 
-      <div id="main" data-behavior="2"
+      <div id="main" data-behavior="5"
         class="
                hasCoverMetaIn
                ">
-        <section class="postShorten-group main-content-wrap">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
           
           
-            
+            <div class="post-header main-content-wrap text-left">
   
-    
-      
-        
-      
-    
+    <h1 class="post-title" itemprop="headline">
+      Spring Transactional
+    </h1>
   
-
-
   
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180822_transation/">
-          Spring Transactional
-        </a>
-      </h1>
-      
   <div class="postShorten-meta post-meta">
     
       <time itemprop="datePublished" datetime="2018-08-22T20:58:15&#43;08:00">
@@ -266,366 +253,193 @@
 
   </div>
 
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>今天遇到了个Spring的<code>@Transactional</code>注解用法的问题(从此也可以看出自己数据库的薄弱,还是需要补这个基础).经过一个下午的源码阅读和debug终于解开了心中所惑,遂写下来记录一下.</p>
-      <p>
-        <a href="https://vitzhou.top/20180822_transation/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
+</div>
           
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <p>今天遇到了个Spring的<code>@Transactional</code>注解用法的问题(从此也可以看出自己数据库的薄弱,还是需要补这个基础).经过一个下午的源码阅读和debug终于解开了心中所惑,遂写下来记录一下.</p>
+
+<p>
+<h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#问题是什么">问题是什么?</a></li>
+<li><a href="#找资料">找资料</a></li>
+<li><a href="#debug">debug</a></li>
+<li><a href="#最后结论">最后结论</a></li>
+</ul></li>
+</ul>
+</nav></p>
+
+<h2 id="问题是什么">问题是什么?</h2>
+
+<p>首先讲下场景.我需要对几张表做修改操作,但是在修改之前我需要先查询这几张表做数据校验.然后修改这些数据.修改操作我希望是一个原子性操作,于是很自然的想到了Spring的<code>@Transactional</code>注解自动事务管理. 我把我的代码简化一下:</p>
+
+<pre><code class="language-java">public class Controller{
+	@Autowired
+	private Service service;
+    
+    public void save(){
+    	service.save();
+    }
+}
+</code></pre>
+
+<pre><code class="language-java">public class Service{
+	public void save(){
+    	//......省略查询表,校验数据步骤
+        doSave();
+    }
+    @Transational
+    public void doSave(){
+    	//修改数据步骤省略
+    }
+}
+</code></pre>
+
+<p>一开始我觉得完美.然后开开心心的提交了代码.直到sonar反馈给我一个bug：</p>
+
+<p><img src="../img/spring/transational01.png" alt="" /></p>
+
+<p>然后我就傻眼了&hellip;虽然我看不懂提示的内容(所以只截图了部分内容),但是我知道不对.那是为什么呢?</p>
+
+<blockquote>
+<p>sonar的解释: When using Spring proxies, calling a method in the same class (e.g. this.aMethod()) with an incompatible @Transactional requirement will result in runtime exceptions because Spring only &ldquo;sees&rdquo; the caller and makes no provisions for properly invoking the callee.</p>
+
+<p>Therefore, certain calls should never be made within the same class:</p>
+</blockquote>
+
+<h2 id="找资料">找资料</h2>
+
+<p>由于我很多年没怎么用数据库,所以很多东西往得差不多了,所以需要先补补理论基础.于是我看了<a href="https://blog.csdn.net/zhousenshan/article/details/78509250">这个</a>.初步了解了spring事务的原理是使用了aop.那么是不是每个方法都会用aop拦截,然后在方法前创建事务,方法后关闭事务？那如果是这样的话save()并没有使用事务,也不会影响到doSave()的事务啊。带着疑问我继续找资料.看了<a href="https://www.jianshu.com/p/42ce0f9250f5">这个源码分析</a></p>
+
+<blockquote>
+<p>如果你跟我一样基础不怎么好,一定要看完这两篇文章之后再往下看</p>
+</blockquote>
+
+<h2 id="debug">debug</h2>
+
+<p>看完上面两篇文章之后,我开始了debug之路.在<code>TransactionInterceptor</code>的invoke方法做了断点.发现压根就没进去过.但是我把代码改成这样:</p>
+
+<pre><code class="language-java">public class Controller{
+	@Autowired
+	private Service service;
+
+    public void save(){
+    	service.save();
+        service.doSave();
+    }
+}
+</code></pre>
+
+<pre><code class="language-java">public class Service{
+	public void save(){
+    	//......省略查询表,校验数据步骤
+    }
+    @Transational
+    public void doSave(){
+    	//修改数据步骤省略
+    }
+}
+</code></pre>
+
+<p>之后当执行到service.doSave()代码之后,就会进入到断点位置(<code>TransactionInterceptor</code>的invoke方法).invoke里面的内容就是开启事务,commit,rollback等事务的逻辑(即<code>@Transational</code>生效了，开启了事务). 但是这又是为什么？ 为何save()直接调用doSave时无法开启事务呢？于是又找到了一篇<a href="https://www.jianshu.com/p/0da29e4f354a">文章</a>. 文章最后的结论是: 动态代理最终都是要调用原始对象的，而原始对象再去调用方法时，是不会再触发代理了。</p>
+
+<p>结合它的结论,再根据代码分析,最后我的结论是: 由于spring的事务管理是使用动态代理来实现的.而动态代理在调用是在调用其他类时生效（就是controller调用service的方法时才生效）。从最初的代码可以看到controller在调用service.save()时是能进入invoke方法的。但是由于save()方法没有使用<code>@Transational</code>,所以并没有进入invoke。然后saove()调用doSave()时动态代理没有生效(同一个类的内部方法调用不满足动态代理生效的机制).</p>
+
+<h2 id="最后结论">最后结论</h2>
+
+<p>如果要使<code>@Transational</code>生效,需要从外部类(controller或者其他类)调用.这样可以似的动态代理生效,从而进入<code>TransactionInterceptor</code>的invoke方法最终开启事务。</p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
             
-  
-    
-      
-        
-      
-    
-  
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/spring/">spring</a>
 
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180804_threadlocal/">
-          ThreadLocal详解(二)
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-08-04T14:58:15&#43;08:00">
-        
-  八月 4, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。
-
-<!--toc--></p>
-      <p>
-        <a href="https://vitzhou.top/20180804_threadlocal/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
+                  </div>
+                
+              
             
-  
-    
-      
-        
-      
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180728_threadlocal/">
-          ThreadLocal详解(一)
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-28T23:02:44&#43;08:00">
-        
-  七月 28, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>最近工作中正好使用了ThreadLocal,之前对它底层实现不是非常清晰.今天正好看一遍</p>
-      <p>
-        <a href="https://vitzhou.top/20180728_threadlocal/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
             
-  
-    
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180804_threadlocal/" data-tooltip="ThreadLocal详解(二)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
       
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
         
       
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180724_reetrantlock/">
-          详读JUC系列之ReetrantLock
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
         </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-24T20:23:08&#43;08:00">
-        
-  七月 24, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java-juc">java JUC</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>详读JUC系列之ReetrantLock
-</p>
-      <p>
-        <a href="https://vitzhou.top/20180724_reetrantlock/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
-            
-  
-    
-      
-        
-      
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180709_aqs_2/">
-          详读JUC系列(2)之AQS
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-10T12:51:42&#43;08:00">
-        
-  七月 10, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java-juc">java JUC</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>AQS(二)</p>
-      <p>
-        <a href="https://vitzhou.top/20180709_aqs_2/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
-            
-  
-    
-      
-        
-      
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180709_prometheus_many_file/">
-          Prometheus Too Many Open file问题
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-09T10:25:50&#43;08:00">
-        
-  七月 9, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/prometheus">Prometheus</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>Prometheus Too many open file问题定位</p>
-      <p>
-        <a href="https://vitzhou.top/20180709_prometheus_many_file/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
-            
-  
-    
-      
-        
-      
-    
-  
-
-
-  
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180707_aqs/">
-          详读JUC系列(1)之AQS
-        </a>
-      </h1>
-      
-  <div class="postShorten-meta post-meta">
-    
-      <time itemprop="datePublished" datetime="2018-07-08T12:51:42&#43;08:00">
-        
-  七月 8, 2018
-
-      </time>
-    
-    
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java-juc">java JUC</a>
-    
-  
-
-  </div>
-
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2>
-      <p>
-        <a href="https://vitzhou.top/20180707_aqs/" class="postShorten-excerpt_link link">阅读全文</a>
-        
-      </p>
-    </div>
-  </div>
-  
-</article>
-
-          
-          
-  <div class="pagination-bar">
-    <ul class="pagination">
-      
-        
-        
-          <li class="pagination-next">
-            <a class="btn btn--default btn--small" href="https://vitzhou.top/post/page/2/">
-              <span>下一页</span>
-              <i class="fa fa-angle-right text-base icon-ml"></i>
-            </a>
-          </li>
-        
-      
-      <li class="pagination-number">第 1 页 共 3 页</li>
+      </li>
     </ul>
   </div>
 
 
-        </section>
+            
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
+            
+          </div>
+        </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
     &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
@@ -633,6 +447,66 @@
 </footer>
 
       </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180804_threadlocal/" data-tooltip="ThreadLocal详解(二)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
     </div>
     
     <div id="about">
@@ -905,6 +779,32 @@ $(document).ready(function() {
 });
 </script>
 
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20180822_transation\/';
+          
+            this.page.identifier = '\/20180822_transation\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
 
 
 
