@@ -6,19 +6,20 @@
     <description>Recent content in Java Juc on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 24 Jul 2018 20:23:08 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 26 Aug 2018 14:58:15 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/tags/java-juc/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>详读JUC系列之ReetrantLock</title>
+      <title>详读JUC系列之ReadWriteLock</title>
       <link>https://vitzhou.top/20180724_reetrantlock/</link>
-      <pubDate>Tue, 24 Jul 2018 20:23:08 +0800</pubDate>
+      <pubDate>Sun, 26 Aug 2018 14:58:15 +0800</pubDate>
       
       <guid>https://vitzhou.top/20180724_reetrantlock/</guid>
-      <description>&lt;p&gt;详读JUC系列之ReetrantLock
-&lt;/p&gt;</description>
+      <description>&lt;p&gt;虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用&lt;code&gt;synchronized&lt;/code&gt;或者&lt;code&gt;ReentrantLock&lt;/code&gt;会浪费非常大的性能.此时使用&lt;code&gt;ReentrantReadWriteLock&lt;/code&gt;会更合适
+
+&lt;!--toc--&gt;&lt;/p&gt;</description>
     </item>
     
     <item>

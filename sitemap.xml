@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20180724_reetrantlock/</loc>
+    <lastmod>2018-08-26T14:58:15+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20180822_transation/</loc>
     <lastmod>2018-08-22T20:58:15+08:00</lastmod>
   </url>
@@ -15,11 +20,6 @@
   <url>
     <loc>https://vitzhou.top/20180728_threadlocal/</loc>
     <lastmod>2018-07-28T23:02:44+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://vitzhou.top/20180724_reetrantlock/</loc>
-    <lastmod>2018-07-24T20:23:08+08:00</lastmod>
   </url>
   
   <url>
@@ -140,13 +140,13 @@
   
   <url>
     <loc>https://vitzhou.top/tags/java-juc/</loc>
-    <lastmod>2018-07-24T20:23:08+08:00</lastmod>
+    <lastmod>2018-08-26T14:58:15+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://vitzhou.top/categories/java-juc/</loc>
-    <lastmod>2018-07-24T20:23:08+08:00</lastmod>
+    <lastmod>2018-08-26T14:58:15+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -176,7 +176,7 @@
   
   <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2018-08-22T20:58:15+08:00</lastmod>
+    <lastmod>2018-08-26T14:58:15+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -242,7 +242,7 @@
   
   <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2018-08-22T20:58:15+08:00</lastmod>
+    <lastmod>2018-08-26T14:58:15+08:00</lastmod>
     <priority>0</priority>
   </url>
   
