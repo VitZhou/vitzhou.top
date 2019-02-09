@@ -18,7 +18,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Golang</title>
+    <title>Rxjava</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
@@ -41,15 +41,15 @@
     </script>
     <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/categories/golang/index.xml">
+      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/tags/rxjava/index.xml">
     
 
     
     <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
     <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Golang">
-    <meta property="og:url" content="/categories/golang/">
+    <meta property="og:title" content="Rxjava">
+    <meta property="og:url" content="/tags/rxjava/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
@@ -245,16 +245,16 @@
     
     <div class="postShorten-header">
       <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180529_http_proxy/">
-          HTTP proxy
+        <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_1/">
+          详读RxJava(数据的发送与接收)
         </a>
       </h1>
       
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-05-29T18:51:42&#43;08:00">
+      <time itemprop="datePublished" datetime="2019-02-08T10:18:38&#43;08:00">
         
-  五月 29, 2018
+  二月 8, 2019
 
       </time>
     
@@ -263,7 +263,7 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/golang">golang</a>
+      <a class="category-link" href="https://vitzhou.top/categories/rxjava">RxJava</a>
     
   
 
@@ -271,13 +271,23 @@
 
     </div>
     <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>最近在用Golang做httpProxy,看到一篇不错的老外博客.所以翻译一遍以备后用</p>
+      <p>18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。</p>
 
-<p>原文地址:<a href="https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c">https://medium.com/@mlowicki/http-s-proxy-in-golang-in-less-than-100-lines-of-code-6a51c2f2c38c</a></p>
+<p>这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的<a href="https://github.com/ReactiveX/RxJava">官网</a>看看。</p>
 
-<p></p>
+<p>由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。</p>
+
+<blockquote>
+<p>这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。</p>
+</blockquote>
+
+<p>首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。</p>
+
+<blockquote>
+<p>建议初学者先去熟悉下RxJava的api</p>
+</blockquote>
       <p>
-        <a href="https://vitzhou.top/20180529_http_proxy/" class="postShorten-excerpt_link link">阅读全文</a>
+        <a href="https://vitzhou.top/20190209_rxjava_1/" class="postShorten-excerpt_link link">阅读全文</a>
         
       </p>
     </div>

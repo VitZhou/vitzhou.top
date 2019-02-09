@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rxjava on 周圣华的博客</title>
+    <link>https://vitzhou.top/categories/rxjava/</link>
+    <description>Recent content in Rxjava on 周圣华的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 08 Feb 2019 10:18:38 +0800</lastBuildDate>
+    
+	<atom:link href="https://vitzhou.top/categories/rxjava/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>详读RxJava(数据的发送与接收)</title>
+      <link>https://vitzhou.top/20190209_rxjava_1/</link>
+      <pubDate>Fri, 08 Feb 2019 10:18:38 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20190209_rxjava_1/</guid>
+      <description>&lt;p&gt;18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。&lt;/p&gt;
+
+&lt;p&gt;这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的&lt;a href=&#34;https://github.com/ReactiveX/RxJava&#34;&gt;官网&lt;/a&gt;看看。&lt;/p&gt;
+
+&lt;p&gt;由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;建议初学者先去熟悉下RxJava的api&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
