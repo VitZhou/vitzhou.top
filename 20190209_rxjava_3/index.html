@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Java 动态代理详解</title>
+    <title>周圣华的博客</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="java proxy, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,54 @@
     
 
     
-    <meta name="description" content="java proxy">
-    <meta property="og:description" content="java proxy">
+    <meta name="description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
+date: 2019-02-08T22:22:31&#43;08:00
+categories:
+
+
+RxJava
+tags:
+RxJava
+keywords:
+RxJava
+description: RxJava
+
+
+这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
+    <meta property="og:description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
+date: 2019-02-08T22:22:31&#43;08:00
+categories:
+
+
+RxJava
+tags:
+RxJava
+keywords:
+RxJava
+description: RxJava
+
+
+这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Java 动态代理详解">
-    <meta property="og:url" content="/20180629_java_proxy/">
+    <meta property="og:title" content="周圣华的博客">
+    <meta property="og:url" content="/20190209_rxjava_3/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="java proxy">
+    <meta name="twitter:description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
+date: 2019-02-08T22:22:31&#43;08:00
+categories:
+
+
+RxJava
+tags:
+RxJava
+keywords:
+RxJava
+description: RxJava
+
+
+这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
     
     
 
@@ -230,482 +269,507 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      Java 动态代理详解
+      
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-06-29T22:51:42&#43;08:00">
+      <time itemprop="datePublished" datetime="0001-01-01T00:00:00Z">
         
-  六月 29, 2018
+  一月 1, 1
 
       </time>
     
     
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
-    
-  
-
   </div>
 
 </div>
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>今天我们聊聊java动态代理</p>
+              <p>title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
+date: 2019-02-08T22:22:31+08:00
+categories:</p>
+
+<ul>
+<li>RxJava
+tags:</li>
+<li>RxJava
+keywords:</li>
+<li>RxJava
+description: RxJava</li>
+</ul>
+
+<p>这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看<a href="https://vitzhou.top/20190209_rxjava_1/">数据的发送与接收</a></p>
 
 <p>
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
 <ul>
-<li><a href="#动态代理">动态代理</a>
+<li>
 <ul>
-<li><a href="#静态代理">静态代理</a></li>
-<li><a href="#动态代理-1">动态代理</a>
+<li><a href="#schedulers-computation">Schedulers.computation()</a>
 <ul>
-<li><a href="#jdk动态代理">jdk动态代理</a>
+<li>
 <ul>
-<li><a href="#cglib">CGLIB</a></li>
+<li><a href="#rxjavaschedulershook-createcomputationscheduler">RxJavaSchedulersHook.createComputationScheduler()</a></li>
+<li><a href="#fixedschedulerpool">FixedSchedulerPool</a></li>
+<li><a href="#poolworker">PoolWorker</a></li>
+<li><a href="#evetloopworker">EvetLoopWorker</a></li>
 </ul></li>
 </ul></li>
+<li><a href="#rxjavaschedulershook-createioscheduler">RxJavaSchedulersHook.createIoScheduler()</a>
+<ul>
+<li>
+<ul>
+<li><a href="#cachedthreadscheduler">CachedThreadScheduler</a></li>
+<li><a href="#eventloopworker">EventLoopWorker</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#提示">提示</a></li>
 </ul></li>
 </ul>
 </nav></p>
 
-<h1 id="动态代理">动态代理</h1>
+<p>先看个demo</p>
 
-<h2 id="静态代理">静态代理</h2>
+<pre><code class="language-java">Observable.create((Observable.OnSubscribe&lt;Integer&gt;) subscriber -&gt; {
+            System.out.println(&quot;start:&quot; + Thread.currentThread().getName());
+            subscriber.onNext(1);
+            subscriber.onCompleted();
+        }).subscribeOn(Schedulers.computation()).map(integer -&gt; {
+            System.out.println(integer + &quot;:&quot; + Thread.currentThread().getName());
+            return integer + 1;
+        }).observeOn(Schedulers.io())
+                .map(integer -&gt; {
+                    System.out.println(integer + &quot;:&quot; + Thread.currentThread().getName());
+                    return integer + 1;
+                }).observeOn(Schedulers.newThread())
+                .subscribe(integer -&gt; System.out.println(&quot;action:&quot; + Thread.currentThread().getName()));
+</code></pre>
 
-<p>在日常生活中有这么一个场景,周末我一般都喜欢去看场电影.那么看电影之前肯定要先买电影票.传统的方式是去电影院买.于是乎就有了Cinema接口:</p>
+<p>demo中使用了subscribeOn和observeOn来进行线程切换.其中observeOn每次切换线程都会生效,但是subscribeOn只会在第一次调用时生效.至于原因我们在下篇文章中揭晓. 这篇文章我们主要介绍的是常用的Schedulers.io()和Schedulers.computation(). 这两者的应用场景跟其名字一样，一个是在io比较多的场景使用,一个是cpu计算密集场景使用.</p>
 
-<pre><code class="language-java">/**
- * 电影院
- */
-public interface Cinema {
-    void buy();
+<h2 id="schedulers-computation">Schedulers.computation()</h2>
+
+<pre><code class="language-java">public static Scheduler computation() {
+    return RxJavaHooks.onComputationScheduler(getInstance().computationScheduler);
 }
 </code></pre>
 
-<p>电影院可以买票. 一般看大片,尤其是像《复联3》这种巨制,我都会选择去万达:</p>
-
-<pre><code class="language-java">/**
- * 万达电影院
- */
-public class WdCinema implements Cinema {
-    public void buy() {
-        System.out.println(&quot;这里是万达影城,欢迎购票&quot;);
-    }
-}
-</code></pre>
-
-<p>于是乎我就可以到万达影院购票了.但是有个麻烦的事就是我需要去电影院买票.但是现在互联网时代还有谁去电影院买呢？我一般都是用淘票票:</p>
-
-<pre><code class="language-java">/**
- * 代理商
- */
-public class CinemaStaticProxy implements Cinema {
-
-    private Cinema cinema;
-
-    public CinemaStaticProxy(Cinema cinema) {
-        this.cinema = cinema;
-    }
-
-    public void buy() {
-        System.out.println(&quot;这里是淘票票,现在帮你在电影院买票&quot;);
-        cinema.buy();
-    }
-}
-</code></pre>
-
-<p>淘票票其实就是中间代理商.也就是proxy.我只打开淘票票,然后选择想去哪家电影院,然后选择购票就可以了:</p>
-
-<pre><code class="language-java">public class CinemaStaticProxyTest {
-
-    @Test
-    public void buy() {
-        WdCinema wdCinema = new WdCinema();
-        CinemaStaticProxy cinemaStaticProxy = new CinemaStaticProxy(wdCinema);
-        cinemaStaticProxy.buy();
-    }
-}
-</code></pre>
-
-<p>结果如下:</p>
-
-<pre><code class="language-console">这里是淘票票,现在帮你在电影院买票
-这里是万达影城,欢迎购票
-</code></pre>
-
-<p>以上这个例子就是一个简单的静态代理.静态代理是在编译器确定实现类的.静态代理的代表作就是AspectJ.</p>
-
-<h2 id="动态代理-1">动态代理</h2>
-
-<p>那么动态代理是怎么实现呢？首先动态代理有两种实现方式:jdk的动态代理,以及cglib(Code Generation Library,字面意思是代码生成库)</p>
-
-<h3 id="jdk动态代理">jdk动态代理</h3>
-
-<p>在jdk 1.3开始支持动态代理.那如果想要用jdk动态代理怎么实现上面的例子呢？需要实现一个InvocationHandler接口:</p>
-
-<pre><code class="language-java">public class CinemaProxy implements InvocationHandler {
-
-    private Cinema cinema;
-
-    public CinemaProxy(Cinema cinema) {
-        this.cinema = cinema;
-    }
-
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (&quot;buy&quot;.equals(method.getName())) {
-            System.out.println(&quot;这里是动态的淘票票,现在帮你购买电影票&quot;);
-            return method.invoke(cinema, args);
+<pre><code class="language-java">private static Schedulers getInstance() {
+        for (;;) {
+            Schedulers current = INSTANCE.get();
+            if (current != null) {
+                return current;
+            }
+            current = new Schedulers();
+            if (INSTANCE.compareAndSet(null, current)) {
+                return current;
+            } else {
+                current.shutdownInstance();
+            }
         }
-        return null;
+    }
+
+    private Schedulers() {
+        @SuppressWarnings(&quot;deprecation&quot;)
+        RxJavaSchedulersHook hook = RxJavaPlugins.getInstance().getSchedulersHook();
+
+        Scheduler c = hook.getComputationScheduler();
+        if (c != null) {
+            computationScheduler = c;
+        } else {
+            computationScheduler = RxJavaSchedulersHook.createComputationScheduler();
+        }
+
+        Scheduler io = hook.getIOScheduler();
+        if (io != null) {
+            ioScheduler = io;
+        } else {
+            ioScheduler = RxJavaSchedulersHook.createIoScheduler();
+        }
+
+        Scheduler nt = hook.getNewThreadScheduler();
+        if (nt != null) {
+            newThreadScheduler = nt;
+        } else {
+            newThreadScheduler = RxJavaSchedulersHook.createNewThreadScheduler();
+        }
+    }
+</code></pre>
+
+<p>如上代码. Schedulers.computation()会调用Schedulers的单例方法getInstance().并在第一次调用时初始化computationScheduler,ioScheduler以及newThreadScheduler.</p>
+
+<p>我们先看RxJavaSchedulersHook.createComputationScheduler()</p>
+
+<h4 id="rxjavaschedulershook-createcomputationscheduler">RxJavaSchedulersHook.createComputationScheduler()</h4>
+
+<pre><code class="language-java">public static Scheduler createComputationScheduler() {
+    return createComputationScheduler(new RxThreadFactory(&quot;RxComputationScheduler-&quot;));
+}
+</code></pre>
+
+<pre><code class="language-java">public final class RxThreadFactory extends AtomicLong implements ThreadFactory {
+    private static final long serialVersionUID = -8841098858898482335L;
+
+    public static final ThreadFactory NONE = new ThreadFactory() {
+        @Override public Thread newThread(Runnable r) {
+            throw new AssertionError(&quot;No threads allowed.&quot;);
+        }
+    };
+
+    final String prefix;
+
+    public RxThreadFactory(String prefix) {
+        this.prefix = prefix;
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread t = new Thread(r, prefix + incrementAndGet());
+        t.setDaemon(true);
+        return t;
     }
 }
 </code></pre>
 
-<p>那么买票现在需要这样买了:</p>
+<p>rxJava提供了一个线程工厂类.在创建新线程时会使用固定的前缀以及原子自增数作为线程名.</p>
 
-<pre><code class="language-java">public class CinemaInvocationHandlerTest {
+<pre><code class="language-java">public static Scheduler createComputationScheduler(ThreadFactory threadFactory) {
+    if (threadFactory == null) {
+        throw new NullPointerException(&quot;threadFactory == null&quot;);
+    }
+    return new EventLoopsScheduler(threadFactory);
+}
 
-    @Test
-    public void setInvoke() {
-        DdCinema ddCinema = new DdCinema();
-        Cinema cinema = (Cinema) Proxy.newProxyInstance(getClass().getClassLoader(),
-                new Class&lt;?&gt;[]{Cinema.class},
-                new CinemaInvocationHandler(ddCinema));
-        cinema.buy();
+public final class EventLoopsScheduler extends Scheduler implements SchedulerLifecycle
+</code></pre>
+
+<pre><code class="language-java">public EventLoopsScheduler(ThreadFactory threadFactory) {
+    this.threadFactory = threadFactory;
+    this.pool = new AtomicReference&lt;FixedSchedulerPool&gt;(NONE);
+    start();
+}
+
+@Override
+public void start() {
+    FixedSchedulerPool update = new FixedSchedulerPool(threadFactory, MAX_THREADS);
+    if (!pool.compareAndSet(NONE, update)) {
+        update.shutdown();
     }
 }
 </code></pre>
 
-<p>输出结果:</p>
+<p>createComputationScheduler会传入线程工厂RxThreadFactory,并返回一个EventLoopsScheduler.</p>
 
-<pre><code class="language-console">这里是动态的淘票票,现在帮你购买电影票
-这里是大地影城,欢迎购票
+<p>EventLoopsScheduler的内部我们可以看到它创建了一个固定大小的线程池(FixedSchedulerPool). 该大小为MAX_THREADS。</p>
+
+<pre><code class="language-java">static final int MAX_THREADS;
+static {
+    int maxThreads = Integer.getInteger(KEY_MAX_THREADS, 0);
+    int cpuCount = Runtime.getRuntime().availableProcessors();
+    int max;
+    if (maxThreads &lt;= 0 || maxThreads &gt; cpuCount) {
+        max = cpuCount;
+    } else {
+        max = maxThreads;
+    }
+    MAX_THREADS = max;
+}
 </code></pre>
 
-<p>那么他内部是怎么实现的呢？让我们看下关键步骤.</p>
+<p>MAX_THREADS等于cpu核心数.所以computation scheduler创建的是一个大小为cpu核心数的线程池.这样每个线程会占用一个cpu,减少了线程切换的耗时从而提高效率,但是他不适合有阻塞的场景.因为一旦产生阻塞就会导致cpu被浪费. 因为cpu数量是有限的,如果有超过cpu数量的任务就必须排队,所以它也不适合大量数据的场景.最好是小于或等cpu数量。</p>
 
-<p>首先看下Proxy.newProxyInstance的参数:</p>
+<h4 id="fixedschedulerpool">FixedSchedulerPool</h4>
 
-<pre><code class="language-java">public static Object newProxyInstance(ClassLoader loader,
-                                          Class&lt;?&gt;[] interfaces,
-                                          InvocationHandler h)
-</code></pre>
+<p>他是EventLoopsScheduler的内部类.</p>
 
-<p>loader: 这个无需多解释,就是用来加载proxy的</p>
+<pre><code class="language-java">static final class FixedSchedulerPool {
+    final int cores;
 
-<p>interfaces: 是我们需要代理的&rdquo;电影院&rdquo;接口,可以是多个接口</p>
+    final PoolWorker[] eventLoops;
+    long n;
 
-<p>h:就是实现了InvocationHandler接口的类(本例中的CinemaInvocationHandler)</p>
-
-<p>然后让我们细看newProxyInstance的实现.</p>
-
-<ol>
-<li>校验</li>
-</ol>
-
-<pre><code class="language-java">    checkProxyAccess(Reflection.getCallerClass(), loader, intfs);
-</code></pre>
-
-<p>首先,它需要校验接口以及classLoader.如果接口是非public的,那么proxy就必须由define接口的classLoader来定义.否则如果调用者的类加载器与接口的定义加载器不同，当通过defineClass0方法定义生成的代理类时，VM将抛出IllegalAccessError</p>
-
-<ol>
-<li>查找或生成</li>
-</ol>
-
-<pre><code class="language-java">   /*
-            * 查找或生成指定的代理类.
-            */
-           Class&lt;?&gt; cl = getProxyClass0(loader, intfs);
-</code></pre>
-
-<p>继续深入进去看:</p>
-
-<pre><code class="language-java">   	/**
-        * Generate a proxy class.  Must call the checkProxyAccess method
-        * to perform permission checks before calling this.
-        */
-       private static Class&lt;?&gt; getProxyClass0(ClassLoader loader,
-                                              Class&lt;?&gt;... interfaces) {
-           if (interfaces.length &gt; 65535) {
-               throw new IllegalArgumentException(&quot;interface limit exceeded&quot;);
-           }
-   
-           // If the proxy class defined by the given loader implementing
-           // the given interfaces exists, this will simply return the cached copy;
-           // otherwise, it will create the proxy class via the ProxyClassFactory
-           return proxyClassCache.get(loader, interfaces);
-       }
-</code></pre>
-
-<blockquote>
-<p>proxyClassCache的实现类是WeakCache,弱引用会在内存空间不足时进行GC.这里不细讲</p>
-</blockquote>
-
-<p>由代码可知,它首先会在缓存中查找,如果查到了就直接返回,否则应该就是要去生成代理类.由于接下来的代码太多.这里我找出了关键步骤(ProxyClassFactory的public Class&lt;?&gt; apply(ClassLoader loader, Class&lt;?&gt;[] interfaces)方法):</p>
-
-<pre><code class="language-java">   /*
-   * Verify that the class loader resolves the name of this
-   * interface to the same Class object.
-   */
-   Class&lt;?&gt; interfaceClass = null;
-   try {
-       //加载目标类实现的接口到内存中
-       interfaceClass = Class.forName(intf.getName(), false, loader);
-   } catch (ClassNotFoundException e) {
-   }
-   if (interfaceClass != intf) {
-       throw new IllegalArgumentException(
-           intf + &quot; is not visible from class loader&quot;);
-   }
-   /*
-   * Verify that the Class object actually represents an
-   * interface.
-   */
-   if (!interfaceClass.isInterface()) {
-       throw new IllegalArgumentException(
-           interfaceClass.getName() + &quot; is not an interface&quot;);
-   }
-   /*
-   * Verify that this interface is not a duplicate.
-   */
-   if (interfaceSet.put(interfaceClass, Boolean.TRUE) != null) {
-       throw new IllegalArgumentException(
-           &quot;repeated interface: &quot; + interfaceClass.getName());
-   }
-</code></pre>
-
-<p>它会进行一系列的校验：</p>
-
-<ol>
-<li>验证classloader是否将此接口的name解析为同一个Class对象</li>
-<li>验证对象是不是接口</li>
-<li>验证该接口是否重复</li>
-</ol>
-
-<p>验证通过之后会生成一个代理类Class返回:</p>
-
-<pre><code class="language-java">   /*
-   * Choose a name for the proxy class to generate.
-   */
-   long num = nextUniqueNumber.getAndIncrement();
-   String proxyName = proxyPkg + proxyClassNamePrefix + num;
-   
-   /*
-   * 生成指定的proxy class的二进制文件
-   */
-   byte[] proxyClassFile = ProxyGenerator.generateProxyClass(
-       proxyName, interfaces, accessFlags);
-   try {
-       //定义一个proxy class并返回
-       return defineClass0(loader, proxyName,
-                           proxyClassFile, 0, proxyClassFile.length);
-   } catch (ClassFormatError e) {
-       /*
-       * A ClassFormatError here means that (barring bugs in the
-       * proxy class generation code) there was some other
-       * invalid aspect of the arguments supplied to the proxy
-       * class creation (such as virtual machine limitations
-       * exceeded).
-       */
-       throw new IllegalArgumentException(e.toString());
-   }
-</code></pre>
-
-<blockquote>
-<p>请注意这里返回的是class而不是object。至于class和object的区别可以查看<a href="https://www.cnblogs.com/hongdada/p/6249144.html">这里</a></p>
-</blockquote>
-
-<p>然后我们继续看它是怎么生成二进制文件的(由于我本地没有源码包,大家凑合看):</p>
-
-<pre><code class="language-java">   public static byte[] generateProxyClass(final String var0, Class&lt;?&gt;[] var1, int var2) {
-           ProxyGenerator var3 = new ProxyGenerator(var0, var1, var2);
-       	//动态生成代理内的字节码,里面的内容太复杂就不再深入了
-           final byte[] var4 = var3.generateClassFile();
-       	//如果需要保存生成的文件,就将上面生成的字节码刷到硬盘上
-           if (saveGeneratedFiles) {
-               AccessController.doPrivileged(new PrivilegedAction&lt;Void&gt;() {
-                   public Void run() {
-                       try {
-                           int var1 = var0.lastIndexOf(46);
-                           Path var2;
-                           if (var1 &gt; 0) {
-                               Path var3 = Paths.get(var0.substring(0, var1).replace('.', File.separatorChar));
-                               Files.createDirectories(var3);
-                               var2 = var3.resolve(var0.substring(var1 + 1, var0.length()) + &quot;.class&quot;);
-                           } else {
-                               var2 = Paths.get(var0 + &quot;.class&quot;);
-                           }
-   						//刷硬盘
-                           Files.write(var2, var4, new OpenOption[0]);
-                           return null;
-                       } catch (IOException var4x) {
-                           throw new InternalError(&quot;I/O exception saving generated file: &quot; + var4x);
-                       }
-                   }
-               });
-           }
-           return var4;
-       }
-</code></pre>
-
-<p>返回之后我细看Proxy.newProxyInstance接口:</p>
-
-<pre><code class="language-java">   public static Object newProxyInstance(ClassLoader loader,
-                                             Class&lt;?&gt;[] interfaces,
-                                             InvocationHandler h)
-           throws IllegalArgumentException
-       {
-         ....省略部分代码
-         //生成一个Proxy Class
-           Class&lt;?&gt; cl = getProxyClass0(loader, intfs);
-   	
-           /*
-            * 使用指定的调用处理程序调用其构造函数
-            */
-           try {
-               if (sm != null) {
-                   checkNewProxyPermission(Reflection.getCallerClass(), cl);
-               }
-               //根据构造参数获取proxy class的构造函数
-               final Constructor&lt;?&gt; cons = cl.getConstructor(constructorParams);
-               final InvocationHandler ih = h;
-               if (!Modifier.isPublic(cl.getModifiers())) {
-                   //假如proxy class的构造函数是private的，就使用反射来set accessible
-                   AccessController.doPrivileged(new PrivilegedAction&lt;Void&gt;() {
-                       public Void run() {
-                           cons.setAccessible(true);
-                           return null;
-                       }
-                   });
-               }
-               //通过proxy class的构造行数生成一个代理对象object返回
-               return cons.newInstance(new Object[]{h});
-           } catch (IllegalAccessException|InstantiationException e) {
-               throw new InternalError(e.toString(), e);
-           } catch (InvocationTargetException e) {
-               Throwable t = e.getCause();
-               if (t instanceof RuntimeException) {
-                   throw (RuntimeException) t;
-               } else {
-                   throw new InternalError(t.toString(), t);
-               }
-           } catch (NoSuchMethodException e) {
-               throw new InternalError(e.toString(), e);
-           }
-</code></pre>
-
-<p>至此它就生成了一个可以使用的代理对象.可以看出jdk的动态代理中使用了大量的反射。</p>
-
-<p>简单总结下,jdk动态代理会通过你所指定的接口(interfaces),InvocationHandler接口的实现类.动态的为你生成一个proxy对象。 有不少rpc,底层也是用了动态代理的.</p>
-
-<p>#### aop</p>
-
-<p>现在我们将CinemaInvocationHandler稍微改造一下:</p>
-
-<pre><code class="language-java">   public class CinemaProxy implements InvocationHandler {
-   
-       private Cinema cinema;
-   
-       public CinemaProxy(Cinema cinema) {
-           this.cinema = cinema;
-       }
-   
-       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-           if (&quot;buy&quot;.equals(method.getName())) {
-               System.out.println(&quot;before&quot;);
-   
-               System.out.println(&quot;这里是动态的淘票票,现在帮你购买电影票&quot;);
-               Object invoke = method.invoke(cinema, args);
-               
-               System.out.println(&quot;after&quot;);
-               return invoke;
-           }
-           return null;
-       }
-   }
-</code></pre>
-
-<p>输出的结果:</p>
-
-<pre><code class="language-java">   before
-   这里是动态的淘票票,现在帮你购买电影票
-   这里是大地影城,欢迎购票
-   after
-</code></pre>
-
-<p>这个就是aop就基本的原理.当然spring aop的实现肯定不是这么简单的.而且spring aop不仅适用了jdk的动态代理.还使用了cglib.是因为jdk的动态代理是需要被代理的类实现接口(Cinema).如果没有实现这个Cinema接口jdk自带的动态代理就束手无策了.那怎么办呢？ 这时候就需要用到CGLIB.</p>
-
-<h4 id="cglib">CGLIB</h4>
-
-<p>(这里只是简单介绍下,源码级的今天实在没时间，有空补上)</p>
-
-<p>首先,同样是有一个万达影城,但是它没有实现Cinema接口:</p>
-
-<pre><code class="language-java">public class WdCGLIBCinema {
-    public void buy() {
-        System.out.println(&quot;这里是万达影城,欢迎购票&quot;);
+    FixedSchedulerPool(ThreadFactory threadFactory, int maxThreads) {
+        // initialize event loops
+        this.cores = maxThreads;
+        this.eventLoops = new PoolWorker[maxThreads];
+        for (int i = 0; i &lt; maxThreads; i++) {
+            this.eventLoops[i] = new PoolWorker(threadFactory);
+        }
     }
 }
 </code></pre>
 
-<p>那这种情况jdk的动态代理就束手无策了.这时候就需要用到cglib.   cglib是使用ASM框架直接对字节码修改的.需要注意的是它是使用继承方式来实现.也就是说被代理的类不能是final的.</p>
+<h4 id="poolworker">PoolWorker</h4>
 
-<blockquote>
-<p>ASM 是一个 Java 字节码操控框架。它能够以二进制形式修改已有类或者动态生成类。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。ASM 从类文件中读入信息后，能够改变类行为，分析类信息，甚至能够根据用户要求生成新类。</p>
-</blockquote>
+<pre><code class="language-java">static final class PoolWorker extends NewThreadWorker {
+    PoolWorker(ThreadFactory threadFactory) {
+        super(threadFactory);
+    }
+}
+public NewThreadWorker(ThreadFactory threadFactory) {
+        ScheduledExecutorService exec = Executors.newScheduledThreadPool(1, threadFactory);
+        // Java 7+: cancelled future tasks can be removed from the executor thus avoiding memory leak
+        boolean cancelSupported = tryEnableCancelPolicy(exec);
+        if (!cancelSupported &amp;&amp; exec instanceof ScheduledThreadPoolExecutor) {
+            registerExecutor((ScheduledThreadPoolExecutor)exec);
+        }
+        executor = exec;
+    }
+</code></pre>
 
-<p>它实现代理的方式是实现一个MethodInterceptor接口:</p>
+<p>从上面可以看到PoolWorker继承了NewThreadWorker,而NewThreadWorker在构造方法中通过Executors创建了一个大小为1的ScheduledExecutorService. 所以PoolWorker和ScheduledExecutorService的关系是1:1,FixedSchedulerPool和PoolWorker的关系是1:cpu核心数。线程池ScheduledExecutorService保存在NewThreadWorker的局部变量executor中.</p>
 
-<pre><code class="language-java">public class CglibProxy implements MethodInterceptor {
+<h4 id="evetloopworker">EvetLoopWorker</h4>
 
-    public Object intercept(Object obj, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
-        System.out.println(&quot;这里是淘票票,现在帮你在电影院买票&quot;);
-        return methodProxy.invokeSuper(obj, objects);
+<p>这个类会在下一篇文章用上.我们先看下他的方法实现.至于他用来干什么的,在看了下篇博客之后就明白了.</p>
+
+<pre><code class="language-java">static final class EventLoopWorker extends Scheduler.Worker {
+        private final SubscriptionList serial = new SubscriptionList();
+        private final CompositeSubscription timed = new CompositeSubscription();
+        private final SubscriptionList both = new SubscriptionList(serial, timed);
+        private final PoolWorker poolWorker;
+
+        EventLoopWorker(PoolWorker poolWorker) {
+            this.poolWorker = poolWorker;
+
+        }
+
+        @Override
+        public void unsubscribe() {
+            both.unsubscribe();
+        }
+
+        @Override
+        public boolean isUnsubscribed() {
+            return both.isUnsubscribed();
+        }
+
+        @Override
+        public Subscription schedule(final Action0 action) {
+            if (isUnsubscribed()) {
+                return Subscriptions.unsubscribed();
+            }
+
+            return poolWorker.scheduleActual(new Action0() {
+                @Override
+                public void call() {
+                    if (isUnsubscribed()) {
+                        return;
+                    }
+                    action.call();
+                }
+            }, 0, null, serial);
+        }
+
+        @Override
+        public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
+            if (isUnsubscribed()) {
+                return Subscriptions.unsubscribed();
+            }
+
+            return poolWorker.scheduleActual(new Action0() {
+                @Override
+                public void call() {
+                    if (isUnsubscribed()) {
+                        return;
+                    }
+                    action.call();
+                }
+            }, delayTime, unit, timed);
+        }
+    }
+</code></pre>
+
+<p>可以看到他的schedule方法都会使用poolWorker的scheduleActual.</p>
+
+<pre><code class="language-java">public ScheduledAction scheduleActual(final Action0 action, long delayTime, TimeUnit unit, SubscriptionList parent) {
+        Action0 decoratedAction = RxJavaHooks.onScheduledAction(action);
+        ScheduledAction run = new ScheduledAction(decoratedAction, parent);
+        parent.add(run);
+
+        Future&lt;?&gt; f;
+        if (delayTime &lt;= 0) {
+            f = executor.submit(run);
+        } else {
+            f = executor.schedule(run, delayTime, unit);
+        }
+        run.add(f);
+
+        return run;
+    }
+</code></pre>
+
+<p>上面就是poolWorker的实现. 可以看到函数action会被封装成ScheduledAction.而ScheduledAction实现了Runnable接口.所以scheduleActual方法会讲函数ScheduledAction提交到线程池中.并且设置调度的时间(delayTime)。等到线程池executor调度到时就会调用到action的call方法:</p>
+
+<pre><code class="language-java">@Override
+public void run() {
+    try {
+        lazySet(Thread.currentThread());
+        action.call();
+    } catch (OnErrorNotImplementedException e) {
+        signalError(new IllegalStateException(&quot;Exception thrown on Scheduler.Worker thread. Add `onError` handling.&quot;, e));
+    } catch (Throwable e) {
+        signalError(new IllegalStateException(&quot;Fatal Exception thrown on Scheduler.Worker thread.&quot;, e));
+    } finally {
+        unsubscribe();
     }
 }
 </code></pre>
 
-<p>所以现在代理的使用方式又换了:</p>
+<p>上面的代码就是ScheduledAction的run()方法内容.</p>
 
-<pre><code class="language-java">public class WdCGLIBCinemaTest {
+<h2 id="rxjavaschedulershook-createioscheduler">RxJavaSchedulersHook.createIoScheduler()</h2>
 
-    @Test
-    public void setBuy() {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(WdCGLIBCinema.class);
-        enhancer.setCallback(new CglibProxy());
-       
+<pre><code class="language-java">public static Scheduler createIoScheduler(ThreadFactory threadFactory) {
+    if (threadFactory == null) {
+        throw new NullPointerException(&quot;threadFactory == null&quot;);
+    }
+    return new CachedThreadScheduler(threadFactory);
+}
+</code></pre>
 
-        WdCGLIBCinema cinema= (WdCGLIBCinema)enhancer.create();
-        cinema.buy();
+<p>Io scheduler使用的是CachedThreadScheduler。</p>
+
+<h4 id="cachedthreadscheduler">CachedThreadScheduler</h4>
+
+<pre><code class="language-java">public CachedThreadScheduler(ThreadFactory threadFactory) {
+    this.threadFactory = threadFactory;
+    this.pool = new AtomicReference&lt;CachedWorkerPool&gt;(NONE);
+    start();
+}
+
+@Override
+public void start() {
+    CachedWorkerPool update =
+        new CachedWorkerPool(threadFactory, KEEP_ALIVE_TIME, KEEP_ALIVE_UNIT);
+    if (!pool.compareAndSet(NONE, update)) {
+        update.shutdown();
     }
 }
 </code></pre>
 
-<p>Enhancer可以指定代理类.以及回调类.然后调用create()方法代理对象.并将所有非final的方法传递给<strong>MethodInterceptor.intercept()</strong>方法.然后我们就可以在intercept()方法中加入任何我想要的逻辑了.比如日志.修改参数等。</p>
+<p>KEEP_ALIVE_TIME默认是60秒.这个线程池会在线程空闲60秒之后回收线程.这个线程池会创建一个调度线程evictor.每隔KEEP_ALIVE_TIME时间就检查一遍线程ThreadWorker是否过期.如果过期了的话就将其从线程队列中移除:</p>
+
+<pre><code class="language-java"> static final class CachedWorkerPool {
+        private final ThreadFactory threadFactory;
+        private final long keepAliveTime;
+        private final ConcurrentLinkedQueue&lt;ThreadWorker&gt; expiringWorkerQueue;
+        private final CompositeSubscription allWorkers;
+        private final ScheduledExecutorService evictorService;
+        private final Future&lt;?&gt; evictorTask;
+
+        CachedWorkerPool(final ThreadFactory threadFactory, long keepAliveTime, TimeUnit unit) {
+            this.threadFactory = threadFactory;
+            this.keepAliveTime = unit != null ? unit.toNanos(keepAliveTime) : 0L;
+            this.expiringWorkerQueue = new ConcurrentLinkedQueue&lt;ThreadWorker&gt;();
+            this.allWorkers = new CompositeSubscription();
+
+            ScheduledExecutorService evictor = null;
+            Future&lt;?&gt; task = null;
+            if (unit != null) {
+                evictor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+                    @Override public Thread newThread(Runnable r) {
+                        Thread thread = threadFactory.newThread(r);
+                        thread.setName(thread.getName() + &quot; (Evictor)&quot;);
+                        return thread;
+                    }
+                });
+                NewThreadWorker.tryEnableCancelPolicy(evictor);
+                task = evictor.scheduleWithFixedDelay(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                evictExpiredWorkers();
+                            }
+                        }, this.keepAliveTime, this.keepAliveTime, TimeUnit.NANOSECONDS
+                );
+            }
+            evictorService = evictor;
+            evictorTask = task;
+        }
+
+        void evictExpiredWorkers() {
+            if (!expiringWorkerQueue.isEmpty()) {
+                long currentTimestamp = now();
+
+                for (ThreadWorker threadWorker : expiringWorkerQueue) {
+                    if (threadWorker.getExpirationTime() &lt;= currentTimestamp) {
+                        if (expiringWorkerQueue.remove(threadWorker)) {
+                            allWorkers.remove(threadWorker);
+                        }
+                    } else {
+                        // Queue is ordered with the worker that will expire first in the beginning, so when we
+                        // find a non-expired worker we can stop evicting.
+                        break;
+                    }
+                }
+            }
+        }
+ }
+</code></pre>
+
+<p>该线程池会在执行任务时优先使用空闲线程,如果没有空闲线程则创建一个新线程:</p>
+
+<pre><code class="language-java">ThreadWorker get() {
+    if (allWorkers.isUnsubscribed()) {
+        return SHUTDOWN_THREADWORKER;
+    }
+    while (!expiringWorkerQueue.isEmpty()) {
+        ThreadWorker threadWorker = expiringWorkerQueue.poll();
+        if (threadWorker != null) {
+            return threadWorker;
+        }
+    }
+
+    // No cached worker found, so create a new one.
+    ThreadWorker w = new ThreadWorker(threadFactory);
+    allWorkers.add(w);
+    return w;
+}
+</code></pre>
+
+<p>从代码可以看出每次调用get()方法时如果没有空闲线程就会新建一个线程.所以这里如果任务非常多则会造成OOM.所以使用时需要注意.</p>
+
+<h4 id="eventloopworker">EventLoopWorker</h4>
+
+<pre><code class="language-java">static final class EventLoopWorker extends Scheduler.Worker implements Action0 {
+        private final CompositeSubscription innerSubscription = new CompositeSubscription();
+        private final CachedWorkerPool pool;
+        private final ThreadWorker threadWorker;
+        final AtomicBoolean once;
+
+        EventLoopWorker(CachedWorkerPool pool) {
+            this.pool = pool;
+            this.once = new AtomicBoolean();
+            this.threadWorker = pool.get();
+        }
+
+        @Override
+        public void call() {
+            pool.release(threadWorker);
+        }
+}
+</code></pre>
+
+<p>可以看到每次创建EventLoopWorker都会将一个线程threadWorker标记好过期时间并放到线程队列expiringWorkerQueue的队尾:</p>
+
+<pre><code class="language-java">void release(ThreadWorker threadWorker) {
+    threadWorker.setExpirationTime(now() + keepAliveTime);
+    expiringWorkerQueue.offer(threadWorker);
+}
+</code></pre>
+
+<h2 id="提示">提示</h2>
+
+<p>Scheduler的主要内容就是这些. 当然这篇博客看上去没有将各个方法连起来.那是因为这一篇也没法把他们连起来,流程是怎样的要在下篇博客中才讲到.看官可以先将内容在脑海中留下印象.以备看接下来的文章。</p>
               
             </div>
           </div>
           <div id="post-footer" class="post-footer main-content-wrap">
             
-              
-                
-                
-                  <div class="post-footer-tags">
-                    <span class="text-color-light text-small">标签</span><br/>
-                    
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/java-proxy/">java proxy</a>
-
-                  </div>
-                
               
             
             
@@ -715,7 +779,7 @@ public class CinemaStaticProxy implements Cinema {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读JUC系列(1)之AQS">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -723,7 +787,7 @@ public class CinemaStaticProxy implements Cinema {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180529_http_proxy/" data-tooltip="HTTP proxy">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -795,7 +859,7 @@ public class CinemaStaticProxy implements Cinema {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180707_aqs/" data-tooltip="详读JUC系列(1)之AQS">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -803,7 +867,7 @@ public class CinemaStaticProxy implements Cinema {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180529_http_proxy/" data-tooltip="HTTP proxy">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -1119,9 +1183,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180629_java_proxy\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20190209_rxjava_3\/';
           
-            this.page.identifier = '\/20180629_java_proxy\/'
+            this.page.identifier = '\/20190209_rxjava_3\/'
           
         };
         (function() {
