@@ -629,9 +629,7 @@
                   Feb 2, 2019
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather">在RxJava中有非常多的Operator方法,比如map,flatMap,lift等。在这些Operatior中比较重要的是lift方法，因为很多操作都是基于lift来实现的,扩展lift还可以实现自定义Operator. 这篇内容主要是介绍lift,map,flatMap的实现(关于这些操作的作用请查阅官网,这里不做过多介绍)。阅读之前请先看本系列文章的第一篇
-lift 先看个例子:
-Operator&lt;Long, Long&gt; myOperator = new Operator&lt;Long, Long&gt;() { @Override public Subscriber&lt;? super Long&gt; call(Subscriber&lt;? super Long&gt; subscriber) { return new Subscriber&lt;Long&gt;() { @Override public void onCompleted() { if (subscriber.isUnsubscribed()) { return; } subscriber.onCompleted(); } @Override public void onError(Throwable e) { if (subscriber.isUnsubscribed()) { return; } subscriber.onError(e); } @Override public void onNext(Long aLong) { if (subscriber.isUnsubscribed()) { return; } subscriber.onNext(aLong + 1); } }; } }; Observable.</div>
+              <div class="media-content hide-xs font-merryweather"><p>在RxJava中有非常多的Operator方法,比如map,flatMap,lift等。在这些Operatior中比较重要的是lift方法，因为很多操作都是基于lift来实现的,扩展lift还可以实现自定义Operator. 这篇内容主要是介绍lift,map,flatMap的实现(关于这些操作的作用请查阅官网,这里不做过多介绍)。阅读之前请先看本系列文章的<a href="https://vitzhou.top/20190209_rxjava_1/">第一篇</a></p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
