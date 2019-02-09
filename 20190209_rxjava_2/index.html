@@ -307,6 +307,11 @@ Observable.just(System.currentTimeMillis())
     });
 </code></pre>
 
+<pre><code class="language-java">public interface Operator&lt;R, T&gt; extends Func1&lt;Subscriber&lt;? super R&gt;, Subscriber&lt;? super T&gt;&gt; {
+        // cover for generics insanity
+    }
+</code></pre>
+
 <p>然后是lift的实现</p>
 
 <pre><code class="language-java">public final &lt;R&gt; Observable&lt;R&gt; lift(final Operator&lt;? extends R, ? super T&gt; operator) {
@@ -513,6 +518,14 @@ Observable.just(System.currentTimeMillis())
 </code></pre>
 
 <p>如上可以看到这里unsafeCreate创建的Obervable的onSubscribe函数是一个匿名类OnSubscribe<R>(). 在其Obervable被订阅时会通过child.setProducer(createProducer(child, ((ScalarSynchronousObservable&lt;? extends R&gt;)o).t))最终调用到flathMap的匿名函数的call方法.从而实现数据的修改.并最终将修改的数据传到订阅者.</p>
+
+<h2 id="小结">小结</h2>
+
+<p>RxJava的操作(Operator)符的实现都遵循了开闭原则(对扩展开放，对修改关闭). 通过Obervable的onSubscibe以及OnSubscribe接口来实现数据的传递与接收,并在传递的过程中插入一个Operator来实现对源数据的修改.</p>
+
+<blockquote>
+<p>虽然每个操作符都会对数据修改,但是从实现来看,并没有对原始数据进行修改.这也符合函数式编程的<code>数据不可变</code>原则</p>
+</blockquote>
 
               
             </div>
