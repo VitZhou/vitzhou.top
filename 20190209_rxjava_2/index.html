@@ -1,5 +1,9 @@
 
 
+  
+    
+  
+
 
   
 
@@ -18,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>Java Proxy</title>
+    <title>详读RxJava(Operator的实现)</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="RxJava, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -41,19 +45,17 @@
     </script>
     <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
     
-      <link rel="alternate" type="application/rss+xml" title="RSS" href="https://vitzhou.top/tags/java-proxy/index.xml">
-    
 
     
-    <meta name="description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
-    <meta property="og:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="description" content="RxJava">
+    <meta property="og:description" content="RxJava">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="Java Proxy">
-    <meta property="og:url" content="/tags/java-proxy/">
+    <meta property="og:title" content="详读RxJava(Operator的实现)">
+    <meta property="og:url" content="/20190209_rxjava_2/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="vitzhou.top|周圣华的博客|Cloud Native|Service Mesh|微服务">
+    <meta name="twitter:description" content="RxJava">
     
     
 
@@ -88,7 +90,7 @@
 
   <body>
     <div id="blog">
-      <header id="header" data-behavior="2">
+      <header id="header" data-behavior="5">
   <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
   <div class="header-title">
     <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
@@ -108,7 +110,7 @@
   
 </header>
 
-      <nav id="sidebar" data-behavior="2">
+      <nav id="sidebar" data-behavior="5">
   <div class="sidebar-container">
     
       <div class="sidebar-profile">
@@ -217,44 +219,26 @@
 </nav>
 
       
-        
 
-      
-      <div id="main" data-behavior="2"
+      <div id="main" data-behavior="5"
         class="
                hasCoverMetaIn
                ">
-        
-          <section class="postShorten-group main-content-wrap">
-            
-            
-              
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
   
-    
-      
-        
-      
-    
+    <h1 class="post-title" itemprop="headline">
+      详读RxJava(Operator的实现)
+    </h1>
   
-
-
   
-
-<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
-  <div class="postShorten-wrap">
-    
-    <div class="postShorten-header">
-      <h1 class="postShorten-title" itemprop="headline">
-        <a class="link-unstyled" href="https://vitzhou.top/20180629_java_proxy/">
-          Java 动态代理详解
-        </a>
-      </h1>
-      
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-06-29T22:51:42&#43;08:00">
+      <time itemprop="datePublished" datetime="2019-02-08T15:18:38&#43;08:00">
         
-  六月 29, 2018
+  二月 8, 2019
 
       </time>
     
@@ -263,29 +247,362 @@
   
     <span>发布在</span>
     
-      <a class="category-link" href="https://vitzhou.top/categories/java">java</a>
+      <a class="category-link" href="https://vitzhou.top/categories/rxjava">RxJava</a>
     
   
 
   </div>
 
-    </div>
-    <div class="postShorten-excerpt" itemprop="articleBody">
-      <p>今天我们聊聊java动态代理</p>
-      <p>
-        <a href="https://vitzhou.top/20180629_java_proxy/" class="postShorten-excerpt_link link">阅读全文</a>
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              
+
+<p>在RxJava中有非常多的Operator方法,比如map,flatMap,lift等。在这些Operatior中比较重要的是lift方法，因为很多操作都是基于lift来实现的,扩展lift还可以实现自定义Operator. 这篇内容主要是介绍lift,map,flatMap的实现(关于这些操作的作用请查阅官网,这里不做过多介绍)。阅读之前请先看本系列文章的<a href="https://vitzhou.top/20190209_rxjava_1/">第一篇</a></p>
+
+<h2 id="lift">lift</h2>
+
+<p>先看个例子:</p>
+
+<pre><code class="language-java">Operator&lt;Long, Long&gt; myOperator = new Operator&lt;Long, Long&gt;() {
+    @Override
+    public Subscriber&lt;? super Long&gt; call(Subscriber&lt;? super Long&gt; subscriber) {
+        return new Subscriber&lt;Long&gt;() {
+            @Override
+            public void onCompleted() {
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                }
+
+                subscriber.onCompleted();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                }
+                subscriber.onError(e);
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                }
+                subscriber.onNext(aLong + 1);
+            }
+        };
+    }
+};
+
+Observable.just(System.currentTimeMillis())
+    .lift(myOperator)
+    .subscribe(new Action1&lt;Long&gt;() {
+        @Override
+        public void call(Long aLong) {
+            System.out.println(aLong);
+        }
+    });
+</code></pre>
+
+<p>然后是lift的实现</p>
+
+<pre><code class="language-java">public final &lt;R&gt; Observable&lt;R&gt; lift(final Operator&lt;? extends R, ? super T&gt; operator) {
+    return unsafeCreate(new OnSubscribeLift&lt;T, R&gt;(onSubscribe, operator));
+}
+</code></pre>
+
+<p>unsafeCreate的实现</p>
+
+<pre><code class="language-java">public static &lt;T&gt; Observable&lt;T&gt; unsafeCreate(OnSubscribe&lt;T&gt; f) {
+    return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f));
+}
+</code></pre>
+
+<p>所以新建的Observable的onSubscribe变量保存的是OnSubscribeLift。注意unsafeCreate(new OnSubscribeLift<T, R>(onSubscribe, operator))这里会将onSubscribe作为参数传入,这个onSubscribe和unsafeCreate创建出来的Obervable的onSubscribe并不一样.作为参数的onSubscribe这个是上一个Obervable(即源Obervable)的函数。 接下来我们看看OnSubscribeLift的细节</p>
+
+<h3 id="onsubscribelift">OnSubscribeLift</h3>
+
+<pre><code class="language-java">public final class OnSubscribeLift&lt;T, R&gt; implements OnSubscribe&lt;R&gt; {
+
+    final OnSubscribe&lt;T&gt; parent;
+
+    final Operator&lt;? extends R, ? super T&gt; operator;
+
+    public OnSubscribeLift(OnSubscribe&lt;T&gt; parent, Operator&lt;? extends R, ? super T&gt; operator){
+        this.parent = parent;
+        this.operator = operator;
+    }
+
+    @Override
+    public void call(Subscriber&lt;? super R&gt; o) {
+        try {
+            Subscriber&lt;? super T&gt; st = RxJavaHooks.onObservableLift(operator).call(o);
+            try {
+                // new Subscriber created and being subscribed with so 'onStart' it
+                st.onStart();
+                parent.call(st);
+            } catch (Throwable e) {
+                // localized capture of errors rather than it skipping all operators
+                // and ending up in the try/catch of the subscribe method which then
+                // prevents onErrorResumeNext and other similar approaches to error handling
+                Exceptions.throwIfFatal(e);
+                st.onError(e);
+            }
+        } catch (Throwable e) {
+            Exceptions.throwIfFatal(e);
+            // if the lift function failed all we can do is pass the error to the final Subscriber
+            // as we don't have the operator available to us
+            o.onError(e);
+        }
+    }
+}
+</code></pre>
+
+<p>OnSubscribeLift实现了OnSubscribe接口。所以它会被订阅者调用其call方法. 在call里面他会调用operator(即我们自定义的myOperator)的call并返回Subscriber  st. 然后又会通过源Obervable调用该st的onNext方法。 结合demo我总结下流程:</p>
+
+<ol>
+<li>调用lift方法时会将just时创建的Obervable保存在OnSubscribeLift的parent变量中.而lift传入的Operator会保存在operator变量.最后返回一个新的Obervable</li>
+<li>调用subscribe()方法时,会调用到lift创建的Obervable的变量obSubscribe(即OnSubscribeLift)的call方法。</li>
+<li>OnSubscribeLift的call返回会先调用自定义的myOperator的call方法,并将返回的Subscriber传入源Obervable(即parent变量)。</li>
+<li>源Obervable会通过其onSubscriber(即JustOnSubscribe)最终调用到myOperator的匿名内部类Subscriber的onNext中（这一步骤的细节请结合上一篇文章看）</li>
+</ol>
+
+<p>整个流程跟上一篇的内容相比,就是在订阅数据时,在源Obervable传送数据的过程中新增了一个自定义的myOperator操作,从而实现对数据的调整.调整后的数据最终被订阅者消费.</p>
+
+<h2 id="map">map</h2>
+
+<pre><code class="language-java">Observable.just(System.currentTimeMillis())
+    .map(new Func1&lt;Long, Long&gt;() {
+        @Override
+        public Long call(Long aLong) {
+            return aLong + 1;
+        }
+    })
+    .subscribe(myAction);
+</code></pre>
+
+<pre><code class="language-java">public final &lt;R&gt; Observable&lt;R&gt; map(Func1&lt;? super T, ? extends R&gt; func) {
+    return unsafeCreate(new OnSubscribeMap&lt;T, R&gt;(this, func));
+}
+</code></pre>
+
+<p>这里跟lift基本一样.唯一的区别就是unsafeCreate创建的Obervable的局部变量onSubcribe保存的函数不一样。所以这里我们只需要了解函数OnSubscribeMap的细节就弄明白map的实现了.</p>
+
+<h3 id="onsubscribemap">OnSubscribeMap</h3>
+
+<pre><code class="language-java">public final class OnSubscribeMap&lt;T, R&gt; implements OnSubscribe&lt;R&gt; {
+
+    final Observable&lt;T&gt; source;
+
+    final Func1&lt;? super T, ? extends R&gt; transformer;
+
+    public OnSubscribeMap(Observable&lt;T&gt; source, Func1&lt;? super T, ? extends R&gt; transformer) {
+        this.source = source;
+        this.transformer = transformer;
+    }
+
+    @Override
+    public void call(final Subscriber&lt;? super R&gt; o) {
+        MapSubscriber&lt;T, R&gt; parent = new MapSubscriber&lt;T, R&gt;(o, transformer);
+        o.add(parent);
+        source.unsafeSubscribe(parent);
+    }
+
+    static final class MapSubscriber&lt;T, R&gt; extends Subscriber&lt;T&gt; {
+        final Subscriber&lt;? super R&gt; actual;
+
+        final Func1&lt;? super T, ? extends R&gt; mapper;
+
+        boolean done;
+
+        public MapSubscriber(Subscriber&lt;? super R&gt; actual, Func1&lt;? super T, ? extends R&gt; mapper) {
+            this.actual = actual;
+            this.mapper = mapper;
+        }
+
+        @Override
+        public void onNext(T t) {
+            R result;
+
+            try {
+                result = mapper.call(t);
+            } catch (Throwable ex) {
+                Exceptions.throwIfFatal(ex);
+                unsubscribe();
+                onError(OnErrorThrowable.addValueAsLastCause(ex, t));
+                return;
+            }
+
+            actual.onNext(result);
+        }
+        @Override
+        public void onError(Throwable e) {
+            if (done) {
+                RxJavaHooks.onError(e);
+                return;
+            }
+            done = true;
+
+            actual.onError(e);
+        }
+
+        @Override
+        public void onCompleted() {
+            if (done) {
+                return;
+            }
+            actual.onCompleted();
+        }
+
+        @Override
+        public void setProducer(Producer p) {
+            actual.setProducer(p);
+        }
+    }
+}
+</code></pre>
+
+<p>结合lift的思路来看,map会在订阅数据之后通过其内部类MapSubscriber来实现对数据的修改.最后通过source.unsafeSubscribe(parent)将数据传送到订阅者.</p>
+
+<p>大致的流程和lift基本一致.</p>
+
+<h2 id="flatmap">flatMap</h2>
+
+<p>flatMap跟map从参数来说有很大区别.如下:</p>
+
+<pre><code class="language-java">Observable.just(System.currentTimeMillis())
+    .flatMap(new Func1&lt;Long, Observable&lt;Long&gt;&gt;() {
+        @Override
+        public Observable&lt;Long&gt; call(Long aLong) {
+            return Observable.just(aLong + 1);
+        }
+    })
+    .subscribe(myAction);
+</code></pre>
+
+<p>其call方法的返回是一个Obervable.</p>
+
+<pre><code class="language-java">public final &lt;R&gt; Observable&lt;R&gt; flatMap(Func1&lt;? super T, ? extends Observable&lt;? extends R&gt;&gt; func) {
+        if (getClass() == ScalarSynchronousObservable.class) {
+            return ((ScalarSynchronousObservable&lt;T&gt;)this).scalarFlatMap(func);
+        }
+        return merge(map(func));
+    }
+</code></pre>
+
+<p>这里会根据源Obervable的类型来进行区分.这里我们不看更为复杂的merge实现(主要是结合我们的demo来看源码).</p>
+
+<p>scalarFlatMap：</p>
+
+<pre><code class="language-java">public &lt;R&gt; Observable&lt;R&gt; scalarFlatMap(final Func1&lt;? super T, ? extends Observable&lt;? extends R&gt;&gt; func) {
+        return unsafeCreate(new OnSubscribe&lt;R&gt;() {
+            @Override
+            public void call(final Subscriber&lt;? super R&gt; child) {
+                Observable&lt;? extends R&gt; o = func.call(t);
+                if (o instanceof ScalarSynchronousObservable) {
+                    child.setProducer(createProducer(child, ((ScalarSynchronousObservable&lt;? extends R&gt;)o).t));
+                } else {
+                    o.unsafeSubscribe(Subscribers.wrap(child));
+                }
+            }
+        });
+    }
+</code></pre>
+
+<p>如上可以看到这里unsafeCreate创建的Obervable的onSubscribe函数是一个匿名类OnSubscribe<R>(). 在其Obervable被订阅时会通过child.setProducer(createProducer(child, ((ScalarSynchronousObservable&lt;? extends R&gt;)o).t))最终调用到flathMap的匿名函数的call方法.从而实现数据的修改.并最终将修改的数据传到订阅者.</p>
+
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/rxjava/">RxJava</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_1/" data-tooltip="详读RxJava(数据的发送与接收)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
         
-      </p>
-    </div>
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
   </div>
-  
-</article>
+
 
             
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
             
-
-          </section>
-        
+          </div>
+        </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
     &copy; 2019 Vit Zhou/周圣华. All Rights Reserved
@@ -293,6 +610,66 @@
 </footer>
 
       </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_1/" data-tooltip="详读RxJava(数据的发送与接收)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
     </div>
     
     <div id="about">
@@ -562,6 +939,32 @@ $(document).ready(function() {
 });
 </script>
 
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20190209_rxjava_2\/';
+          
+            this.page.identifier = '\/20190209_rxjava_2\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
 
 
 
