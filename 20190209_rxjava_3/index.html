@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>周圣华的博客</title>
+    <title>详读RxJava(Scheduler实现)</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content="RxJava, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,54 +47,15 @@
     
 
     
-    <meta name="description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
-date: 2019-02-08T22:22:31&#43;08:00
-categories:
-
-
-RxJava
-tags:
-RxJava
-keywords:
-RxJava
-description: RxJava
-
-
-这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
-    <meta property="og:description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
-date: 2019-02-08T22:22:31&#43;08:00
-categories:
-
-
-RxJava
-tags:
-RxJava
-keywords:
-RxJava
-description: RxJava
-
-
-这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
+    <meta name="description" content="RxJava">
+    <meta property="og:description" content="RxJava">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="周圣华的博客">
+    <meta property="og:title" content="详读RxJava(Scheduler实现)">
     <meta property="og:url" content="/20190209_rxjava_3/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
-date: 2019-02-08T22:22:31&#43;08:00
-categories:
-
-
-RxJava
-tags:
-RxJava
-keywords:
-RxJava
-description: RxJava
-
-
-这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看数据的发送与接收">
+    <meta name="twitter:description" content="RxJava">
     
     
 
@@ -269,39 +230,34 @@ description: RxJava
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      
+      详读RxJava(Scheduler实现)
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="0001-01-01T00:00:00Z">
+      <time itemprop="datePublished" datetime="2019-02-08T22:22:31&#43;08:00">
         
-  一月 1, 1
+  二月 8, 2019
 
       </time>
     
     
+  
+  
+    <span>发布在</span>
+    
+      <a class="category-link" href="https://vitzhou.top/categories/rxjava">RxJava</a>
+    
+  
+
   </div>
 
 </div>
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>title: &ldquo;详读RxJava(Scheduler实现)&rdquo;
-date: 2019-02-08T22:22:31+08:00
-categories:</p>
-
-<ul>
-<li>RxJava
-tags:</li>
-<li>RxJava
-keywords:</li>
-<li>RxJava
-description: RxJava</li>
-</ul>
-
-<p>这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看<a href="https://vitzhou.top/20190209_rxjava_1/">数据的发送与接收</a></p>
+              <p>这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看<a href="https://vitzhou.top/20190209_rxjava_1/">数据的发送与接收</a></p>
 
 <p>
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
@@ -771,6 +727,16 @@ public void start() {
           <div id="post-footer" class="post-footer main-content-wrap">
             
               
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/rxjava/">RxJava</a>
+
+                  </div>
+                
+              
             
             
   <div class="post-actions-wrap">
@@ -779,7 +745,7 @@ public void start() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -787,7 +753,7 @@ public void start() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_2/" data-tooltip="详读RxJava(Operator的实现)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -859,7 +825,7 @@ public void start() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -867,7 +833,7 @@ public void start() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--disabled">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_2/" data-tooltip="详读RxJava(Operator的实现)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -960,6 +926,23 @@ public void start() {
       <div class="no-result text-color-light text-center"></div>
       <div class="results">
         
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_3/">
+                <h3 class="media-heading">详读RxJava(Scheduler实现)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看<a href="https://vitzhou.top/20190209_rxjava_1/">数据的发送与接收</a></p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
         
           <div class="media">
             
@@ -1113,23 +1096,6 @@ public void start() {
                 </span>
               </span>
               <div class="media-content hide-xs font-merryweather"><h2 id="详读j-u-c系列-1-之aqs">详读J.U.C系列(1)之AQS</h2></div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180629_java_proxy/">
-                <h3 class="media-heading">Java 动态代理详解</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Jun 6, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"><p>今天我们聊聊java动态代理</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>

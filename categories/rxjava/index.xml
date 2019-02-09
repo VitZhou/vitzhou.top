@@ -6,10 +6,19 @@
     <description>Recent content in Rxjava on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 08 Feb 2019 15:18:38 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 08 Feb 2019 22:22:31 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/categories/rxjava/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>详读RxJava(Scheduler实现)</title>
+      <link>https://vitzhou.top/20190209_rxjava_3/</link>
+      <pubDate>Fri, 08 Feb 2019 22:22:31 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20190209_rxjava_3/</guid>
+      <description>&lt;p&gt;这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看&lt;a href=&#34;https://vitzhou.top/20190209_rxjava_1/&#34;&gt;数据的发送与接收&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>详读RxJava(Operator的实现)</title>
