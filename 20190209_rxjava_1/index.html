@@ -22,9 +22,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>记一次k8s的网络实践</title>
+    <title>周圣华的博客</title>
     <meta name="author" content="Vit Zhou/周圣华">
-    <meta name="keywords" content="k8s spring cloud network, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    <meta name="keywords" content=", java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
     <script>
@@ -47,15 +47,48 @@
     
 
     
-    <meta name="description" content="记一次k8s的网络实践">
-    <meta property="og:description" content="记一次k8s的网络实践">
+    <meta name="description" content="详读RxJava(数据的发送与接收) 18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。
+这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的官网看看。
+由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。
+ 这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。
+ 首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。
+ 建议初学者先去熟悉下RxJava的api
+ 数据传递 首先我们看一个简单的demo:
+Observable.just(System.currentTimeMillis());  just声明一个Observable.
+just public static &lt;T&gt; Observable&lt;T&gt; just(final T value) { return ScalarSynchronousObservable.create(value); }  跳入just方法看到的就是上面的代码。从代码来看就是将value值包装到一个Obervable里面(当然这里使用的是ScalarSynchronousObservable).
+我们先看下ScalarSynchronousObservable类的定义
+public final class ScalarSynchronousObservable&lt;T&gt; extends Observable&lt;T&gt;  它继承自Observable。
+Obervable public class Observable&lt;T&gt; { final OnSubscribe&lt;T&gt; onSubscribe; protected Observable(OnSubscribe&lt;T&gt; f) { this.onSubscribe = f; } @Deprecated public static &lt;T&gt; Observable&lt;T&gt; create(OnSubscribe&lt;T&gt; f) { return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f)); } }   只列出来了我们需要的方法">
+    <meta property="og:description" content="详读RxJava(数据的发送与接收) 18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。
+这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的官网看看。
+由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。
+ 这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。
+ 首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。
+ 建议初学者先去熟悉下RxJava的api
+ 数据传递 首先我们看一个简单的demo:
+Observable.just(System.currentTimeMillis());  just声明一个Observable.
+just public static &lt;T&gt; Observable&lt;T&gt; just(final T value) { return ScalarSynchronousObservable.create(value); }  跳入just方法看到的就是上面的代码。从代码来看就是将value值包装到一个Obervable里面(当然这里使用的是ScalarSynchronousObservable).
+我们先看下ScalarSynchronousObservable类的定义
+public final class ScalarSynchronousObservable&lt;T&gt; extends Observable&lt;T&gt;  它继承自Observable。
+Obervable public class Observable&lt;T&gt; { final OnSubscribe&lt;T&gt; onSubscribe; protected Observable(OnSubscribe&lt;T&gt; f) { this.onSubscribe = f; } @Deprecated public static &lt;T&gt; Observable&lt;T&gt; create(OnSubscribe&lt;T&gt; f) { return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f)); } }   只列出来了我们需要的方法">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="记一次k8s的网络实践">
-    <meta property="og:url" content="/20180428_k8s_network_sc/">
+    <meta property="og:title" content="周圣华的博客">
+    <meta property="og:url" content="/20190209_rxjava_1/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
-    <meta name="twitter:description" content="记一次k8s的网络实践">
+    <meta name="twitter:description" content="详读RxJava(数据的发送与接收) 18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。
+这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的官网看看。
+由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。
+ 这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。
+ 首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。
+ 建议初学者先去熟悉下RxJava的api
+ 数据传递 首先我们看一个简单的demo:
+Observable.just(System.currentTimeMillis());  just声明一个Observable.
+just public static &lt;T&gt; Observable&lt;T&gt; just(final T value) { return ScalarSynchronousObservable.create(value); }  跳入just方法看到的就是上面的代码。从代码来看就是将value值包装到一个Obervable里面(当然这里使用的是ScalarSynchronousObservable).
+我们先看下ScalarSynchronousObservable类的定义
+public final class ScalarSynchronousObservable&lt;T&gt; extends Observable&lt;T&gt;  它继承自Observable。
+Obervable public class Observable&lt;T&gt; { final OnSubscribe&lt;T&gt; onSubscribe; protected Observable(OnSubscribe&lt;T&gt; f) { this.onSubscribe = f; } @Deprecated public static &lt;T&gt; Observable&lt;T&gt; create(OnSubscribe&lt;T&gt; f) { return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f)); } }   只列出来了我们需要的方法">
     
     
 
@@ -230,116 +263,375 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      记一次k8s的网络实践
+      
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2018-04-27T18:51:42&#43;08:00">
+      <time itemprop="datePublished" datetime="0001-01-01T00:00:00Z">
         
-  四月 27, 2018
+  一月 1, 1
 
       </time>
     
     
-  
-  
-    <span>发布在</span>
-    
-      <a class="category-link" href="https://vitzhou.top/categories/k8s">k8s</a>
-    
-  
-
   </div>
 
 </div>
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>众所周知k8s的网络一直是个很头疼的问题,这两天我也遇到了网络的问题.本文记录这几天所遇到的问题,以及解决方案</p>
+              
 
-<p></p>
+<h1 id="详读rxjava-数据的发送与接收">详读RxJava(数据的发送与接收)</h1>
 
-<h2 id="场景-前提">场景(前提)</h2>
+<p>18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。</p>
 
-<p>我们公司适用的基础开发框架是spring cloud. 由于只有部分小组开始适用k8s,所以我们公司目前开发环境是虚拟机和k8s环境结合,eureka server也是部署在虚拟机环境中的.  我部署在k8s上的服务需要被容器外(即虚拟机)的服务调用,而且也需要被k8s集群内的服务调用.</p>
+<p>这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的<a href="https://github.com/ReactiveX/RxJava">官网</a>看看。</p>
 
-<h2 id="需要说一句的重点">需要说一句的重点</h2>
+<p>由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。</p>
 
-<p>简单的说一下eureka的服务注册和服务发现机制.我们将做服务注册的服务称为生产服务,做服务发现的服务为消费服务</p>
+<blockquote>
+<p>这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。</p>
+</blockquote>
 
-<p>生产服务在注册时会使用当前服务的ip(spring cloud的eureka.instance.ip-address配置)和端口注册到eureka server中。</p>
+<p>首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。</p>
 
-<p>消费服务做服务发现时,eureka server会把ip:port返回.然后消费服务会用<a href="http://ip:port的形式访问生产服务">http://ip:port的形式访问生产服务</a>.</p>
+<blockquote>
+<p>建议初学者先去熟悉下RxJava的api</p>
+</blockquote>
 
-<h2 id="面临的问题">面临的问题</h2>
+<h2 id="数据传递">数据传递</h2>
 
-<p>由于生产服务在k8s内,所以它使用的是k8s集群内部的ip. 然后它注册时也是使用该ip去注册.所以当消费服务通过该ip:port访问生产服务时因为众所周知的网络问题(k8s集群外无法直接访问k8s内的ip)将无法访问。如下图：</p>
+<p>首先我们看一个简单的demo:</p>
 
-<p><img src="https://vitzhou.top/img/k8s/1.jpg" alt="" /></p>
-
-<h2 id="ingress">Ingress</h2>
-
-<p>k8s外无法访问k8s内的网络问题,很自然的就想到了ingress.所以我的想法是让生产服务注册的ip-address变成(通过eureka.instance.ip-address参数更改)域名加端口的形式(host:80).为何端口要是80呢？ 因为ingress是用host转发到容器内的ip:port去。假设你使用其他端口,那么消费服务会使用<a href="http://host:port">http://host:port</a> 访问,然后ingress无法将host:port转到ip:port上. 所以就做成了下图这样:</p>
-
-<p><img src="https://vitzhou.top/img/k8s/2.jpg" alt="" /></p>
-
-<p>但是由于使用了host:port,消费服务A内没有Hosts映射所以无法访问到生产服务。那怎么办？当然是往消费服务A容器中添加host映射.但是真有那么容易？请继续往下看.</p>
-
-<h2 id="添加hosts遇到的问题">添加hosts遇到的问题</h2>
-
-<p>在容器中添加host无法这几种方案:</p>
-
-<ol>
-<li>在Dockerfile中echo &lsquo;ip host&rsquo; &gt;&gt; /etc/hosts.</li>
-<li>在pod中使用hostAliases(k8s 1.7开始支持)添加映射</li>
-<li>在deployment中添加</li>
-</ol>
-
-<p>首先我是尝试第一种方式的,但是发现不行.后来查询了docker官网和k8s官网,都说如果这样做,在容器启动之后会失效(具体原因没深究,以后补回来)。所以只好作罢.第二种方式,一般我们在使用k8s时,不直接使用pod.所以只好作罢.  那只剩下第三种方式了. 在github上搜索到了如下可行配置:</p>
-
-<pre><code class="language-yaml">apiVersion: apps/v1beta2
-kind: Deployment
-metadata:
-  name: service-a
-  labels:
-    app: service-a
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: service-a
-  template:
-    metadata:
-      labels:
-        app: service-a
-    spec:
-      containers:
-        - name: service-a
-          image: &quot;{{ .Values.image.schedule.repository }}:{{ .Values.image.schedule.tag }}&quot;
-          lifecycle:
-            postStart:
-              exec:
-                command: [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;echo \&quot;10.100.13.30  host\&quot; &gt;&gt; /etc/hosts&quot;]
+<pre><code class="language-java">Observable.just(System.currentTimeMillis());
 </code></pre>
 
-<p>至此才算把容器内外的网络打通</p>
+<p>just声明一个Observable.</p>
+
+<h3 id="just">just</h3>
+
+<pre><code class="language-java">public static &lt;T&gt; Observable&lt;T&gt; just(final T value) {
+    return ScalarSynchronousObservable.create(value);
+}
+</code></pre>
+
+<p>跳入just方法看到的就是上面的代码。从代码来看就是将value值包装到一个Obervable里面(当然这里使用的是ScalarSynchronousObservable).</p>
+
+<p>我们先看下ScalarSynchronousObservable类的定义</p>
+
+<pre><code class="language-java">public final class ScalarSynchronousObservable&lt;T&gt; extends Observable&lt;T&gt; 
+</code></pre>
+
+<p>它继承自Observable。</p>
+
+<h3 id="obervable">Obervable</h3>
+
+<pre><code class="language-java">public class Observable&lt;T&gt; {
+
+    final OnSubscribe&lt;T&gt; onSubscribe;
+
+    protected Observable(OnSubscribe&lt;T&gt; f) {
+        this.onSubscribe = f;
+    }
+    
+    @Deprecated
+    public static &lt;T&gt; Observable&lt;T&gt; create(OnSubscribe&lt;T&gt; f) {
+        return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f));
+    }
+}
+</code></pre>
+
+<blockquote>
+<p>只列出来了我们需要的方法</p>
+</blockquote>
+
+<p>它的构造函数会将一个OnSubscribe存储在变量onSubscribe中.而OnSubscribe是一个函数接口Action1的子类</p>
+
+<pre><code class="language-java">public interface Action1&lt;T&gt; extends Action {
+    void call(T t);
+}
+public interface OnSubscribe&lt;T&gt; extends Action1&lt;Subscriber&lt;? super T&gt;&gt; {
+    // cover for generics insanity
+}
+</code></pre>
+
+<p>create(OnSubscribe<T> f)方法中使用了RxJavaHooks.onCreate(f)来包装函数f.但是这一操作只是为监控rxjava留的口子。如果RxJava并没有启用,只是简单的将f返回而已.如下:</p>
+
+<pre><code class="language-java"> public static &lt;T&gt; Observable.OnSubscribe&lt;T&gt; onCreate(Observable.OnSubscribe&lt;T&gt; onSubscribe){
+     Func1&lt;Observable.OnSubscribe, Observable.OnSubscribe&gt; f = onObservableCreate;
+     if (f != null) {
+         return f.call(onSubscribe);
+     }
+     return onSubscribe;
+ }
+</code></pre>
+
+<blockquote>
+<p>请在脑海里留下印象之后很多地方都有类似代码。</p>
+</blockquote>
+
+<p>然后我们再回到ScalarSynchronousObservable.create(value)方法。</p>
+
+<pre><code class="language-java">public static &lt;T&gt; ScalarSynchronousObservable&lt;T&gt; create(T t) {
+    return new ScalarSynchronousObservable&lt;T&gt;(t);
+}
+
+protected ScalarSynchronousObservable(final T t) {
+    super(RxJavaHooks.onCreate(new JustOnSubscribe&lt;T&gt;(t)));
+    this.t = t;
+}
+</code></pre>
+
+<p>注意super(RxJavaHooks.onCreate(new JustOnSubscribe<T>(t)))这里.它会调用父类(也就是Obersvable)的构造函数。但是在此之前会使用一个JustOnSubscribe(类似的如果demo中使用的是defer,则会使用OnSubscribeDefer)将值t封装成一个函数OnSubscribe.然后将该函数保存在父类的obSubscribe变量中(这里请记住,在之后的订阅中会用上).</p>
+
+<p>我们在细看ScalarSynchronousObservable</p>
+
+<h3 id="scalarsynchronousobservable">ScalarSynchronousObservable</h3>
+
+<h4 id="justonsubscribe">JustOnSubscribe</h4>
+
+<p>它是ScalarSynchronousObservable的静态内部类</p>
+
+<pre><code class="language-java">static final class JustOnSubscribe&lt;T&gt; implements OnSubscribe&lt;T&gt; {
+        final T value;
+
+        JustOnSubscribe(T value) {
+            this.value = value;
+        }
+
+        @Override
+        public void call(Subscriber&lt;? super T&gt; s) {
+            s.setProducer(createProducer(s, value));
+        }
+    }
+</code></pre>
+
+<pre><code class="language-java">static &lt;T&gt; Producer createProducer(Subscriber&lt;? super T&gt; s, T v) {
+        if (STRONG_MODE) {
+            return new SingleProducer&lt;T&gt;(s, v);
+        }
+        return new WeakSingleProducer&lt;T&gt;(s, v);
+    }
+</code></pre>
+
+<h4 id="weaksingleproducer">WeakSingleProducer</h4>
+
+<pre><code class="language-java">static final class WeakSingleProducer&lt;T&gt; implements Producer {
+        final Subscriber&lt;? super T&gt; actual;
+        final T value;
+        boolean once;
+
+        public WeakSingleProducer(Subscriber&lt;? super T&gt; actual, T value) {
+            this.actual = actual;
+            this.value = value;
+        }
+
+        @Override
+        public void request(long n) {
+            if (once) {
+                return;
+            }
+            if (n &lt; 0L) {
+                throw new IllegalStateException(&quot;n &gt;= required but it was &quot; + n);
+            }
+            if (n == 0L) {
+                return;
+            }
+            once = true;
+            Subscriber&lt;? super T&gt; a = actual;
+            if (a.isUnsubscribed()) {
+                return;
+            }
+            T v = value;
+            try {
+                a.onNext(v);//将值v传递给onNext。
+            } catch (Throwable e) {
+                Exceptions.throwOrReport(e, a, v);
+                return;
+            }
+
+            if (a.isUnsubscribed()) {
+                return;
+            }
+            a.onCompleted();
+        }
+    }
+</code></pre>
+
+<p>JustOnSubscribe函数的call方法会创建一个Producer.而Producer会有一个request(long n)方法.最终在改方法里面会调用Subscriber的onNext()以及onCompleted接口。 这个request方法会在之后的订阅中被调用.请继续往下看</p>
+
+<h3 id="subscriber">Subscriber</h3>
+
+<p>Subscriber实现了Observer,Subscription两个接口.我们简单列一下这两个接口的定义.</p>
+
+<pre><code class="language-java">public interface Observer&lt;T&gt; {
+
+    /**
+     * Notifies the Observer that the {@link Observable} has finished sending push-based notifications.
+     * &lt;p&gt;
+     * The {@link Observable} will not call this method if it calls {@link #onError}.
+     */
+    void onCompleted();
+
+    /**
+     * Notifies the Observer that the {@link Observable} has experienced an error condition.
+     * &lt;p&gt;
+     * If the {@link Observable} calls this method, it will not thereafter call {@link #onNext} or
+     * {@link #onCompleted}.
+     *
+     * @param e
+     *          the exception encountered by the Observable
+     */
+    void onError(Throwable e);
+
+    /**
+     * Provides the Observer with a new item to observe.
+     * &lt;p&gt;
+     * The {@link Observable} may call this method 0 or more times.
+     * &lt;p&gt;
+     * The {@code Observable} will not call this method again after it calls either {@link #onCompleted} or
+     * {@link #onError}.
+     *
+     * @param t
+     *          the item emitted by the Observable
+     */
+    void onNext(T t);
+}
+
+public interface Subscription {
+
+    /**
+     * Stops the receipt of notifications on the {@link Subscriber} that was registered when this Subscription
+     * was received.
+     * &lt;p&gt;
+     * This allows deregistering an {@link Subscriber} before it has finished receiving all events (i.e. before
+     * onCompleted is called).
+     */
+    void unsubscribe();
+
+    /**
+     * Indicates whether this {@code Subscription} is currently unsubscribed.
+     *
+     * @return {@code true} if this {@code Subscription} is currently unsubscribed, {@code false} otherwise
+     */
+    boolean isUnsubscribed();
+
+}
+</code></pre>
+
+<p>我们目前需要关注的是他的另外一个方法:</p>
+
+<pre><code class="language-java">public void setProducer(Producer p) {
+    //省略了次要逻辑
+    if (toRequest == NOT_SET) {
+        producer.request(Long.MAX_VALUE);
+    } else {
+        producer.request(toRequest);
+    }
+}
+</code></pre>
+
+<p>该方法在JustOnSubscribe的call方法中调用.而该方法最终又会调用producer的request. 所以JustOnSubscribe的call方法最终会调用到Subscriber的onNext方法。而onNext方法就是传递数据用的。</p>
+
+<p>现在知道数据是通过JustOnSubscribe的call来传递数据的了.但是这个call是谁来调用呢？很明显Subscriber就是订阅者.如果后续有人订阅了这个Observable的话.我想Subscriber的call方法就会被调用到.那么实际上真会如此吗？我们继续</p>
+
+<h2 id="订阅">订阅</h2>
+
+<p>我们将上面的demo扩展一下,订阅just的数据。</p>
+
+<pre><code class="language-java">Observable.just(System.currentTimeMillis())
+                .subscribe(new Action1&lt;Long&gt;() {
+            @Override
+            public void call(Long aLong) {
+                System.out.println(aLong);
+            }
+        });
+</code></pre>
+
+<p>我们可以看到subscribe中声明了一个匿名类Action1.我们将其称为订阅者函数action。</p>
+
+<pre><code class="language-java">public final Subscription subscribe(final Action1&lt;? super T&gt; onNext) {
+        if (onNext == null) {
+            throw new IllegalArgumentException(&quot;onNext can not be null&quot;);
+        }
+
+        Action1&lt;Throwable&gt; onError = InternalObservableUtils.ERROR_NOT_IMPLEMENTED;
+        Action0 onCompleted = Actions.empty();
+        return subscribe(new ActionSubscriber&lt;T&gt;(onNext, onError, onCompleted));
+    }
+</code></pre>
+
+<p>ActionSubscriber只是将订阅者函数action包装了下.这里我们直接跳过.看重点：</p>
+
+<pre><code class="language-java">public final Subscription subscribe(Subscriber&lt;? super T&gt; subscriber) {
+        return Observable.subscribe(subscriber, this);
+    }
+
+static &lt;T&gt; Subscription subscribe(Subscriber&lt;? super T&gt; subscriber, Observable&lt;T&gt; observable) {
+    subscriber.onStart();
+    if (!(subscriber instanceof SafeSubscriber)) {
+        subscriber = new SafeSubscriber&lt;T&gt;(subscriber);
+    }
+    try {
+        RxJavaHooks.onObservableStart(observable, observable.onSubscribe).call(subscriber);
+        return RxJavaHooks.onObservableReturn(subscriber);
+    } catch (Throwable e) {
+        if (subscriber.isUnsubscribed()) {
+            RxJavaHooks.onError(RxJavaHooks.onObservableError(e));
+        } else {
+            try {
+                subscriber.onError(RxJavaHooks.onObservableError(e));
+            } catch (Throwable e2) {
+                throw r; // NOPMD
+            }
+        }
+        return Subscriptions.unsubscribed();
+    }
+}
+</code></pre>
+
+<p>由于内容较多,我只列出了核心代码.</p>
+
+<p>首先回顾下just方法.它会返回一个Observable.所以Observable.subscribe(subscriber, this)中的this。就是just中声明的Observable. 在just声明Observable时Observable的onSubscribe变量保存的是JustOnSubscribe.所以RxJavaHooks.onObservableStart(observable, observable.onSubscribe).call(subscriber);这一步就是调用了JustOnSubscribe的call方法.参数subscriber就是demo代码中声明的订阅者函数action.  结合上面所述.最终会将Observable中的数据value值。通过JustOnSubscribe的call方法传递到订阅者函数action的call方法中。这样就实现了数据的订阅。我总结下流程(一些其他的细节等下再解释):</p>
+
+<p>Observable声明(值得定义):</p>
+
+<ol>
+<li>Obervable调用just.</li>
+<li>just中创建ScalarSynchronousObservable(ScalarSynchronousObservable.create(value))</li>
+<li>new JustOnSubscribe(value).</li>
+<li>value会保存在justOnSubscribe的局部变量中</li>
+<li>将justObSubscribe保存在ScalarSynchronousObservable的局部变量onSubscribe中</li>
+</ol>
+
+<p>订阅：</p>
+
+<ol>
+<li>声明一个匿名函数Action1且将其传入subscribe方法.</li>
+<li>Observable.subscribe(subscriber, this); this是just返回的Observable.</li>
+<li>RxJavaHooks.onObservableStart(observable, observable.onSubscribe).call(subscriber) observable.onSubscribe就是just方法中声明的JustOnSubscribe。subscriber即匿名函数Action1的包装类</li>
+<li>调用JustOnSubscribe.call(subscriber).</li>
+<li>createProducer(subscriber, value) 创建producer,并将subscriber和value保存在producer的局部变量中</li>
+<li>调用producer.request();</li>
+<li>在producer的request中调用subscriber.onNext(value); subscriber就是匿名函数Action1.所以到此就可以在值value传递到匿名函数Action1中了。</li>
+</ol>
+
+<h3 id="其他细节">其他细节</h3>
+
+<h4 id="safesubscriber">SafeSubscriber</h4>
+
+<p>代码subscriber = new SafeSubscriber<T>(subscriber)。是将函数subscriber进行了包装。包装类SafeSubscriber会保证subscriber的onNext,onCompleted,onError方法的正确使用(即onNext可以调用1到多次,而onCompleted和onError只能调用一次，且三者是互斥关系).</p>
+
+<p>下篇我们看下操作符是如何实现的.</p>
+
               
             </div>
           </div>
           <div id="post-footer" class="post-footer main-content-wrap">
             
-              
-                
-                
-                  <div class="post-footer-tags">
-                    <span class="text-color-light text-small">标签</span><br/>
-                    
-  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/k8s/">k8s</a>
-
-                  </div>
-                
               
             
             
@@ -349,7 +641,7 @@ spec:
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180529_http_proxy/" data-tooltip="HTTP proxy">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -357,7 +649,7 @@ spec:
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180328_prometheus_config/" data-tooltip="Prometheus命令">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -429,7 +721,7 @@ spec:
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180529_http_proxy/" data-tooltip="HTTP proxy">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/2018-02-spring-cloud-refresh-context/" data-tooltip="Spring Cloud Config自动刷新机制">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -437,7 +729,7 @@ spec:
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20180328_prometheus_config/" data-tooltip="Prometheus命令">
+                <a class="post-action-btn btn btn--disabled">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -759,9 +1051,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20180428_k8s_network_sc\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20190209_rxjava_1\/';
           
-            this.page.identifier = '\/20180428_k8s_network_sc\/'
+            this.page.identifier = '\/20190209_rxjava_1\/'
           
         };
         (function() {

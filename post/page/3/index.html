@@ -449,6 +449,63 @@
 </article>
 
           
+            
+  
+    
+      
+        
+      
+    
+  
+
+
+  
+
+<article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
+  <div class="postShorten-wrap">
+    
+    <div class="postShorten-header">
+      <h1 class="postShorten-title" itemprop="headline">
+        <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_1/">
+          
+        </a>
+      </h1>
+      
+  <div class="postShorten-meta post-meta">
+    
+      <time itemprop="datePublished" datetime="0001-01-01T00:00:00Z">
+        
+  一月 1, 1
+
+      </time>
+    
+    
+  </div>
+
+    </div>
+    <div class="postShorten-excerpt" itemprop="articleBody">
+      详读RxJava(数据的发送与接收) 18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。
+这里不介绍什么是RxJava。以及它的优缺点,有兴趣的同学可以去它的官网看看。
+由于我所在的公司使用的基础框架是Spring Cloud 1.5.x。而其底层所使用的RxJava是1.x版本.所以我所看的RxJava也是使用的1.x版本。
+ 这一系列我只会读RxJava的关键流程。因为时间有限,而我只想弄清楚它的核心原理是什么。
+ 首先我们要了解它是怎么传递数据的,操作符怎么实现的。然后是怎么订阅到这些数据,最后弄明白它的线程调度是怎么回事。
+ 建议初学者先去熟悉下RxJava的api
+ 数据传递 首先我们看一个简单的demo:
+Observable.just(System.currentTimeMillis());  just声明一个Observable.
+just public static &lt;T&gt; Observable&lt;T&gt; just(final T value) { return ScalarSynchronousObservable.create(value); }  跳入just方法看到的就是上面的代码。从代码来看就是将value值包装到一个Obervable里面(当然这里使用的是ScalarSynchronousObservable).
+我们先看下ScalarSynchronousObservable类的定义
+public final class ScalarSynchronousObservable&lt;T&gt; extends Observable&lt;T&gt;  它继承自Observable。
+Obervable public class Observable&lt;T&gt; { final OnSubscribe&lt;T&gt; onSubscribe; protected Observable(OnSubscribe&lt;T&gt; f) { this.onSubscribe = f; } @Deprecated public static &lt;T&gt; Observable&lt;T&gt; create(OnSubscribe&lt;T&gt; f) { return new Observable&lt;T&gt;(RxJavaHooks.onCreate(f)); } }   只列出来了我们需要的方法
+      <p>
+        <a href="https://vitzhou.top/20190209_rxjava_1/" class="postShorten-excerpt_link link">阅读全文</a>
+        
+      </p>
+    </div>
+  </div>
+  
+</article>
+
+          
           
   <div class="pagination-bar">
     <ul class="pagination">
@@ -471,7 +528,7 @@
         </section>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
-    &copy; 2018 Vit Zhou/周圣华. All Rights Reserved
+    &copy; 2019 Vit Zhou/周圣华. All Rights Reserved
   </span>
 </footer>
 
@@ -713,7 +770,7 @@
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         18 posts found
+         19 posts found
       </p>
     </div>
   </div>
