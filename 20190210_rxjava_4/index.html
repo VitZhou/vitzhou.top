@@ -271,6 +271,7 @@
 <li><a href="#subscribeonsubscriber">SubscribeOnSubscriber</a></li>
 </ul></li>
 <li><a href="#第二种情况">第二种情况</a></li>
+<li><a href="#小结">小结</a></li>
 </ul></li>
 </ul>
 </nav></p>
@@ -338,11 +339,7 @@
 
 <p>这里会再用一个onSchedule函数将当前的scheduler包起来.当被调用到onSchedule的call方法时,线程就会被切换回当前onSchedule的线程池中.最后使用ScalarAsyncOnSubscribe将值T和onSchedule包装成一个OnSubscribe.</p>
 
-<p>由于subscribeOn(Scheduler scheduler, boolean requestOn) 这一步只会在第一次使用onSchedule时会进入到scalarScheduleOn.而这里会将请求线程切换到第一次使用onSchedule传入的线程池.所以多次调用onSchedule的话最终工作的线程是第一次onSchedule传入的线程池.</p>
-
-<blockquote>
-<p>虽然最终作用在第一次调用的线程池中,但是之后的线程池也是会生效的.虽然只是个短暂的线程切换.但是还是会有比较大的性能损耗.所以onSchedule尽量只使用一次。</p>
-</blockquote>
+<p>由于subscribeOn(Scheduler scheduler, boolean requestOn) 这一步只会在第一次使用onSchedule时会进入到scalarScheduleOn.而这里会将请求线程切换到第一次使用onSchedule传入的线程池.所以多次调用onSchedule的话最终工作的线程是第一次onSchedule传入的线程池.（第二次subscribeOn的OperatorSubscribeOn是怎么调用到ScalarAsyncOnSubscribe请看下面的第二种情况即可明白).</p>
 
 <pre><code class="language-java">@Override
 public void call(Subscriber&lt;? super T&gt; s) {
@@ -460,6 +457,8 @@ action:RxComputationScheduler-1
 
 <p>此时不管是第一次还是第二次调用subscribeOn,当前的Observable都不可能是ScalarSynchronousObservable.所以都会进入到OperatorSubscribeOn。那么只是使用OperatorSubscribeOn,怎么达到只作用在第一次调用subscribeOn的呢？我们直接看关键步骤.</p>
 
+<p>OperatorSubscribeOn:</p>
+
 <pre><code class="language-java">@Override
 public void call(final Subscriber&lt;? super T&gt; subscriber) {
     final Worker inner = scheduler.createWorker();
@@ -474,6 +473,8 @@ public void call(final Subscriber&lt;? super T&gt; subscriber) {
 
 <p>第一次调用时会将第一个scheduler(computation)作为局部变量scheduler保存下来.并传入SubscribeOnSubscriber.也就是说OperatorSubscribeOn,SubscribeOnSubscriber都和线程池scheduler是强绑定.并且SubscribeOnSubscriber会记录源Observable.</p>
 
+<p>SubscribeOnSubscriber:</p>
+
 <pre><code class="language-java">@Override
 public void call() {
     Observable&lt;T&gt; src = source;
@@ -486,6 +487,12 @@ public void call() {
 <p>结合代码.如果此时订阅已经开始,那么肯定是会创建两个OperatorSubscribeOn,SubscribeOnSubscriber.但是最外层的SubscribeOnSubscriber会通过source变量调用到最底层的SubscribeOnSubscriber.从而完成线程切换回第一个线程池的目标.</p>
 
 <p>我们将视角切回调用完map之后。此时第一次调用subscribeOn.所以OperatorSubscribeOn中的source是保存着对map返回的Observable的引用. 所以computation的OperatorSubscribeOn被调用call时,会调用到map的Observable.从而影响上流数据.</p>
+
+<h2 id="小结">小结</h2>
+
+<p>subscribeOn的特征是通过将上一个操作符返回的Observable作为source.一层层向后传递,订阅后类似递归一样一层层向前调用实现的. observeOn与它最大的区别也是在此了.</p>
+
+<p>虽然最终作用在第一个线程池中,但是之后的线程池也是会生效的.虽然只是个短暂的线程切换.但是还是会有比较大的性能损耗.所以onSchedule尽量只使用一次。</p>
               
             </div>
           </div>
