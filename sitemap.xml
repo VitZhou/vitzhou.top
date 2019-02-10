@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://vitzhou.top/20190210_rxjava_5/</loc>
+    <lastmod>2019-02-10T18:22:31+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://vitzhou.top/20190210_rxjava_4/</loc>
     <lastmod>2019-02-10T10:22:31+08:00</lastmod>
   </url>
@@ -196,7 +201,7 @@
   
   <url>
     <loc>https://vitzhou.top/post/</loc>
-    <lastmod>2019-02-10T10:22:31+08:00</lastmod>
+    <lastmod>2019-02-10T18:22:31+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -214,13 +219,13 @@
   
   <url>
     <loc>https://vitzhou.top/tags/rxjava/</loc>
-    <lastmod>2019-02-10T10:22:31+08:00</lastmod>
+    <lastmod>2019-02-10T18:22:31+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://vitzhou.top/categories/rxjava/</loc>
-    <lastmod>2019-02-10T10:22:31+08:00</lastmod>
+    <lastmod>2019-02-10T18:22:31+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -274,7 +279,7 @@
   
   <url>
     <loc>https://vitzhou.top/</loc>
-    <lastmod>2019-02-10T10:22:31+08:00</lastmod>
+    <lastmod>2019-02-10T18:22:31+08:00</lastmod>
     <priority>0</priority>
   </url>
   

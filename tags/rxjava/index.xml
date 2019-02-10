@@ -6,10 +6,19 @@
     <description>Recent content in Rxjava on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 10 Feb 2019 10:22:31 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 10 Feb 2019 18:22:31 +0800</lastBuildDate>
     
 	<atom:link href="https://vitzhou.top/tags/rxjava/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>详读RxJava(observeOn实现)</title>
+      <link>https://vitzhou.top/20190210_rxjava_5/</link>
+      <pubDate>Sun, 10 Feb 2019 18:22:31 +0800</pubDate>
+      
+      <guid>https://vitzhou.top/20190210_rxjava_5/</guid>
+      <description>&lt;p&gt;这次我们聊聊observeOn线程切换的实现.阅读之前请先阅读之前的几篇博客&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>详读RxJava(subscribeOn实现)</title>

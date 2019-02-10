@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
-    <title>详读RxJava(subscribeOn实现)</title>
+    <title>详读RxJava(observeOn实现)</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="RxJava, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
     
@@ -50,8 +50,8 @@
     <meta name="description" content="RxJava">
     <meta property="og:description" content="RxJava">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="详读RxJava(subscribeOn实现)">
-    <meta property="og:url" content="/20190210_rxjava_4/">
+    <meta property="og:title" content="详读RxJava(observeOn实现)">
+    <meta property="og:url" content="/20190210_rxjava_5/">
     <meta property="og:site_name" content="周圣华的博客">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="周圣华的博客">
@@ -230,13 +230,13 @@
             <div class="post-header main-content-wrap text-left">
   
     <h1 class="post-title" itemprop="headline">
-      详读RxJava(subscribeOn实现)
+      详读RxJava(observeOn实现)
     </h1>
   
   
   <div class="postShorten-meta post-meta">
     
-      <time itemprop="datePublished" datetime="2019-02-10T10:22:31&#43;08:00">
+      <time itemprop="datePublished" datetime="2019-02-10T18:22:31&#43;08:00">
         
   二月 10, 2019
 
@@ -257,172 +257,24 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>今天我们聊聊subscribeOn线程切换的实现.阅读之前请先阅读之前的几篇博客</p>
+              <p>这次我们聊聊observeOn线程切换的实现.阅读之前请先阅读之前的几篇博客</p>
 
 <p>
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
 <ul>
 <li>
 <ul>
-<li><a href="#第一种情况">第一种情况</a>
+<li>
 <ul>
-<li><a href="#scalarasyncproducer">ScalarAsyncProducer</a></li>
-<li><a href="#operatorsubscribeon">OperatorSubscribeOn</a></li>
-<li><a href="#subscribeonsubscriber">SubscribeOnSubscriber</a></li>
+<li><a href="#onsubscribelift">OnSubscribeLift</a></li>
+<li><a href="#operatorobserveon">OperatorObserveOn</a>
+<ul>
+<li><a href="#observeonsubscriber">ObserveOnSubscriber</a></li>
 </ul></li>
-<li><a href="#第二种情况">第二种情况</a></li>
-<li><a href="#小结">小结</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav></p>
-
-<h2 id="第一种情况">第一种情况</h2>
-
-<p>造例,还是根据demo来看源码</p>
-
-<pre><code class="language-java">Observable.just(1)
-    .subscribeOn(Schedulers.computation())
-    .subscribeOn(Schedulers.io())
-    .subscribe(integer -&gt; System.out.println(&quot;action:&quot; + Thread.currentThread().getName()));
-</code></pre>
-
-<p>输出的结果是:</p>
-
-<pre><code class="language-shell">action:RxComputationScheduler-1
-</code></pre>
-
-<p>虽然我们使用了两个subscribeOn,但是跟上篇博客所述的一样subscribeOn只有第一次(computation线程池)生效了。这是为何呢？这个我们最后再解释.先看下subscribeOn的内部.</p>
-
-<pre><code class="language-java">public final Observable&lt;T&gt; subscribeOn(Scheduler scheduler, boolean requestOn) {
-    if (this instanceof ScalarSynchronousObservable) {
-        return ((ScalarSynchronousObservable&lt;T&gt;)this).scalarScheduleOn(scheduler);
-    }
-    return unsafeCreate(new OperatorSubscribeOn&lt;T&gt;(this, scheduler, requestOn));
-}
-</code></pre>
-
-<p>可以看到它会判断当前Obervable是否是ScalarSynchronousObservable.从demo以及前面几篇博客可以知道just返回的Observable就是属于ScalarSynchronousObservable。但是subscribeOn返回的Observable不属于.所以第一次调用subscribeOn会进入scalarScheduleOn.第二次会进入unsafeCreate(……)。我们先看第一次调用.</p>
-
-<pre><code class="language-java">public Observable&lt;T&gt; scalarScheduleOn(final Scheduler scheduler) {
-    Func1&lt;Action0, Subscription&gt; onSchedule;
-    if (scheduler instanceof EventLoopsScheduler) {
-        final EventLoopsScheduler els = (EventLoopsScheduler) scheduler;
-        onSchedule = new Func1&lt;Action0, Subscription&gt;() {
-            @Override
-            public Subscription call(Action0 a) {
-                return els.scheduleDirect(a);
-            }
-        };
-    } else {
-        onSchedule = new Func1&lt;Action0, Subscription&gt;() {
-            @Override
-            public Subscription call(final Action0 a) {
-                final Scheduler.Worker w = scheduler.createWorker();
-                w.schedule(new Action0() {
-                    @Override
-                    public void call() {
-                        try {
-                            a.call();
-                        } finally {
-                            w.unsubscribe();
-                        }
-                    }
-                });
-                return w;
-            }
-        };
-    }
-
-    return unsafeCreate(new ScalarAsyncOnSubscribe&lt;T&gt;(t, onSchedule));
-}
-</code></pre>
-
-<p>这里会再用一个onSchedule函数将当前的scheduler包起来.当被调用到onSchedule的call方法时,线程就会被切换回当前onSchedule的线程池中.最后使用ScalarAsyncOnSubscribe将值T和onSchedule包装成一个OnSubscribe.</p>
-
-<p>由于subscribeOn(Scheduler scheduler, boolean requestOn) 这一步只会在第一次使用onSchedule时会进入到scalarScheduleOn.而这里会将请求线程切换到第一次使用onSchedule传入的线程池.所以多次调用onSchedule的话最终工作的线程是第一次onSchedule传入的线程池.（第二次subscribeOn的OperatorSubscribeOn是怎么调用到ScalarAsyncOnSubscribe请看下面的第二种情况即可明白).</p>
-
-<pre><code class="language-java">@Override
-public void call(Subscriber&lt;? super T&gt; s) {
-    s.setProducer(new ScalarAsyncProducer&lt;T&gt;(s, value, onSchedule));
-}
-</code></pre>
-
-<p>这是ScalarAsyncOnSubscribe的call实现.</p>
-
-<h3 id="scalarasyncproducer">ScalarAsyncProducer</h3>
-
-<pre><code class="language-java">@Override
-public void request(long n) {
-    if (n &lt; 0L) {
-        throw new IllegalArgumentException(&quot;n &gt;= 0 required but it was &quot; + n);
-    }
-    if (n != 0 &amp;&amp; compareAndSet(false, true)) {
-        actual.add(onSchedule.call(this));
-    }
-}
-
-@Override
-public void call() {
-    Subscriber&lt;? super T&gt; a = actual;
-    if (a.isUnsubscribed()) {
-        return;
-    }
-    T v = value;
-    try {
-        a.onNext(v);
-    } catch (Throwable e) {
-        Exceptions.throwOrReport(e, a, v);
-        return;
-    }
-    if (a.isUnsubscribed()) {
-        return;
-    }
-    a.onCompleted();
-}
-</code></pre>
-
-<p>最终call被调用时完成了数据的传递a.onNext(v).</p>
-
-<h3 id="operatorsubscribeon">OperatorSubscribeOn</h3>
-
-<pre><code class="language-java">public final class OperatorSubscribeOn&lt;T&gt; implements OnSubscribe&lt;T&gt;
-</code></pre>
-
-<p>它实现了OnSubscribe.所以将会在订阅(subscribe)之后被调用它的call方法.</p>
-
-<pre><code class="language-java">@Override
-public void call(final Subscriber&lt;? super T&gt; subscriber) {
-    final Worker inner = scheduler.createWorker();
-
-    SubscribeOnSubscriber&lt;T&gt; parent = new SubscribeOnSubscriber&lt;T&gt;(subscriber, requestOn, inner, source);
-    subscriber.add(parent);
-    subscriber.add(inner);
-
-    inner.schedule(parent);
-}
-</code></pre>
-
-<p>scheduler就是从subscribeOn传入的Scheduler.io().注意在这里都是io线程池,还没切换到computation池.在call中它会将源Observable(变量source,这个source就是第一次调用subscribeOn返回的Observable)和subscriber用SubscribeOnSubscriber进行包装. 然后使用将parent放入到Worker线程池中(上一篇博客中所提到EventLoopWorker都是实现了Worker接口,所以这里的Inner就是CachedThreadScheduler的内部类EventLoopWorker.)中进行调度.调度的结果就是调用到parent的call方法(从这一步开始数据的传输就开始在一个线程池中进行,即开始了线程切换.进行异步操作).</p>
-
-<h3 id="subscribeonsubscriber">SubscribeOnSubscriber</h3>
-
-<pre><code class="language-java">static final class SubscribeOnSubscriber&lt;T&gt; extends Subscriber&lt;T&gt; implements Action0
-</code></pre>
-
-<p>它实现了Subscriber接口,所有有onNext,onCompleted,onError方法,先看它的call方法.</p>
-
-<pre><code class="language-java">@Override
-public void call() {
-    Observable&lt;T&gt; src = source;
-    source = null;
-    t = Thread.currentThread();
-    src.unsafeSubscribe(this);
-}
-</code></pre>
-
-<p>这一步很关键. src即第一次调用subscribeOn返回的Observable.所以src.unsafeSubscribe(this),然后就会调用到ScalarAsyncOnSubscribe的call方法.而ScalarAsyncOnSubscribe最终会调用它的局部变量onSchedule的call.所以到这一步就会将io线程切换回onSchedule的线程(即computation线程).</p>
-
-<h2 id="第二种情况">第二种情况</h2>
 
 <pre><code class="language-java">Observable.just(1)
     .map(new Func1&lt;Integer, Long&gt;() {
@@ -432,71 +284,168 @@ public void call() {
             return integer+1L;
         }
     })
-    .subscribeOn(Schedulers.computation())
-    .subscribeOn(Schedulers.io())
+    .observeOn(Schedulers.io())
     .subscribe(integer -&gt; System.out.println(&quot;action:&quot; + Thread.currentThread().getName()));
 </code></pre>
 
-<p>运行的结果是:</p>
+<p>运行结果:</p>
 
-<pre><code class="language-shell">1RxComputationScheduler-1
-action:RxComputationScheduler-1
+<pre><code class="language-java">1main
+action:RxIoScheduler-2
 </code></pre>
 
-<p>可以看到subscribeOn可以影响到数据的上下游.且任务在第一次subscribeOn传入的线程池中工作.那么它又是如何生效的呢？</p>
+<p>可以看到observeOn只影响数据下游.</p>
 
-<p>还是从subscribeOn入手</p>
+<p>还是直接进入observeOn。</p>
 
-<pre><code class="language-java">public final Observable&lt;T&gt; subscribeOn(Scheduler scheduler, boolean requestOn) {
+<pre><code class="language-java">public final Observable&lt;T&gt; observeOn(Scheduler scheduler, boolean delayError, int bufferSize{
     if (this instanceof ScalarSynchronousObservable) {
         return ((ScalarSynchronousObservable&lt;T&gt;)this).scalarScheduleOn(scheduler);
     }
-    return unsafeCreate(new OperatorSubscribeOn&lt;T&gt;(this, scheduler, requestOn));
+    return lift(new OperatorObserveOn&lt;T&gt;(scheduler, delayError, bufferSize));
 }
 </code></pre>
 
-<p>此时不管是第一次还是第二次调用subscribeOn,当前的Observable都不可能是ScalarSynchronousObservable.所以都会进入到OperatorSubscribeOn。那么只是使用OperatorSubscribeOn,怎么达到只作用在第一次调用subscribeOn的呢？我们直接看关键步骤.</p>
+<p>重点在于lift()方法.所以我们先看这个方法:</p>
 
-<p>OperatorSubscribeOn:</p>
+<pre><code class="language-java">public final &lt;R&gt; Observable&lt;R&gt; lift(final Operator&lt;? extends R, ? super T&gt; operator) {
+    return unsafeCreate(new OnSubscribeLift&lt;T, R&gt;(onSubscribe, operator));
+}
+</code></pre>
+
+<p>lift中会使用OnSubscribeLift将onSubscribe, operator包装起来.而operator则是lift中传入的OperatorObserveOn实例.onSubscribe在demo中是OnSubscribeMap.</p>
+
+<h3 id="onsubscribelift">OnSubscribeLift</h3>
+
+<pre><code class="language-java">public final class OnSubscribeLift&lt;T, R&gt; implements OnSubscribe&lt;R&gt; {
+
+    final OnSubscribe&lt;T&gt; parent;
+
+    final Operator&lt;? extends R, ? super T&gt; operator;
+
+    public OnSubscribeLift(OnSubscribe&lt;T&gt; parent, Operator&lt;? extends R, ? super T&gt; operator) {
+        this.parent = parent;
+        this.operator = operator;
+    }
+
+    @Override
+    public void call(Subscriber&lt;? super R&gt; o) {
+        try {
+            Subscriber&lt;? super T&gt; st = RxJavaHooks.onObservableLift(operator).call(o);
+            try {
+                // new Subscriber created and being subscribed with so 'onStart' it
+                st.onStart();
+                parent.call(st);
+            } catch (Throwable e) {
+                // localized capture of errors rather than it skipping all operators
+                // and ending up in the try/catch of the subscribe method which then
+                // prevents onErrorResumeNext and other similar approaches to error handling
+                Exceptions.throwIfFatal(e);
+                st.onError(e);
+            }
+        } catch (Throwable e) {
+            Exceptions.throwIfFatal(e);
+            // if the lift function failed all we can do is pass the error to the final Subscriber
+            // as we don't have the operator available to us
+            o.onError(e);
+        }
+    }
+}
+</code></pre>
+
+<p>它将上一个操作符(map)返回的Observable(OnSubscribeMap)作为源Observable保存在parent中.并将OperatorObserveOn保存在operator中.当调用了subscribe()时会调到它的call方法.从call里面可以看到它会先调用OperatorObserveOn的call,然后再调用OnSubscribeMap的call.简单的画下流程:</p>
+
+<p>subscribe()-&gt;OnSubscribeLift.call()-&gt;OperatorObserveOn.call()-&gt;OnSubscribeMap.call();</p>
+
+<p>我们再看下OperatorObserveOn做了什么:</p>
+
+<h3 id="operatorobserveon">OperatorObserveOn</h3>
+
+<p>内容较多,只提取了关键代码.</p>
 
 <pre><code class="language-java">@Override
-public void call(final Subscriber&lt;? super T&gt; subscriber) {
-    final Worker inner = scheduler.createWorker();
-
-    SubscribeOnSubscriber&lt;T&gt; parent = new SubscribeOnSubscriber&lt;T&gt;(subscriber, requestOn, inner, source);
-    subscriber.add(parent);
-    subscriber.add(inner);
-
-    inner.schedule(parent);
+public Subscriber&lt;? super T&gt; call(Subscriber&lt;? super T&gt; child) {
+    if (scheduler instanceof ImmediateScheduler) {
+        // avoid overhead, execute directly
+        return child;
+    } else if (scheduler instanceof TrampolineScheduler) {
+        // avoid overhead, execute directly
+        return child;
+    } else {
+        ObserveOnSubscriber&lt;T&gt; parent = new ObserveOnSubscriber&lt;T&gt;(scheduler, child, delayError, bufferSize);
+        parent.init();
+        return parent;
+    }
 }
 </code></pre>
 
-<p>第一次调用时会将第一个scheduler(computation)作为局部变量scheduler保存下来.并传入SubscribeOnSubscriber.也就是说OperatorSubscribeOn,SubscribeOnSubscriber都和线程池scheduler是强绑定.并且SubscribeOnSubscriber会记录源Observable.</p>
+<p>scheduler变量是从observeOn中传入的Schedulers.io(),child是从OnSubscribeLift的call传递过来的subscribe()中创建的匿名函数(即你demo中的扩展方法)。我们再看下ObserveOnSubscriber:</p>
 
-<p>SubscribeOnSubscriber:</p>
+<h4 id="observeonsubscriber">ObserveOnSubscriber</h4>
 
-<pre><code class="language-java">@Override
-public void call() {
-    Observable&lt;T&gt; src = source;
-    source = null;
-    t = Thread.currentThread();
-    src.unsafeSubscribe(this);
+<pre><code class="language-java">public ObserveOnSubscriber(Scheduler scheduler, Subscriber&lt;? super T&gt; child, boolean delayError, int bufferSize) {
+    this.child = child;
+    this.recursiveScheduler = scheduler.createWorker();
+    this.delayError = delayError;
+    int calculatedSize = (bufferSize &gt; 0) ? bufferSize : RxRingBuffer.SIZE;
+    // this formula calculates the 75% of the bufferSize, rounded up to the next integer
+    this.limit = calculatedSize - (calculatedSize &gt;&gt; 2);
+    if (UnsafeAccess.isUnsafeAvailable()) {
+        queue = new SpscArrayQueue&lt;Object&gt;(calculatedSize);
+    } else {
+        queue = new SpscAtomicArrayQueue&lt;Object&gt;(calculatedSize);
+    }
+    // signal that this is an async operator capable of receiving this many
+    request(calculatedSize);
+}
+
+void init() {
+    // don't want this code in the constructor because `this` can escape through the
+    // setProducer call
+    Subscriber&lt;? super T&gt; localChild = child;
+
+    localChild.setProducer(new Producer() {
+
+        @Override
+        public void request(long n) {
+            if (n &gt; 0L) {
+                BackpressureUtils.getAndAddRequest(requested, n);
+                schedule();
+            }
+        }
+
+    });
+    localChild.add(recursiveScheduler);
+    localChild.add(this);
+}
+protected void schedule() {
+    if (counter.getAndIncrement() == 0) {
+        recursiveScheduler.schedule(this);
+    }
 }
 </code></pre>
 
-<p>结合代码.如果此时订阅已经开始,那么肯定是会创建两个OperatorSubscribeOn,SubscribeOnSubscriber.但是最外层的SubscribeOnSubscriber会通过source变量调用到最底层的SubscribeOnSubscriber.从而完成线程切换回第一个线程池的目标.</p>
+<p>从他的构造函数可以看到他使用了Schduler.io()的EventLoopWorker。在init方法中通过child的setProducer方法调用到schedule.schedule方法会使用Schduler.io()的EventLoopWorker来调度(recursiveScheduler.schedule(this)).</p>
 
-<p>我们将视角切回调用完map之后。此时第一次调用subscribeOn.所以OperatorSubscribeOn中的source是保存着对map返回的Observable的引用. 所以computation的OperatorSubscribeOn被调用call时,会调用到map的Observable.从而影响上流数据.</p>
+<p>recursiveScheduler.schedule(this)从这代码可以看到从这里开始会将调用ObserveOnSubscriber的任务提交到一个线程池中进行操作.</p>
 
-<h2 id="小结">小结</h2>
+<p>我再看下ObserveOnSubscriber的call方法的关键代码:</p>
 
-<p>subscribeOn的特征是通过将上一个操作符返回的Observable作为source.一层层向后传递,订阅后类似递归一样一层层向前调用实现的. observeOn与它最大的区别也是在此了.</p>
+<pre><code class="language-java">final Queue&lt;Object&gt; q = this.queue;
+final Subscriber&lt;? super T&gt; localChild = this.child;
+Object v = q.poll();
+localChild.onNext(NotificationLite.&lt;T&gt;getValue(v));
+</code></pre>
 
-<p>虽然最终作用在第一个线程池中,但是之后的线程池也是会生效的.虽然只是个短暂的线程切换.但是还是会有比较大的性能损耗.所以onSchedule尽量只使用一次。</p>
+<p>而this.child是demo中的拓展匿名函数也是数据的下游.所以下游的数据处理是异步的。</p>
 
-<p>请求流程如图:</p>
+<p>我们再回到OnSubscribeLift的call的两行关键代码:</p>
 
-<p><img src="../img/2019/1549791558795.jpg" alt="" /></p>
+<pre><code class="language-java">Subscriber&lt;? super T&gt; st = RxJavaHooks.onObservableLift(operator).call(o); //1
+parent.call(st); //2
+</code></pre>
+
+<p>我们可以得知进入这个call方法时的线程是主线程.然后通过第一行代码将ObserveOnSubscriber的执行放入到了一个线程池.所以从主线程将不会再处理ObserveOnSubscriber的任务.但是主线程还会继续执行第二行代码parent.call(st); 从上面可以得知parent是map操作符返回的Observable(OnSubscribeMap)。所以observeOn并不会影响调用它之前的数据.只会影响调用之后的数据.   所以observeOn可以进行多次调用进行线程切换</p>
               
             </div>
           </div>
@@ -521,7 +470,7 @@ public void call() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_5/" data-tooltip="详读RxJava(observeOn实现)">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -529,7 +478,7 @@ public void call() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_3/" data-tooltip="详读RxJava(Scheduler实现)">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_4/" data-tooltip="详读RxJava(subscribeOn实现)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -601,7 +550,7 @@ public void call() {
           
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_5/" data-tooltip="详读RxJava(observeOn实现)">
+                <a class="post-action-btn btn btn--disabled">
               
                   <i class="fa fa-angle-left"></i>
                   <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
@@ -609,7 +558,7 @@ public void call() {
             </li>
             <li class="post-action">
               
-                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190209_rxjava_3/" data-tooltip="详读RxJava(Scheduler实现)">
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_4/" data-tooltip="详读RxJava(subscribeOn实现)">
               
                   <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
                   <i class="fa fa-angle-right"></i>
@@ -925,9 +874,9 @@ $(document).ready(function() {
     
       <script>
         var disqus_config = function () {
-          this.page.url = 'https:\/\/vitzhou.top\/20190210_rxjava_4\/';
+          this.page.url = 'https:\/\/vitzhou.top\/20190210_rxjava_5\/';
           
-            this.page.identifier = '\/20190210_rxjava_4\/'
+            this.page.identifier = '\/20190210_rxjava_5\/'
           
         };
         (function() {
