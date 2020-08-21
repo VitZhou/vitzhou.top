@@ -21,7 +21,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
+    <meta name="generator" content="Hugo 0.55.6 with theme Tranquilpeak 0.4.3-BETA">
     <title>Spring Cloud Config自动刷新机制</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="Spring Cloud, Spring Cloud Config, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
@@ -257,8 +257,7 @@
           
           <div class="post-content markdown" itemprop="articleBody">
             <div class="main-content-wrap">
-              <p>Spring Cloud Config自动刷新的主要流程
-</p>
+              <p>Spring Cloud Config自动刷新的主要流程</p>
 
 <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
 <ul>
@@ -515,12 +514,9 @@ public class RefreshBusEndpoint extends AbstractBusEndpoint {
 }
 </code></pre>
 
-<p>该方法主要是从远程获取Environment(其实际就是发送了个rest request到config server),因为该方法不允许失败,所以还添加@Retryable注解(在失败时重试)</p></li>
-
-<li><p>从注释2到3主要是将从远程获取的Environment和当前上下文的Environment做比较,当前Environment有的属性就替换,没有的就新增到当前的Environment中</p></li>
-
-<li><p>最后需要close掉新建出来的ConfigurableApplicationContext。</p></li>
-</ol>
+<p>该方法主要是从远程获取Environment(其实际就是发送了个rest request到config server),因为该方法不允许失败,所以还添加@Retryable注解(在失败时重试)
+1. 从注释2到3主要是将从远程获取的Environment和当前上下文的Environment做比较,当前Environment有的属性就替换,没有的就新增到当前的Environment中
+1. 最后需要close掉新建出来的ConfigurableApplicationContext。</p>
 
 <p>总结一下: config client为了能去远程获取Environment,创建了一个ConfigurableApplicationContext,用来触发ConfigServicePropertySourceLocator的locate方法,随后将新的配置更新到当前环境中，并关闭ConfigurableApplicationContext。</p>
 
@@ -530,40 +526,41 @@ public class RefreshBusEndpoint extends AbstractBusEndpoint {
 
 <pre><code class="language-java">@Override
 public void onApplicationEvent(EnvironmentChangeEvent event) {
-    rebind();
+rebind();
 }
 @ManagedOperation
 public void rebind() {
-    this.errors.clear();
-    for (String name : this.beans.getBeanNames()) {
-        rebind(name);
-    }
+this.errors.clear();
+for (String name : this.beans.getBeanNames()) {
+    rebind(name);
+}
 }
 
 @ManagedOperation
 public boolean rebind(String name) {
-    if (!this.beans.getBeanNames().contains(name)) {
-        return false;
-    }
-    if (this.applicationContext != null) {
-        try {
-            Object bean = this.applicationContext.getBean(name);
-            if (AopUtils.isCglibProxy(bean)) {
-                bean = getTargetObject(bean);
-            }
-            this.binder.postProcessBeforeInitialization(bean, name);
-            this.applicationContext.getAutowireCapableBeanFactory()
-                    .initializeBean(bean, name);
-            return true;
-        }
-        catch (RuntimeException e) {
-            this.errors.put(name, e);
-            throw e;
-        }
-    }
+if (!this.beans.getBeanNames().contains(name)) {
     return false;
 }
-</code></pre>
+if (this.applicationContext != null) {
+    try {
+        Object bean = this.applicationContext.getBean(name);
+        if (AopUtils.isCglibProxy(bean)) {
+            bean = getTargetObject(bean);
+        }
+        this.binder.postProcessBeforeInitialization(bean, name);
+        this.applicationContext.getAutowireCapableBeanFactory()
+                .initializeBean(bean, name);
+        return true;
+    }
+    catch (RuntimeException e) {
+        this.errors.put(name, e);
+        throw e;
+    }
+}
+return false;
+}
+</code></pre></li>
+</ol>
 
 <p>当发生EnvironmentChangeEvent事件时会重新初始化bean(包括重新绑定新的配置源以及重新校验metadata等,详情请查看spring core的官方文档)</p>
 
@@ -695,7 +692,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
         </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
-    &copy; 2019 Vit Zhou/周圣华. All Rights Reserved
+    &copy; 2020 Vit Zhou/周圣华. All Rights Reserved
   </span>
 </footer>
 
@@ -813,6 +810,23 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
           <div class="media">
             
             <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20200821/">
+                <h3 class="media-heading">字面量,符号引用,直接引用究竟是什么？</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2020
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20190210_rxjava_5/">
                 <h3 class="media-heading">详读RxJava(observeOn实现)</h3>
               </a>
@@ -906,9 +920,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
                   Aug 8, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用<code>synchronized</code>或者<code>ReentrantLock</code>会浪费非常大的性能.此时使用<code>ReentrantReadWriteLock</code>会更合适
-
-<!--toc--></p></div>
+              <div class="media-content hide-xs font-merryweather"><p>虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用<code>synchronized</code>或者<code>ReentrantLock</code>会浪费非常大的性能.此时使用<code>ReentrantReadWriteLock</code>会更合适</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -942,9 +954,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
                   Aug 8, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。
-
-<!--toc--></p></div>
+              <div class="media-content hide-xs font-merryweather"><p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -967,23 +977,6 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
             <hr>
           </div>
         
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180709_aqs_2/">
-                <h3 class="media-heading">详读JUC系列(2)之AQS</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Jul 7, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"><p>AQS(二)</p></div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
       </div>
     </div>
     <div class="modal-footer">
@@ -991,7 +984,7 @@ config client都会监听该事件,而且该事件的处理是不管配置是否
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         23 posts found
+         24 posts found
       </p>
     </div>
   </div>

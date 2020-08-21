@@ -1,0 +1,964 @@
+
+
+  
+    
+  
+
+
+  
+
+
+
+
+  
+
+
+  
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Hugo 0.55.6 with theme Tranquilpeak 0.4.3-BETA">
+    <title>字面量,符号引用,直接引用究竟是什么？</title>
+    <meta name="author" content="Vit Zhou/周圣华">
+    <meta name="keywords" content="字面量, 符号引用, 直接引用, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113904612-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113904612-1');
+    </script>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?5e7939ec0e76c7d22e429ffd57848a67";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <link rel="icon" href="https://vitzhou.top/images/author.jpeg">
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="blog">
+    <meta property="og:title" content="字面量,符号引用,直接引用究竟是什么？">
+    <meta property="og:url" content="/20200821/">
+    <meta property="og:site_name" content="周圣华的博客">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="周圣华的博客">
+    <meta name="twitter:description" content="">
+    
+    
+
+    
+    
+
+    
+      <meta property="og:image" content="//www.gravatar.com/avatar/ccfaa5056cb19a47376367385b8d75c1?s=640">
+    
+
+    
+    
+    
+
+    
+
+    
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css"/>
+    <link rel="stylesheet" href="https://vitzhou.top/local/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css"/>
+    
+    
+    <link rel="stylesheet" href="https://vitzhou.top/css/style-jsjn0006wyhpyzivf6yceb31gvpjatbcs3qzjvlumobfnugccvobqwxnnaj8.min.css" />
+    
+    
+
+    
+      
+    
+    
+  </head>
+
+  <body>
+    <div id="blog">
+      <header id="header" data-behavior="5">
+  <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+  <div class="header-title">
+    <a class="header-title-link" href="https://vitzhou.top/">周圣华的博客</a>
+  </div>
+  
+    
+      <a class="header-right-picture "
+         href="https://vitzhou.top/#about">
+    
+    
+    
+      
+        <img class="header-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+      
+    
+    </a>
+  
+</header>
+
+      <nav id="sidebar" data-behavior="5">
+  <div class="sidebar-container">
+    
+      <div class="sidebar-profile">
+        <a href="https://vitzhou.top/#about">
+          <img class="sidebar-profile-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" />
+        </a>
+        <h4 class="sidebar-profile-name">Vit Zhou/周圣华</h4>
+        
+          <h5 class="sidebar-profile-bio">梦想,不是浮躁.而是沉淀和积累</h5>
+        
+      </div>
+    
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+      
+      <span class="sidebar-button-desc">Home</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/categories">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+      
+      <span class="sidebar-button-desc">分类</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/tags">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+      
+      <span class="sidebar-button-desc">标签</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/archives">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+      
+      <span class="sidebar-button-desc">归档</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://vitzhou.top/#about">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+      
+      <span class="sidebar-button-desc">关于</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://github.com/VitZhou" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+      
+      <span class="sidebar-button-desc">GitHub</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://www.gitbook.com/@vitzhou" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-leanpub"></i>
+      
+      <span class="sidebar-button-desc">学习笔记</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://dreamfly.io/project/dreammesh/" target="_blank" rel="noopener">
+    
+      <i class="sidebar-button-icon fa fa-lg fa-github-square"></i>
+      
+      <span class="sidebar-button-desc">开源项目</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+
+    </ul>
+  </div>
+</nav>
+
+      
+
+      <div id="main" data-behavior="5"
+        class="
+               hasCoverMetaIn
+               ">
+        <article class="post" itemscope itemType="http://schema.org/BlogPosting">
+          
+          
+            <div class="post-header main-content-wrap text-left">
+  
+    <h1 class="post-title" itemprop="headline">
+      字面量,符号引用,直接引用究竟是什么？
+    </h1>
+  
+  
+  <div class="postShorten-meta post-meta">
+    
+      <time itemprop="datePublished" datetime="2020-08-21T23:11:13&#43;08:00">
+        
+  八月 21, 2020
+
+      </time>
+    
+    
+  
+  
+    <span>发布在</span>
+    
+      <a class="category-link" href="https://vitzhou.top/categories/jvm">jvm</a>
+    
+  
+
+  </div>
+
+</div>
+          
+          <div class="post-content markdown" itemprop="articleBody">
+            <div class="main-content-wrap">
+              <h1 id="table-of-contents">目录</h1><nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#字面量">字面量</a></li>
+<li><a href="#符号引用">符号引用</a></li>
+<li><a href="#直接引用">直接引用</a></li>
+</ul></li>
+</ul>
+</nav>
+
+<p>相信大家对&rsquo;字面量&rsquo;,&lsquo;符号引用&rsquo;,&lsquo;直接引用&rsquo;这些词在书上或者博客上都见了不少. 但是又有多少人真正的理解这几个词？反正我毕业前四年是没有弄懂.</p>
+
+<h2 id="字面量">字面量</h2>
+
+<p>到底什么是字面量？ 这其实要甩锅给前辈们,他们翻译过来之后用了这么个词,虽然比较抽象,但是这词也基本上表达了它的含义。</p>
+
+<p>百度百科是这么解释的</p>
+
+<blockquote>
+<p>在计算机科学中，字面量（literal）是用于表达源代码中一个固定值的表示法（notation）。几乎所有计算机编程语言都具有对基本值的字面量表示，诸如：整数、浮点数以及字符串；而有很多也对布尔类型和字符类型的值也支持字面量表示；还有一些甚至对枚举类型的元素以及像数组、记录和对象等复合类型的值也支持字面量表示法</p>
+</blockquote>
+
+<p>相信大家还是不太懂到底什么意思,尤其是字面量和常量又这两个概念.那么举个例子:</p>
+
+<pre><code class="language-java">static final String MSG = &quot;hello word&quot;;
+static final int A = 1;
+static final float F = 0.52f
+</code></pre>
+
+<p>那么<code>MSG</code>,<code>A</code>,<code>F</code>就是常说的常量. 而<code>hello word</code>, <code>1</code>,<code>0.52f</code>就是字面量. 其实就是这么简单. 如你所见的这些个“固定值”就是字面量.</p>
+
+<blockquote>
+<p>注意在java里面字面量必须是使用final修饰的. 从百度百科中可得知它是一个固定值的表示法.在java里面final修饰表示不变.</p>
+</blockquote>
+
+<h2 id="符号引用">符号引用</h2>
+
+<blockquote>
+<p>这里理解了能帮助你更深入的理解类加载</p>
+</blockquote>
+
+<p>符号引用其实是编译原理的概念,是相对直接引用来说的,所以符号引用和直接引用是有关联的. 简单来说符号引用可以分为三类:</p>
+
+<ul>
+<li>类和接口的全限定名</li>
+<li>字段的名称和描述符</li>
+<li>方法的名称和描述符</li>
+</ul>
+
+<p>比如有以下代码:</p>
+
+<pre><code class="language-java">public class Demo {
+
+    private int b = 3;
+    private static Integer a;
+
+    public static void increment() {
+        a++;
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i &lt; 100; i++) {
+            increment();
+        }
+        System.out.println(a);
+    }
+}
+</code></pre>
+
+<p>从上面定义来说:</p>
+
+<ul>
+<li>字段的名称<code>a</code>,&lsquo;b&rsquo;和描述符<code>Integer</code>,<code>int</code>是符号引用</li>
+<li>方法的名称<code>increment</code>和描述符<code>()</code>是符号引用</li>
+<li>类的全限定名<code>{包名}.Demo</code>是符号引用</li>
+</ul>
+
+<p>也可以更直观的看到符号引用,这里需要借助jdk的命令<code>javac</code>和<code>javap</code>;将这个类文件编译一下<code>javac Demo.java</code>得到.class文件,然后再<code>javap -v Demo &gt; demo.txt</code>得到反编译文件,如下:</p>
+
+<pre><code class="language-java">Classfile xxx/Demo.class
+  Last modified 2020-8-21; size 827 bytes
+  MD5 checksum a12d6be1ed5686e3aaa0f3f270505693
+  Compiled from &quot;Demo.java&quot;
+public class com.ai94.user.portrait.Demo
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #10.#28        // java/lang/Object.&quot;&lt;init&gt;&quot;:()V
+   #2 = Fieldref           #9.#29         // com/ai94/user/portrait/Demo.b:I
+   #3 = Fieldref           #9.#30         // com/ai94/user/portrait/Demo.a:Ljava/lang/Integer;
+   #4 = Methodref          #31.#32        // java/lang/Integer.intValue:()I
+   #5 = Methodref          #31.#33        // java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+   #6 = Methodref          #9.#34         // com/ai94/user/portrait/Demo.increment:()V
+   #7 = Fieldref           #35.#36        // java/lang/System.out:Ljava/io/PrintStream;
+   #8 = Methodref          #37.#38        // java/io/PrintStream.println:(Ljava/lang/Object;)V
+   #9 = Class              #39            // com/ai94/user/portrait/Demo
+  #10 = Class              #40            // java/lang/Object
+  #11 = Utf8               b
+  #12 = Utf8               I
+  #13 = Utf8               ConstantValue
+  #14 = Integer            3
+  #15 = Utf8               a
+  #16 = Utf8               Ljava/lang/Integer;
+  #17 = Utf8               &lt;init&gt;
+  #18 = Utf8               ()V
+  #19 = Utf8               Code
+  #20 = Utf8               LineNumberTable
+  #21 = Utf8               increment
+  #22 = Utf8               main
+  #23 = Utf8               ([Ljava/lang/String;)V
+  #24 = Utf8               StackMapTable
+  #25 = Utf8               &lt;clinit&gt;
+  #26 = Utf8               SourceFile
+  #27 = Utf8               Demo.java
+  #28 = NameAndType        #17:#18        // &quot;&lt;init&gt;&quot;:()V
+  #29 = NameAndType        #11:#12        // b:I
+  #30 = NameAndType        #15:#16        // a:Ljava/lang/Integer;
+  #31 = Class              #41            // java/lang/Integer
+  #32 = NameAndType        #42:#43        // intValue:()I
+  #33 = NameAndType        #44:#45        // valueOf:(I)Ljava/lang/Integer;
+  #34 = NameAndType        #21:#18        // increment:()V
+  #35 = Class              #46            // java/lang/System
+  #36 = NameAndType        #47:#48        // out:Ljava/io/PrintStream;
+  #37 = Class              #49            // java/io/PrintStream
+  #38 = NameAndType        #50:#51        // println:(Ljava/lang/Object;)V
+  #39 = Utf8               {包名}/Demo
+  #40 = Utf8               java/lang/Object
+  #41 = Utf8               java/lang/Integer
+  #42 = Utf8               intValue
+  #43 = Utf8               ()I
+  #44 = Utf8               valueOf
+  #45 = Utf8               (I)Ljava/lang/Integer;
+  #46 = Utf8               java/lang/System
+  #47 = Utf8               out
+  #48 = Utf8               Ljava/io/PrintStream;
+  #49 = Utf8               java/io/PrintStream
+  #50 = Utf8               println
+  #51 = Utf8               (Ljava/lang/Object;)V
+{
+  public com.ai94.user.portrait.Demo();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V
+         4: aload_0
+         5: iconst_3
+         6: putfield      #2                  // Field b:I
+         9: return
+      LineNumberTable:
+        line 5: 0
+        line 7: 4
+
+  public static void increment();
+    descriptor: ()V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=2, args_size=0
+         0: getstatic     #3                  // Field a:Ljava/lang/Integer;
+         3: astore_0
+         4: getstatic     #3                  // Field a:Ljava/lang/Integer;
+         7: invokevirtual #4                  // Method java/lang/Integer.intValue:()I
+        10: iconst_1
+        11: iadd
+        12: invokestatic  #5                  // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+        15: dup
+        16: putstatic     #3                  // Field a:Ljava/lang/Integer;
+        19: astore_1
+        20: aload_0
+        21: pop
+        22: return
+      LineNumberTable:
+        line 11: 0
+        line 12: 22
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=2, args_size=1
+         0: iconst_0
+         1: istore_1
+         2: iload_1
+         3: bipush        100
+         5: if_icmpge     17
+         8: invokestatic  #6                  // Method increment:()V
+        11: iinc          1, 1
+        14: goto          2
+        17: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        20: getstatic     #3                  // Field a:Ljava/lang/Integer;
+        23: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/Object;)V
+        26: return
+      LineNumberTable:
+        line 15: 0
+        line 16: 8
+        line 15: 11
+        line 18: 17
+        line 19: 26
+      StackMapTable: number_of_entries = 2
+        frame_type = 252 /* append */
+          offset_delta = 2
+          locals = [ int ]
+        frame_type = 250 /* chop */
+          offset_delta = 14
+
+  static {};
+    descriptor: ()V
+    flags: ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: iconst_2
+         1: invokestatic  #5                  // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+         4: putstatic     #3                  // Field a:Ljava/lang/Integer;
+         7: return
+      LineNumberTable:
+        line 8: 0
+}
+SourceFile: &quot;Demo.java&quot;
+
+</code></pre>
+
+<p>我们关注重点<code>常量池</code>(Constant pool)部分:</p>
+
+<blockquote>
+<p>现在所看到的常量池也叫静态常量池,因为它现在还没运行,是静态存储在.class文件中的.而相对它而言的运行时常量池 这个概念即是将.class文件加载到内存中运行时这个常量池就叫运行时常量池</p>
+</blockquote>
+
+<pre><code class="language-java">  #11 = Utf8               b
+  #12 = Utf8               I
+  #13 = Utf8               ConstantValue
+  #14 = Integer            3
+  #15 = Utf8               a
+  #16 = Utf8               Ljava/lang/Integer;
+  #17 = Utf8               &lt;init&gt;
+  #18 = Utf8               ()V
+  #19 = Utf8               Code
+  #20 = Utf8               LineNumberTable
+  #21 = Utf8               increment
+  #39 = Utf8               {包名}/Demo
+</code></pre>
+
+<p>这些抽取出来的关键信息就是字面量3,以及符号引用b,a. 所以常量池中包含符号引用和字面量。</p>
+
+<blockquote>
+<p>字节码文件中#12 I表示Int</p>
+</blockquote>
+
+<h2 id="直接引用">直接引用</h2>
+
+<p>从上面得知符号引用其实是<code>静态</code>的,那么直接引用就是<code>动态</code>的. 将.class文件加载到内存中之后,jvm会将符号引用转化为代码在内存中实际的内存地址.那么这就是直接引用.也就是类加载中的<code>动态链接</code>。</p>
+              
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+                
+                
+                  <div class="post-footer-tags">
+                    <span class="text-color-light text-small">标签</span><br/>
+                    
+  <a class="tag tag--primary tag--small" href="https://vitzhou.top/tags/jvm/">jvm</a>
+
+                  </div>
+                
+              
+            
+            
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_5/" data-tooltip="详读RxJava(observeOn实现)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+            
+              
+                <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+    var gitment = new Gitment({
+            id: window.location.pathname,
+                                  owner: 'VitZhou',
+                                  repo: 'vitzhou.top',
+                                  oauth: {
+                                      client_id: '3010cc20c7d35d5950a7',
+                                      client_secret: '3a6f6cf7da23f2c8a6081cbfdcf775549cbe6643',
+                                  },
+                              })
+    gitment.render('container')
+</script>
+              
+            
+          </div>
+        </article>
+        <footer id="footer" class="main-content-wrap">
+  <span class="copyrights">
+    &copy; 2020 Vit Zhou/周圣华. All Rights Reserved
+  </span>
+</footer>
+
+      </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+        
+  <div class="post-actions-wrap">
+      <nav >
+        <ul class="post-actions post-action-nav">
+          
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--disabled">
+              
+                  <i class="fa fa-angle-left"></i>
+                  <span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+              
+                <a class="post-action-btn btn btn--default tooltip--top" href="https://vitzhou.top/20190210_rxjava_5/" data-tooltip="详读RxJava(observeOn实现)">
+              
+                  <span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+                  <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+          
+        </ul>
+      </nav>
+    <ul class="post-actions post-action-share" >
+      
+        <li class="post-action hide-lg hide-md hide-sm">
+          <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions">
+            <i class="fa fa-share-alt"></i>
+          </a>
+        </li>
+        
+      
+      
+        <li class="post-action">
+          <a class="post-action-btn btn btn--default" href="#disqus_thread">
+            <i class="fa fa-comment-o"></i>
+          </a>
+        </li>
+      
+      <li class="post-action">
+        
+          <a class="post-action-btn btn btn--default" href="#table-of-contents">
+        
+          <i class="fa fa-list"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+      </div>
+      <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+  <i id="btn-close-shareoptions" class="fa fa-close"></i>
+  <ul class="share-options">
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+    </div>
+    
+    <div id="about">
+  <div id="about-card">
+    <div id="about-btn-close">
+      <i class="fa fa-remove"></i>
+    </div>
+    
+      <img id="about-card-picture" src="https://vitzhou.top/images/author.jpeg?s=460&v=4" alt="作者的图片" />
+    
+    <h4 id="about-card-name">Vit Zhou/周圣华</h4>
+    
+      <div id="about-card-bio">梦想,不是浮躁.而是沉淀和积累</div>
+    
+    
+      <div id="about-card-job">
+        <i class="fa fa-briefcase"></i>
+        <br/>
+        团贷网@高级java
+      </div>
+    
+    
+      <div id="about-card-location">
+        <i class="fa fa-map-marker"></i>
+        <br/>
+        vitzhou@gmail.com
+      </div>
+    
+  </div>
+</div>
+
+    <div id="algolia-search-modal" class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="close-button"><i class="fa fa-close"></i></span>
+      <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+        <span class="searchby-algolia-text text-color-light text-small">by</span>
+        <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+      </a>
+      <i class="search-icon fa fa-search"></i>
+      <form id="algolia-search-form">
+        <input type="text" id="algolia-search-input" name="search"
+          class="form-control input--large search-input" placeholder="搜索" />
+      </form>
+    </div>
+    <div class="modal-body">
+      <div class="no-result text-color-light text-center"></div>
+      <div class="results">
+        
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20200821/">
+                <h3 class="media-heading">字面量,符号引用,直接引用究竟是什么？</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2020
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190210_rxjava_5/">
+                <h3 class="media-heading">详读RxJava(observeOn实现)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>这次我们聊聊observeOn线程切换的实现.阅读之前请先阅读之前的几篇博客</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190210_rxjava_4/">
+                <h3 class="media-heading">详读RxJava(subscribeOn实现)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>今天我们聊聊subscribeOn线程切换的实现.阅读之前请先阅读之前的几篇博客</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_3/">
+                <h3 class="media-heading">详读RxJava(Scheduler实现)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>这篇文章主要介绍在RxJava中的Scheduler实现。阅读之前请先看<a href="https://vitzhou.top/20190209_rxjava_1/">数据的发送与接收</a></p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_2/">
+                <h3 class="media-heading">详读RxJava(Operator的实现)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>在RxJava中有非常多的Operator方法,比如map,flatMap,lift等。在这些Operatior中比较重要的是lift方法，因为很多操作都是基于lift来实现的,扩展lift还可以实现自定义Operator. 这篇内容主要是介绍lift,map,flatMap的实现(关于这些操作的作用请查阅官网,这里不做过多介绍)。阅读之前请先看本系列文章的<a href="https://vitzhou.top/20190209_rxjava_1/">第一篇</a></p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20190209_rxjava_1/">
+                <h3 class="media-heading">详读RxJava(数据的发送与接收)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Feb 2, 2019
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>18年我就再尝试使用rxJava来解决网络IO问题.但是一直使用得不是很得心应手,原因是不太知道它的底层原理.这次春节正好有时间可以把RxJava的原理看一遍。</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180724_reetrantlock/">
+                <h3 class="media-heading">详读JUC系列之ReadWriteLock</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用<code>synchronized</code>或者<code>ReentrantLock</code>会浪费非常大的性能.此时使用<code>ReentrantReadWriteLock</code>会更合适</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180822_transation/">
+                <h3 class="media-heading">Spring Transactional</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>今天遇到了个Spring的<code>@Transactional</code>注解用法的问题(从此也可以看出自己数据库的薄弱,还是需要补这个基础).经过一个下午的源码阅读和debug终于解开了心中所惑,遂写下来记录一下.</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180804_threadlocal/">
+                <h3 class="media-heading">ThreadLocal详解(二)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20180728_threadlocal/">
+                <h3 class="media-heading">ThreadLocal详解(一)</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Jul 7, 2018
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"><p>最近工作中正好使用了ThreadLocal,之前对它底层实现不是非常清晰.今天正好看一遍</p></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+      </div>
+    </div>
+    <div class="modal-footer">
+      <p class="results-count text-medium"
+         data-message-zero=""
+         data-message-one=""
+         data-message-other="">
+         24 posts found
+      </p>
+    </div>
+  </div>
+</div>
+    
+  
+    
+    <div id="cover" style="background-image:url('https://vitzhou.top/images/cover1.jpg');"></div>
+  
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js" integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin="anonymous"></script>
+
+
+<script src="https://vitzhou.top/js/script-qi9wbxp2ya2j6p7wx1i6tgavftewndznf4v0hy2gvivk1rxgc3lm7njqb6bz.min.js"></script>
+
+
+
+<script>
+$(document).ready(function() {
+  hljs.configure({ classPrefix: '', useBR: false });
+  $('pre.code-highlight > code, pre > code').each(function(i, block) {
+    if (!$(this).hasClass('codeblock')) {
+      $(this).addClass('codeblock');
+    }
+    hljs.highlightBlock(block);
+  });
+});
+</script>
+
+
+  
+    
+      <script>
+        var disqus_config = function () {
+          this.page.url = 'https:\/\/vitzhou.top\/20200821\/';
+          
+            this.page.identifier = '\/20200821\/'
+          
+        };
+        (function() {
+          
+          
+          if (window.location.hostname == "localhost") {
+            return;
+          }
+          var d = document, s = d.createElement('script');
+          var disqus_shortname = '个人博客';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+    
+  
+
+
+
+    
+  </body>
+</html>
+

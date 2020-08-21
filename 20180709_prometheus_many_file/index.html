@@ -21,7 +21,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="Hugo 0.37 with theme Tranquilpeak 0.4.3-BETA">
+    <meta name="generator" content="Hugo 0.55.6 with theme Tranquilpeak 0.4.3-BETA">
     <title>Prometheus Too Many Open file问题</title>
     <meta name="author" content="Vit Zhou/周圣华">
     <meta name="keywords" content="Prometheus Too Many Open file, java, service mesh, spring cloud, spring boot, docker, k8s, unit test">
@@ -259,8 +259,7 @@
             <div class="main-content-wrap">
               <p>Prometheus Too many open file问题定位</p>
 
-<p>
-<!-- top --></p>
+<!-- top -->
 
 <p>用了快半年的Prometheus了.但是经常出现too many open file错误.基本上跑半个月就会出问题.之前一直以为是prometheus本身的问题,由于太忙了.再加上清理了它的存储文件之后又能跑半个月.所以暂时就放下了。但是昨天晚上又挂了.不能忍了·。废话不多说.直接谷歌。然后在github上找到了这个issue.<a href="https://github.com/prometheus/prometheus/issues/1873">https://github.com/prometheus/prometheus/issues/1873</a>.   细细看完,发现这个问题是上古世纪的问题.官方已经解决了。但是我这为何还出现这么古老的问题(注意只是问题,不是bug哈。是我姿势不对没用好它)呢？ 在issue中,作者给了排查意见.于是乎开启&rdquo;大家一起找茬&rdquo;之旅</p>
 
@@ -389,7 +388,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
         </article>
         <footer id="footer" class="main-content-wrap">
   <span class="copyrights">
-    &copy; 2019 Vit Zhou/周圣华. All Rights Reserved
+    &copy; 2020 Vit Zhou/周圣华. All Rights Reserved
   </span>
 </footer>
 
@@ -507,6 +506,23 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
           <div class="media">
             
             <div class="media-body">
+              <a class="link-unstyled" href="https://vitzhou.top/20200821/">
+                <h3 class="media-heading">字面量,符号引用,直接引用究竟是什么？</h3>
+              </a>
+              <span class="media-meta">
+                <span class="media-date text-small">
+                  Aug 8, 2020
+                </span>
+              </span>
+              <div class="media-content hide-xs font-merryweather"></div>
+            </div>
+            <div style="clear:both;"></div>
+            <hr>
+          </div>
+        
+          <div class="media">
+            
+            <div class="media-body">
               <a class="link-unstyled" href="https://vitzhou.top/20190210_rxjava_5/">
                 <h3 class="media-heading">详读RxJava(observeOn实现)</h3>
               </a>
@@ -600,9 +616,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
                   Aug 8, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用<code>synchronized</code>或者<code>ReentrantLock</code>会浪费非常大的性能.此时使用<code>ReentrantReadWriteLock</code>会更合适
-
-<!--toc--></p></div>
+              <div class="media-content hide-xs font-merryweather"><p>虽然锁可以保证资源的线程安全,但是锁带来的性能损失也是不可以忽略的.尤其是在读多写少的场景下,如果你使用<code>synchronized</code>或者<code>ReentrantLock</code>会浪费非常大的性能.此时使用<code>ReentrantReadWriteLock</code>会更合适</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -636,9 +650,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
                   Aug 8, 2018
                 </span>
               </span>
-              <div class="media-content hide-xs font-merryweather"><p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。
-
-<!--toc--></p></div>
+              <div class="media-content hide-xs font-merryweather"><p>接下来我们继续聊get,remove方法。以及ThreadLocal使用不当会发生的问题。</p></div>
             </div>
             <div style="clear:both;"></div>
             <hr>
@@ -661,23 +673,6 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
             <hr>
           </div>
         
-          <div class="media">
-            
-            <div class="media-body">
-              <a class="link-unstyled" href="https://vitzhou.top/20180709_aqs_2/">
-                <h3 class="media-heading">详读JUC系列(2)之AQS</h3>
-              </a>
-              <span class="media-meta">
-                <span class="media-date text-small">
-                  Jul 7, 2018
-                </span>
-              </span>
-              <div class="media-content hide-xs font-merryweather"><p>AQS(二)</p></div>
-            </div>
-            <div style="clear:both;"></div>
-            <hr>
-          </div>
-        
       </div>
     </div>
     <div class="modal-footer">
@@ -685,7 +680,7 @@ ok！搞定。 然后剩下的事情就只有交给时间检验了。</p>
          data-message-zero=""
          data-message-one=""
          data-message-other="">
-         23 posts found
+         24 posts found
       </p>
     </div>
   </div>

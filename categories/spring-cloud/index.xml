@@ -17,8 +17,7 @@
       <pubDate>Tue, 13 Feb 2018 11:07:44 +0800</pubDate>
       
       <guid>https://vitzhou.top/20180213_eureka_client_config/</guid>
-      <description>&lt;p&gt;这次我们来详细聊聊eureka client服务的配置
-&lt;/p&gt;</description>
+      <description>&lt;p&gt;这次我们来详细聊聊eureka client服务的配置&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -27,8 +26,7 @@
       <pubDate>Sun, 11 Feb 2018 15:09:33 +0800</pubDate>
       
       <guid>https://vitzhou.top/20180211_eureka_client_registry/</guid>
-      <description>&lt;p&gt;本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看&lt;a href=&#34;http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/&#34;&gt;这里&lt;/a&gt;入门.
-&lt;/p&gt;</description>
+      <description>&lt;p&gt;本文的内容是Eureka Client的服务注册的主要流程,如果你是第一次使用Eureka Client,你可以先看&lt;a href=&#34;http://blog.didispace.com/Spring-Cloud%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/&#34;&gt;这里&lt;/a&gt;入门.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -37,8 +35,7 @@
       <pubDate>Tue, 06 Feb 2018 14:31:23 +0800</pubDate>
       
       <guid>https://vitzhou.top/2018-02-spring-cloud-refresh-context/</guid>
-      <description>&lt;p&gt;Spring Cloud Config自动刷新的主要流程
-&lt;/p&gt;</description>
+      <description>&lt;p&gt;Spring Cloud Config自动刷新的主要流程&lt;/p&gt;</description>
     </item>
     
   </channel>

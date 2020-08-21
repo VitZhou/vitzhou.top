@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Rxjava on 周圣华的博客</title>
+    <title>RxJava on 周圣华的博客</title>
     <link>https://vitzhou.top/categories/rxjava/</link>
-    <description>Recent content in Rxjava on 周圣华的博客</description>
+    <description>Recent content in RxJava on 周圣华的博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Sun, 10 Feb 2019 18:22:31 +0800</lastBuildDate>
